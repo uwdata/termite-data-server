@@ -46,4 +46,4 @@ function __demo__ {
 
 bin/setup.sh
 __demo__
-bin/run_server.sh
+bin/start_server.sh
