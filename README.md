@@ -24,18 +24,6 @@ To launch the web server, execute the following command. A dialogue will appear.
 bin/start_server.sh
 ```
 
-A demo script is included in this repository. Executing the following command will download the 20newsgroups dataset, build a LDA topic model with 20 latent topics, and launch the web server.
-
-```
-bin/demo.sh
-```
-
-The resulting topic model will be available at:
-
-```
-http://127.0.0.1:8000/20newsgroups/lda
-```
-
 License
 -------
 
