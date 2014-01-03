@@ -7,7 +7,7 @@ The tool contains two components:
   * A web server for accessing the output of a topic model and distributing the content over the internet.
   * A client interface for visualizing the topic model in a web browser.
 
-This repository contains the server-side component for processing the output of a MALLET topic model and hosting the content on a web2py server. This software is developed by [Jason Chuang](http://jason.chuang.ca), and distributed under the BSD-3 license.
+This repository contains the server-side component for processing the output of a MALLET topic model and hosting the content on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca), and distributed under the BSD-3 license. [MALLET](http://mallet.cs.umass.edu) is developed by Andrew McCallum, et al. [The web2py Web Framework](http://web2py.com) is developed by Massimo Di Pierro, et al.
 
 Using the software
 ------------------
