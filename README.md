@@ -1,5 +1,5 @@
-Termite Web Server for Interactive Topic Modeling
-=================================================
+Termite Web Server for ITM models
+=================================
 
 Termite is a visualization tool for inspecting the output of statistical topic models.
 
