@@ -1,0 +1,10 @@
+.DS_Store
+.gitignore~
+*.py~
+*.pyc
+*.sh~
+externals*
+tools*
+corpus*
+models*
+data*
