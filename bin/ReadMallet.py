@@ -37,7 +37,7 @@ class ReadMallet( object ):
 		self.logger.info( 'Making output folder' )
 		os.makedirs( self.data_path )
 		
-		self.logger.info( 'Reading "%s" from Mallet...', ReadMallet.TOPIC_WORD_WEIGHTS )
+		self.logger.info( 'Reading "%s" from MALLET model output...', ReadMallet.TOPIC_WORD_WEIGHTS )
 		self.ExtractTopicWordWeights( min_term_freq, min_term_count )
 		
 		self.logger.info( 'Writing data to disk...' )
