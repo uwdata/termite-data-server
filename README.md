@@ -18,13 +18,13 @@ Run the setup script to fetch all required libraries. This script only needs to 
 bin/setup.sh
 ```
 
-To launch the web server, execute the following commnand. A dialogue will appear. Click on "start server" to proceed.
+To launch the web server, execute the following command. A dialogue will appear. Click on "start server" to proceed.
 
 ```
 bin/start_server.sh
 ```
 
-A demo script is included in this repository. Executing the following commnd will download the 20newsgroups dataset, build a LDA topic model with 20 latent topics, and launch the web server.
+A demo script is included in this repository. Executing the following command will download the 20newsgroups dataset, build a LDA topic model with 20 latent topics, and launch the web server.
 
 ```
 bin/demo.sh
