@@ -3,6 +3,9 @@
 import os
 import json
 
+def test():
+	return { 'message' : "Yo" }
+	
 def index():
 	if IsJsonFormat():
 		return GenerateJsonResponse()
@@ -26,6 +29,8 @@ def GenerateJsonResponse():
 def GenerateHtmlResponse():
 	text = "This is an LDA model."
 	return text
+	
+	# return { 'message' : 'This is an LDA model generated from an HTML template' }
 
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
