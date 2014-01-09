@@ -27,7 +27,7 @@ bin/start_server.sh
 A demo script is included in this repository. Executing the following command will download the 20newsgroups dataset, build a LDA topic model with 20 latent topics, and launch the web server.
 
 ```
-bin/demo.sh
+bin/demo-20newsgroups.sh
 ```
 
 The resulting topic model will be available at:
