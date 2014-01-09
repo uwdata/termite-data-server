@@ -22,7 +22,7 @@ class ReadMallet( object ):
 		handler.setLevel( logging_level )
 		self.logger.addHandler( handler )
 	
-	def execute( self, filenameTopicWordWeights, filenameDocTopicMixtures, min_term_freq, min_term_count ):
+	def execute( self, filenameTopicWordWeights, filenameDocTopicMixtures ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		self.logger.info( 'Importing a Mallet model...'                                                      )
 		self.logger.info( '       model = %s', self.model_path                                               )
@@ -30,8 +30,6 @@ class ReadMallet( object ):
 		self.logger.info( '         lda = %s', self.lda_path                                                 )
 		self.logger.info( ' topic-words = %s', filenameTopicWordWeights                                      )
 		self.logger.info( '  doc-topics = %s', filenameDocTopicMixtures                                      )
-		self.logger.info( '    min_term_freq = %s', min_term_freq                                            )
-		self.logger.info( '    min_term_count = %s', min_term_count                                          )
 		
 		if not os.path.exists( self.lda_path ):
 			self.logger.info( 'Making output folder: %s', self.lda_path )
@@ -169,7 +167,6 @@ class ReadMallet( object ):
 			self.docTopicMatrix[ doc ] = row
 		
 	def SaveToDisk( self ):
-		
 		filename = '{}/doc-index.json'.format( self.lda_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
@@ -213,8 +210,6 @@ def main():
 	parser.add_argument( 'data_path'    , type = str,               help = 'Web2py application path.'                                              )
 	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.'               )
 	parser.add_argument( '--doc_topics' , type = str, default = DOC_TOPIC_MIXTURES, help = 'File containing doc vs. topic mixtures.'               )
-	parser.add_argument( '--term_freq'  , type = int, default = 20, help = 'Include only terms that occur at least this many times in the corpus.' )
-	parser.add_argument( '--term_count' , type = int, default =  5, help = 'Include only terms that appear in at least this many documents.'       )
 	parser.add_argument( '--logging'    , type = int, default = 20, help = 'Override default logging level.'                                       )
 	args = parser.parse_args()
 	
@@ -224,9 +219,7 @@ def main():
 		logging_level = args.logging
 	).execute(
 		args.topic_words, 
-		args.doc_topics, 
-		min_term_freq = args.term_freq, 
-		min_term_count = args.term_count
+		args.doc_topics
 	)
 
 if __name__ == '__main__':
