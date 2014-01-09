@@ -4,6 +4,12 @@ import os
 import json
 
 def index():
+	if IsJsonFormat():
+		return GenerateJsonResponse()
+	else:
+		return GenerateHtmlResponse()
+
+def GenerateJsonResponse():
 	identifier = {
 		'model_type' : 'lda',
 		'model_version' : '0.1',
@@ -15,7 +21,14 @@ def index():
 			'DocTopicMatrix'
 		]
 	}
-	return json.dumps( identifier, encoding = 'utf-8', indent = 2 )
+	return json.dumps( identifier, encoding = 'utf-8', indent = 2, sort_keys = True )
+
+def GenerateHtmlResponse():
+	text = "This is an LDA model."
+	return text
+
+def IsJsonFormat():
+	return 'format' in request.vars and 'json' == request.vars['format'].lower()
 
 def GetDocIndex( limit = 100 ):
 	filename = os.path.join( request.folder, 'data/lda', 'doc-index.json' )
