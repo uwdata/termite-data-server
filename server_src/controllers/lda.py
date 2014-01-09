@@ -17,76 +17,116 @@ def index():
 	}
 	return json.dumps( identifier, encoding = 'utf-8', indent = 2 )
 
-def GerDocIndex():
+def GetDocIndex( limit = 100 ):
 	filename = os.path.join( request.folder, 'data/lda', 'doc-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
-	return content
+	return content[:limit]
 
-def GetTermIndex():
+def GetTermIndex( limit = 100 ):
 	filename = os.path.join( request.folder, 'data/lda', 'term-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
-	return content
+	return content[:limit]
 
-def GetTopicIndex():
+def GetTopicIndex( limit = 50 ):
 	filename = os.path.join( request.folder, 'data/lda', 'topic-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
-	return content
+	return content[:limit]
 
-def GetTermTopicMatrix():
+def GetTermTopicMatrix( termLimit = 100, topicLimit = 50 ):
 	filename = os.path.join( request.folder, 'data/lda', 'term-topic-matrix.txt' )
+	content = []
 	with open( filename ) as f:
-		content = [ [ float(value) for value in line.split('\t') ] for line in f.read().decode( 'utf-8' ).splitlines() ]
+		for line in f:
+			values = [ float(value) for value in line[:-1].split('\t') ]
+			content.append( values[:topicLimit] )
+			if len(content) >= termLimit:
+				break
 	return content
 
-def GetDocTopicMatrix():
+def GetDocTopicMatrix( docLimit = 100, topicLimit = 50 ):
 	filename = os.path.join( request.folder, 'data/lda', 'doc-topic-matrix.txt' )
+	content = []
 	with open( filename ) as f:
-		content = [ [ float(value) for value in line.split('\t') ] for line in f.read().decode( 'utf-8' ).splitlines() ]
+		for line in f:
+			values = [ float(value) for value in line[:-1].split('\t') ]
+			content.append( values[:topicLimit] )
+			if len(content) >= docLimit:
+				break
 	return content
 
 def DocIndex():
+	docLimit = 100
+	docIndex = GetDocIndex( limit = docLimit )
 	data = {
 		'api_type' : 'TermIndex',
 		'api_version' : '0.1',
-		'DocIndex' : GetDocIndex()
+		'docLimit' : docLimit,
+		'docCount' : len(docIndex),
+		'DocIndex' : docIndex
 	}
 	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
 
 def TermIndex():
+	termLimit = 100
+	termIndex = GetTermIndex( limit = termLimit )
 	data = {
 		'api_type' : 'TermIndex',
 		'api_version' : '0.1',
-		'TermIndex' : GetTermIndex()
+		'termLimit' : termLimit,
+		'termCount' : len(termIndex),
+		'TermIndex' : termIndex
 	}
 	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
 
 def TopicIndex():
+	topicLimit = 50
+	topicIndex = GetTopicIndex( limit = topicLimit )
 	data = {
 		'api_type' : 'TopicIndex',
 		'api_version' : '0.1',
-		'TopicIndex' : GetTopicIndex()
+		'topicLimit' : topicLimit,
+		'topicCount' : len(topicIndex),
+		'TopicIndex' : topicIndex
 	}
 	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
 
 def TermTopicMatrix():
+	termLimit = 100
+	topicLimit = 50
+	termIndex = GetTermIndex( limit = termLimit )
+	topicIndex = GetTopicIndex( limit = topicLimit )
+	termTopicMatrix = GetTermTopicMatrix( termLimit = termLimit, topicLimit = topicLimit )
 	data = {
 		'api_type' : 'TermTopicMatrix',
 		'api_version' : '0.1',
-		'TermIndex' : GetTermIndex(),
-		'TopicIndex' : GetTopicIndex(),
-		'TermTopicMatrix' : GetTermTopicMatrix()
+		'termLimit' : termLimit,
+		'termCount' : len(termIndex),
+		'topicLimit' : topicLimit,
+		'topicCount' : len(topicIndex),
+		'TermIndex' : termIndex,
+		'TopicIndex' : topicIndex,
+		'TermTopicMatrix' : termTopicMatrix
 	}
 	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
 
 def DocTopicMatrix():
+	docLimit = 100
+	topicLimit = 50
+	docIndex = GetDocIndex( limit = docLimit )
+	topicIndex = GetTopicIndex( limit = topicLimit )
+	docTopicMatrix = GetDocTopicMatrix( docLimit = docLimit, topicLimit = topicLimit )
 	data = {
 		'api_type' : 'DocTopicMatrix',
 		'api_version' : '0.1',
-		'DocIndex' : GetDocIndex(),
-		'TopicIndex' : GetTopicIndex(),
-		'TermTopicMatrix' : GetDocTopicMatrix()
+		'docLimit' : docLimit,
+		'docCount' : len(docIndex),
+		'topicLimit' : topicLimit,
+		'topicCount' : len(topicIndex),
+		'DocIndex' : docIndex,
+		'TopicIndex' : topicIndex,
+		'DocTopicMatrix' : docTopicMatrix
 	}
 	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
