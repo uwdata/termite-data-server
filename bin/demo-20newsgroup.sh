@@ -17,9 +17,13 @@ function __demo_fetch_data__ {
 	CORPUS_PATH=$DEMO_PATH/corpus
 	MODEL_PATH=$DEMO_PATH/model
 
-	echo
-	echo ">> Setting up the 20newsgroups dataset..."
+	echo "# Setting up the 20newsgroups dataset..."
 	__create_folder__ $DEMO_PATH "    "
+	
+	if [ ! -e "$DEMO_PATH/README" ]
+	then
+		echo "After a model is imported into a Termite server, you can technically delete all content in this folder without affecting the server. However you may wish to retain your model for other analysis purposes." > $DEMO_PATH/README
+	fi
 
 	if [ ! -d "$DOWNLOAD_PATH" ]
 	then
@@ -42,18 +46,28 @@ function __demo_fetch_data__ {
 	else
 		echo "    Already available: $CORPUS_PATH"
 	fi
+
+	echo
 }
 
-function __demo_train_model__ {
+function __train_model__ {
+	echo "# Training an LDA mode..."
+	echo
+	echo "bin/train_from_folder.sh $CORPUS_PATH $MODEL_PATH"
+	echo
 	bin/train_from_folder.sh $CORPUS_PATH $MODEL_PATH
 }
 
-function __demo_import_model__ {
+function __import_model__ {
+	echo "# Training an LDA mode..."
+	echo
+	echo "bin/import_model.sh $MODEL_PATH 20newsgroups"
+	echo
 	bin/import_model.sh $MODEL_PATH 20newsgroups
 }
 
 bin/setup.sh
 __demo_fetch_data__
-__demo_train_model__
-__demo_import_model__
+__train_model__
+__import_model__
 bin/start_server.sh

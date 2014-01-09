@@ -13,8 +13,7 @@ MALLET_ROOT=tools/mallet-2.0.7
 NUM_TOPICS=20
 NUM_ITERS=1000
 
-echo
-echo ">> Building a topic model: [$CORPUS_FOLDER] --> [$MODEL_FOLDER]"
+echo "# Building a topic model: [$CORPUS_FOLDER] --> [$MODEL_FOLDER]"
 
 if [ ! -d "$MODEL_FOLDER" ]
 then
@@ -40,3 +39,5 @@ then
 else
 	echo "    Already exists: $MODEL_FOLDER"
 fi
+
+echo

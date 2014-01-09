@@ -14,8 +14,7 @@ APP_IDENTIFIER=$2
 WEB2PY_ROOT=tools/web2py
 WEB2PY_REL=../..
 
-echo
-echo ">> Importing a topic model as a web2py application: [$MODEL_FOLDER] --> [$APP_IDENTIFIER]"
+echo "# Importing a topic model as a web2py application: [$MODEL_FOLDER] --> [$APP_IDENTIFIER]"
 
 if [ ! -d "$APPS_PATH/$APP_IDENTIFIER" ]
 then
@@ -39,3 +38,5 @@ then
 else
 	echo "    Already exists: $APPS_PATH/$APP_IDENTIFIER"
 fi
+
+echo

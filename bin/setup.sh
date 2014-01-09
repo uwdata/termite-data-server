@@ -18,8 +18,7 @@ function __setup_mallet__ {
 	EXTERNALS_SUBPATH=$EXTERNALS_PATH/mallet-2.0.7
 	TOOLS_SUBPATH=$TOOLS_PATH/mallet-2.0.7
 
-	echo
-	echo ">> Downloading MALLET (MAchine Learning for LanguagE Toolkit)..."
+	echo "# Downloading MALLET (MAchine Learning for LanguagE Toolkit)..."
 	if [ ! -f "$EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz" ]
 	then
 		__create_folder__ $EXTERNALS_SUBPATH "    "
@@ -27,9 +26,9 @@ function __setup_mallet__ {
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
 	fi
-
 	echo
-	echo ">> Setting up MALLET..."
+
+	echo "# Setting up MALLET..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
 		__create_folder__ $TOOLS_SUBPATH "    "
@@ -43,14 +42,14 @@ function __setup_mallet__ {
 	else
 		echo "    Already available: $TOOLS_SUBPATH"
 	fi
+	echo
 }
 
 function __setup_web2py__ {
 	EXTERNALS_SUBPATH=$EXTERNALS_PATH/web2py
 	TOOLS_SUBPATH=$TOOLS_PATH/web2py
 
-	echo
-	echo ">> Downloading web2py..."
+	echo "# Downloading web2py..."
 	if [ ! -f "$EXTERNALS_SUBPATH/web2py_src.zip" ]
 	then
 		__create_folder__ $EXTERNALS_SUBPATH "    "
@@ -58,9 +57,9 @@ function __setup_web2py__ {
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/web2py_src.zip"
 	fi
-
 	echo
-	echo ">> Setting up web2py..."
+
+	echo "# Setting up web2py..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
 		__create_folder__ $TOOLS_SUBPATH "    "
@@ -82,10 +81,10 @@ function __setup_web2py__ {
 		ln -s ../../../../server_src/termite/controllers $TOOLS_SUBPATH/applications/termite/controllers
 		ln -s ../../../../server_src/termite/views $TOOLS_SUBPATH/applications/termite/views
 		sed -i bkp "s/redirect(URL('welcome', 'default', 'index'))/redirect(URL('termite', 'default', 'index'))/g" $TOOLS_SUBPATH/gluon/main.py
-		
 	else
 		echo "    Already available: $TOOLS_SUBPATH"
 	fi
+	echo
 }
 
 __create_folder__ $EXTERNALS_PATH
