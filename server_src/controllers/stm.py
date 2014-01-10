@@ -4,55 +4,30 @@ import os
 import json
 
 def index():
-	identifier = {
-		'server_type' : 'stm',
-		'server_version' : '0.1',
-		'server_handlers' : [
-			'TermTopicMatrix',
-			'TermIndex',
-			'TopicIndex'
-		]
-	}
-	return json.dumps( identifier, encoding = 'utf-8', indent = 2 )
-
-def GetTermTopicMatrix():
-	filename = os.path.join( request.folder, 'data', 'term-topic-matrix.txt' )
-	with open( filename ) as f:
-		content = [ [ float(value) for value in line.split('\t') ] for line in f.read().decode( 'utf-8' ).splitlines() ]
-	return content
-
-def GerTermIndex():
-	filename = os.path.join( request.folder, 'data', 'term-index.txt' )
-	with open( filename ) as f:
-		content = f.read().decode( 'utf-8' ).splitlines()
-	return content
-
-def GetTopicIndex():
-	filename = os.path.join( request.folder, 'data', 'topic-index.txt' )
-	with open( filename ) as f:
-		content = f.read().decode( 'utf-8' ).splitlines()
-	return content
-
-def TermTopicMatrix():
 	data = {
-		'content_type' : 'TermTopicMatrix',
-		'content_version' : '0.1',
-		'content' : GetTermTopicMatrix()
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attributes' : []
 	}
-	return json.dumps( data, encoding = 'utf-8' )
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return dataStr
+	else:
+		data[ 'content' ] = dataStr
+		return data
 
-def TermIndex():
-	data = {
-		'content_type' : 'TermIndex',
-		'content_version' : '0.1',
-		'content' : GerTermIndex()
-	}
-	return json.dumps( data, encoding = 'utf-8' )
+def IsJsonFormat():
+	return 'format' in request.vars and 'json' == request.vars['format'].lower()
 
-def TopicIndex():
-	data = {
-		'content_type' : 'TopicIndex',
-		'content_version' : '0.1',
-		'content' : GetTopicIndex()
-	}
-	return json.dumps( data, encoding = 'utf-8' )
+def GetServerIdentifier():
+	return request.env['HTTP_HOST']
+
+def GetDatasetIdentifier():
+	return request.application
+
+def GetModelType():
+	return request.controller
+
+def GetModelAttribute():
+	return request.function
