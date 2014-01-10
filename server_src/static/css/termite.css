@@ -93,6 +93,7 @@ div.info div.content {
 	font-size: 10pt;
 }
 div.info div.code {
+	display: inline-block;
 	margin: 0.8em 0 0 0;
 	padding: 15px;
 	min-width: 640px;
