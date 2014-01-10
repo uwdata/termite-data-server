@@ -59,7 +59,7 @@ function __train_model__ {
 }
 
 function __import_model__ {
-	echo "# Training an LDA model..."
+	echo "# Importing an LDA model..."
 	echo
 	echo "bin/import_model.sh $MODEL_PATH 20newsgroups"
 	echo
