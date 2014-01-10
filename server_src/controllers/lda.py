@@ -5,10 +5,10 @@ import json
 
 def index():
 	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifier' : '20newsgroups',
-		'model_type' : 'lda',
-		'model_api' : [
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attributes' : [
 			'DocIndex',
 			'TermIndex',
 			'TopicIndex',
@@ -16,31 +16,51 @@ def index():
 			'DocTopicMatrix'
 		]
 	}
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
-		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+		return dataStr
 	else:
+		data[ 'content' ] = dataStr
 		return data
 
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
 
+def GetServerIdentifier():
+	return request.env['HTTP_HOST']
+
+def GetDatasetIdentifier():
+	return request.application
+
+def GetModelType():
+	return request.controller
+
+def GetModelAttribute():
+	return request.function
+
 def GetDocIndex( limit = 100 ):
 	filename = os.path.join( request.folder, 'data/lda', 'doc-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
-	return content[:limit]
+	maxCount = len(content)
+	content=content[:limit]
+	return content, maxCount
 
 def GetTermIndex( limit = 100 ):
 	filename = os.path.join( request.folder, 'data/lda', 'term-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
-	return content[:limit]
+	maxCount = len(content)
+	content=content[:limit]
+	return content, maxCount
 
 def GetTopicIndex( limit = 50 ):
 	filename = os.path.join( request.folder, 'data/lda', 'topic-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
-	return content[:limit]
+	maxCount = len(content)
+	content=content[:limit]
+	return content, maxCount
 
 def GetTermTopicMatrix( termLimit = 100, topicLimit = 50 ):
 	filename = os.path.join( request.folder, 'data/lda', 'term-topic-matrix.txt' )
@@ -66,14 +86,22 @@ def GetDocTopicMatrix( docLimit = 100, topicLimit = 50 ):
 
 def DocIndex():
 	docLimit = 100
-	docIndex = GetDocIndex( limit = docLimit )
+	docIndex, docMaxCount = GetDocIndex( limit = docLimit )
 	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifier' : '20newsgroups',
-		'model_type' : 'lda',
-		'api_type' : 'TermIndex',
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attribute' : GetModelAttribute(),
+		'model_attributes' : [
+			'DocIndex',
+			'TermIndex',
+			'TopicIndex',
+			'TermTopicMatrix',
+			'DocTopicMatrix'
+		],
 		'docLimit' : docLimit,
 		'docCount' : len(docIndex),
+		'docMaxCount' : docMaxCount,
 		'DocIndex' : docIndex
 	}
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
@@ -86,14 +114,22 @@ def DocIndex():
 
 def TermIndex():
 	termLimit = 100
-	termIndex = GetTermIndex( limit = termLimit )
+	termIndex, termMaxCount = GetTermIndex( limit = termLimit )
 	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifier' : '20newsgroups',
-		'model_type' : 'lda',
-		'api_type' : 'TermIndex',
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attribute' : GetModelAttribute(),
+		'model_attributes' : [
+			'DocIndex',
+			'TermIndex',
+			'TopicIndex',
+			'TermTopicMatrix',
+			'DocTopicMatrix'
+		],
 		'termLimit' : termLimit,
 		'termCount' : len(termIndex),
+		'termMaxCount' : termMaxCount,
 		'TermIndex' : termIndex
 	}
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
@@ -106,14 +142,22 @@ def TermIndex():
 
 def TopicIndex():
 	topicLimit = 50
-	topicIndex = GetTopicIndex( limit = topicLimit )
+	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
 	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifier' : '20newsgroups',
-		'model_type' : 'lda',
-		'api_type' : 'TermIndex',
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attribute' : GetModelAttribute(),
+		'model_attributes' : [
+			'DocIndex',
+			'TermIndex',
+			'TopicIndex',
+			'TermTopicMatrix',
+			'DocTopicMatrix'
+		],
 		'topicLimit' : topicLimit,
 		'topicCount' : len(topicIndex),
+		'topicMaxCount' : topicMaxCount,
 		'TopicIndex' : topicIndex
 	}
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
@@ -127,18 +171,27 @@ def TopicIndex():
 def TermTopicMatrix():
 	termLimit = 100
 	topicLimit = 50
-	termIndex = GetTermIndex( limit = termLimit )
-	topicIndex = GetTopicIndex( limit = topicLimit )
+	termIndex, termMaxCount = GetTermIndex( limit = termLimit )
+	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
 	termTopicMatrix = GetTermTopicMatrix( termLimit = termLimit, topicLimit = topicLimit )
 	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifier' : '20newsgroups',
-		'model_type' : 'lda',
-		'api_type' : 'TermIndex',
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attribute' : GetModelAttribute(),
+		'model_attributes' : [
+			'DocIndex',
+			'TermIndex',
+			'TopicIndex',
+			'TermTopicMatrix',
+			'DocTopicMatrix'
+		],
 		'termLimit' : termLimit,
 		'termCount' : len(termIndex),
+		'termMaxCount' : termMaxCount,
 		'topicLimit' : topicLimit,
 		'topicCount' : len(topicIndex),
+		'topicMaxCount' : topicMaxCount,
 		'TermIndex' : termIndex,
 		'TopicIndex' : topicIndex,
 		'TermTopicMatrix' : termTopicMatrix
@@ -154,18 +207,27 @@ def TermTopicMatrix():
 def DocTopicMatrix():
 	docLimit = 100
 	topicLimit = 50
-	docIndex = GetDocIndex( limit = docLimit )
-	topicIndex = GetTopicIndex( limit = topicLimit )
+	docIndex, docMaxCount = GetDocIndex( limit = docLimit )
+	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
 	docTopicMatrix = GetDocTopicMatrix( docLimit = docLimit, topicLimit = topicLimit )
 	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifier' : '20newsgroups',
-		'model_type' : 'lda',
-		'api_type' : 'TermIndex',
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attribute' : GetModelAttribute(),
+		'model_attributes' : [
+			'DocIndex',
+			'TermIndex',
+			'TopicIndex',
+			'TermTopicMatrix',
+			'DocTopicMatrix'
+		],
 		'docLimit' : docLimit,
 		'docCount' : len(docIndex),
+		'docMaxCount' : docMaxCount,
 		'topicLimit' : topicLimit,
 		'topicCount' : len(topicIndex),
+		'topicMaxCount' : topicMaxCount,
 		'DocIndex' : docIndex,
 		'TopicIndex' : topicIndex,
 		'DocTopicMatrix' : docTopicMatrix

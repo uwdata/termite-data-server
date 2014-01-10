@@ -80,6 +80,7 @@ function __setup_web2py__ {
 		echo "    Setting up a default app..."
 		ln -s ../../../../landing_src/controllers $TOOLS_SUBPATH/applications/termite/controllers
 		ln -s ../../../../landing_src/views $TOOLS_SUBPATH/applications/termite/views
+		ln -s ../../../../landing_src/static $TOOLS_SUBPATH/applications/termite/static
 		sed -i bkp "s/redirect(URL('welcome', 'default', 'index'))/redirect(URL('termite', 'default', 'index'))/g" $TOOLS_SUBPATH/gluon/main.py
 	else
 		echo "    Already available: $TOOLS_SUBPATH"

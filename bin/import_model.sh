@@ -24,11 +24,10 @@ then
 	echo "    Preparing app data: [$MODEL_FOLDER] --> [$APPS_PATH/$APP_IDENTIFIER/data]"
 	bin/ImportMallet.py $MODEL_FOLDER $APPS_PATH/$APP_IDENTIFIER
 
-	echo "    Setting up app controllers: [$APPS_PATH/$APP_IDENTIFIER/controllers]"
+	echo "    Setting up app subfolders: [$APPS_PATH/$APP_IDENTIFIER/controllers, views, static]"
 	ln -s ../../server_src/controllers $APPS_PATH/$APP_IDENTIFIER/controllers
-
-	echo "    Setting up app views: [$APPS_PATH/$APP_IDENTIFIER/views]"
 	ln -s ../../server_src/views $APPS_PATH/$APP_IDENTIFIER/views
+	ln -s ../../server_src/static $APPS_PATH/$APP_IDENTIFIER/static
 
 	if [ ! -e "$WEB2PY_ROOT/applications/$APP_IDENTIFIER" ]
 	then
