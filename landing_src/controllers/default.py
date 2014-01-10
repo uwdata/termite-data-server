@@ -4,7 +4,7 @@ import os
 import json
 
 def index():
-	if IsDebugFormat():
+	if IsDebugMode():
 		return GenerateDebugResponse()
 	else:
 		return GenerateNormalResponse()
@@ -12,8 +12,31 @@ def index():
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
 
-def IsDebugFormat():
-	return 'format' in request.vars and 'debug' == request.vars['format'].lower()
+def IsDebugMode():
+	return 'debug' in request.vars
+
+def GetDatasets():
+	FOLDER_EXCLUSIONS = frozenset( [ 'admin', 'examples', 'welcome', 'termite' ] )
+	applications_parent = request.env['applications_parent']
+	applications_path = '{}/applications'.format( applications_parent )
+	folders = []
+	for folder in os.listdir( applications_path ):
+		applications_subpath = '{}/{}'.format( applications_path, folder )
+		if os.path.isdir( applications_subpath ):
+			if folder not in FOLDER_EXCLUSIONS:
+				folders.append( folder )
+	folders = sorted( folders )
+	return folders
+
+def GenerateNormalResponse():
+	data = {
+		'server_type' : 'topic_models',
+		'dataset_identifiers' : GetDatasets()
+	}
+	if IsJsonFormat():
+		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	else:
+		return data
 
 def GenerateDebugResponse():
 	def GetEnv( env ):
@@ -29,7 +52,7 @@ def GenerateDebugResponse():
 			else:
 				data[ key ] = 'N/A'
 		return data
-	
+
 	info = {
 		'env' : GetEnv( request.env ),
 		'cookies' : request.cookies,
@@ -45,14 +68,3 @@ def GenerateDebugResponse():
 	}
 	return json.dumps( info, encoding = 'utf-8', indent = 2, sort_keys = True )
 
-def GenerateNormalResponse():
-	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifiers' : [
-			'20newsgroups'
-		]
-	}
-	if IsJsonFormat():
-		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	else:
-		return data

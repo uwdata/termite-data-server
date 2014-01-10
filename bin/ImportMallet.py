@@ -11,12 +11,12 @@ import json
 TOPIC_WORD_WEIGHTS = 'topic-word-weights.txt'
 DOC_TOPIC_MIXTURES = 'doc-topic-mixtures.txt'
 
-class ReadMallet( object ):
+class ImportMallet( object ):
 	def __init__( self, model_path, data_path, logging_level ):
 		self.model_path = model_path
 		self.data_path = data_path
 		self.lda_path = self.data_path + '/data/lda'
-		self.logger = logging.getLogger( 'ReadMallet' )
+		self.logger = logging.getLogger( 'ImportMallet' )
 		self.logger.setLevel( logging_level )
 		handler = logging.StreamHandler( sys.stderr )
 		handler.setLevel( logging_level )
@@ -35,14 +35,14 @@ class ReadMallet( object ):
 			self.logger.info( 'Making output folder: %s', self.lda_path )
 			os.makedirs( self.lda_path )
 		
-		self.docs = set()
-		self.terms = set()
-		self.topics = set()
-		self.docIDs = {}
-		self.termFreqs = {}
-		self.topicFreqs = {}
-		self.docsAndTopics = {}
-		self.topicsAndTerms = {}
+		self.docs = None
+		self.terms = None
+		self.topics = None
+		self.docPaths = None
+		self.termFreqs = None
+		self.topicFreqs = None
+		self.docsAndTopics = None
+		self.topicsAndTerms = None
 		
 		self.logger.info( 'Reading topic-term matrix from MALLET: %s', filenameTopicWordWeights )
 		self.ExtractTopicWordWeights( filenameTopicWordWeights )
@@ -76,7 +76,7 @@ class ReadMallet( object ):
 					topics.add( topic )
 					topicFreqs[ topic ] = 0.0
 					topicsAndTerms[ topic ] = {}
-				if term not in self.terms:
+				if term not in terms:
 					terms.add( term )
 					termFreqs[ term ] = 0.0
 
@@ -93,7 +93,7 @@ class ReadMallet( object ):
 	def ExtractDocTopicMixtures( self, filename ):
 		docs = set()
 		topics = set()
-		docIDs = {}
+		docPaths = {}
 		topicFreqs = {}
 		docsAndTopics = {}
 
@@ -107,7 +107,7 @@ class ReadMallet( object ):
 				else:
 					fields = line.split( '\t' )
 					doc = int(fields[0])
-					docID = fields[1]
+					docPath = fields[1]
 					topicKeys = [ int(field) for n, field in enumerate(fields[2:]) if n == 0 ]
 					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n == 1 ]
 					for n in range(len(topicKeys)):
@@ -115,7 +115,7 @@ class ReadMallet( object ):
 						value = topicValues[n]
 						if doc not in docs:
 							docs.add( doc )
-							docIDs[ doc ] = docID
+							docPaths[ doc ] = docPath
 							docsAndTopics[ doc ] = {}
 						if topic not in topics:
 							topics.add( topic )
@@ -124,7 +124,7 @@ class ReadMallet( object ):
 						topicFreqs[ topic ] += value
 		
 		self.docs = docs
-		self.docIDs = docIDs
+		self.docPaths = docPaths
 		self.docsAndTopics = docsAndTopics
 		assert( len(self.topics) == len(topics) )
 		assert( len(self.topicFreqs) == len(topicFreqs) )
@@ -141,18 +141,19 @@ class ReadMallet( object ):
 		
 		for n, doc in enumerate( self.docs ):
 			self.docIndex[n] = {
-				'index' : doc,
-				'path' : self.docIDs[doc]
+				'index' : n,
+				'path' : self.docPaths[ doc ]
 			}
 		for n, term in enumerate( self.terms ):
 			self.termIndex[n] = {
 				'index' : n,
-				'text' : term
+				'text' : term,
+				'freq' : self.termFreqs[ term ]
 			}
 		for n, topic in enumerate( self.topics ):
 			self.topicIndex[n] = {
-				'index' : topic,
-				'freq' : self.topicFreqs[topic]
+				'index' : n,
+				'freq' : self.topicFreqs[ topic ]
 			}
 		for n, term in enumerate( self.terms ):
 			row = [ 0.0 ] * len( self.topics )
@@ -213,7 +214,7 @@ def main():
 	parser.add_argument( '--logging'    , type = int, default = 20, help = 'Override default logging level.'                                       )
 	args = parser.parse_args()
 	
-	ReadMallet(
+	ImportMallet(
 		model_path = args.model_path, 
 		data_path = args.data_path, 
 		logging_level = args.logging

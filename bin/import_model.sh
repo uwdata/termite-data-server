@@ -22,7 +22,7 @@ then
 	mkdir $APPS_PATH/$APP_IDENTIFIER
 
 	echo "    Preparing app data: [$MODEL_FOLDER] --> [$APPS_PATH/$APP_IDENTIFIER/data]"
-	bin/ReadMallet.py $MODEL_FOLDER $APPS_PATH/$APP_IDENTIFIER
+	bin/ImportMallet.py $MODEL_FOLDER $APPS_PATH/$APP_IDENTIFIER
 
 	echo "    Setting up app controllers: [$APPS_PATH/$APP_IDENTIFIER/controllers]"
 	ln -s ../../server_src/controllers $APPS_PATH/$APP_IDENTIFIER/controllers
