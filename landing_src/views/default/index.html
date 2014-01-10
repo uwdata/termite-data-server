@@ -26,7 +26,7 @@ var onSelectDataset = function( select ) {
 <div class="info">
 
 	<div class="heading">Server for Topic Model Visualization</div>
-	<div class="content">This server reads the output of <a href="http://scholar.harvard.edu/bstewart/-models-open-ended-survey-responses-applications-experiments/">Structural topic models</a> and distributes the content over the internet via a RESTful interface. For more information, please visit <a href="http://github.com/uwdata/termite-stm">Termite Web Server for STM</a> repository.</div>
+	<div class="content">This server reads the output of <a href="http://scholar.harvard.edu/bstewart/-models-open-ended-survey-responses-applications-experiments/">structural topic models</a> and distributes the content over the internet via a RESTful interface. For more information, please visit the <a href="http://github.com/uwdata/termite-stm">Termite Web Server for STM</a> repository.</div>
 
 	<div class="heading">API Format</div>
 	<div class="content">All API calls are in following format.</div>
@@ -36,5 +36,6 @@ var onSelectDataset = function( select ) {
 
 <div class="body">
 	<div class="heading">Server Response</div>
+	<div class="extras">[<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">JSON format</a>]</div>
 	<div class="content">{{=content}}</div>
 </div>
