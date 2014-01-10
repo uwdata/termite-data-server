@@ -19,19 +19,6 @@ def index():
 	if IsJsonFormat():
 		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	else:
-		body = {
-			'server_type' : "<a href='/'>topic_models</a>",
-			'dataset_identifier' : "<a href='..'>20newsgroups</a>",
-			'model_type' : "<b>lda</b>",
-			'model_api' : [
-				"<a href='DocIndex/'>DocIndex</a>",
-				"<a href='TermIndex/'>TermIndex</a>",
-				"<a href='TopicIndex/'>TopicIndex</a>",
-				"<a href='TermTopicMatrix/'>TermTopicMatrix</a>",
-				"<a href='DocTopicMatrix/'>DocTopicMatrix</a>"
-			]
-		}
-		data[ "body" ] = json.dumps( body, encoding = 'utf-8', indent = 2, sort_keys = True )
 		return data
 
 def IsJsonFormat():
@@ -94,7 +81,7 @@ def DocIndex():
 		return dataStr
 	else:
 		response.view = 'lda/api.html'
-		data[ "body" ] = dataStr
+		data[ 'content' ] = dataStr
 		return data
 
 def TermIndex():
@@ -114,7 +101,7 @@ def TermIndex():
 		return dataStr
 	else:
 		response.view = 'lda/api.html'
-		data[ "body" ] = dataStr
+		data[ 'content' ] = dataStr
 		return data
 
 def TopicIndex():
@@ -134,7 +121,7 @@ def TopicIndex():
 		return data
 	else:
 		response.view = 'lda/api.html'
-		data[ "body" ] = dataStr
+		data[ 'content' ] = dataStr
 		return data
 
 def TermTopicMatrix():
@@ -161,7 +148,7 @@ def TermTopicMatrix():
 		return dataStr
 	else:
 		response.view = 'lda/api.html'
-		data[ "body" ] = dataStr
+		data[ 'content' ] = dataStr
 		return data
 
 def DocTopicMatrix():
@@ -188,5 +175,5 @@ def DocTopicMatrix():
 		return dataStr
 	else:
 		response.view = 'lda/api.html'
-		data[ "body" ] = dataStr
+		data[ 'content' ] = dataStr
 		return data

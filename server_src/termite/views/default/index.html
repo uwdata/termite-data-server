@@ -1,5 +1,10 @@
 {{extend 'layout.html'}}
 
-<h4>Termite Web Server</h4>
+<h1>Termite Web Server</h1>
 
-<div style="white-space: pre; font-family: monospace">{{response.write( body, escape = False )}}</div>
+<h3>Datasets</h3>
+<ul>
+{{for dataset_identifier in dataset_identifiers:}}
+	<li><a href="/{{=dataset_identifier}}/">{{=dataset_identifier}}</a></li>
+{{pass}}
+</ul>

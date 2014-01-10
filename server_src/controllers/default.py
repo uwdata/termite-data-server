@@ -56,12 +56,4 @@ def GenerateNormalResponse():
 	if IsJsonFormat():
 		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	else:
-		body = {
-			'server_type' : "<a href='/'>topic_models</a>",
-			'dataset_identifier' : "<b>20newsgroups</b>",
-			'model_types' : [
-				"<a href='lda/'>lda</a>"
-			]
-		}
-		data[ "body" ] = json.dumps( body, encoding = 'utf-8', indent = 2, sort_keys = True )
 		return data

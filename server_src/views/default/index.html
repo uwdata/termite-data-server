@@ -1,5 +1,15 @@
 {{extend 'layout.html'}}
 
-<h4>Termite Web Server | Dataset = {{=dataset_identifier}}</h4>
+<h1>Termite Web Server</h1>
 
-<div style="white-space: pre; font-family: monospace">{{response.write( body, escape = False )}}</div>
+<h3>Dataset</h3>
+<ul>
+	<li><b>{{=dataset_identifier}}</b></li>
+</ul>
+	
+<h3>Models</h3>
+<ul>
+{{for model_type in model_types:}}
+	<li><a href="{{=model_type}}/">{{=model_type}}</a></li>
+{{pass}}
+</ul>

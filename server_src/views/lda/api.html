@@ -1,5 +1,21 @@
 {{extend 'layout.html'}}
 
-<h4>Termite Web Server | Dataset = {{=dataset_identifier}} | Model = {{=model_type}} | API = {{=api_type}}</h4>
+<h1>Termite Web Server</h1>
 
-<div style="white-space: pre; font-family: monospace">{{response.write( body, escape = False )}}</div>
+<h3>Dataset</h3>
+<ul>
+	<li><a href="/">{{=dataset_identifier}}</a></li>
+</ul>
+	
+<h3>Model</h3>
+<ul>
+	<li><a href="..">{{=model_type}}</a></li>
+</ul>
+	
+<h3>API</h3>
+<ul>
+	<li><b>{{=api_type}}</b></li>
+</ul>
+
+<h3>Content</h3>
+<pre>{{=content}}</pre>
