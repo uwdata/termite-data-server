@@ -56,6 +56,9 @@ div.body {
 div.body div.heading {
 	font-size: 12pt;
 }
+div.body div.extras {
+	font-size: 8pt;
+}
 div.body div.content {
 	display: inline-block;
 	padding: 15px;

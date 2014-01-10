@@ -27,5 +27,6 @@ var onSelectModel = function( select ) {
 
 <div class="body">
 	<div class="heading">Server Response</div>
+	<div class="extras">[<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">JSON format</a>]</div>
 	<div class="content">{{=content}}</div>
 </div>

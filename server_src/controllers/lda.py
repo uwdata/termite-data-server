@@ -162,7 +162,7 @@ def TopicIndex():
 	}
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
-		return data
+		return dataStr
 	else:
 		response.view = 'lda/api.html'
 		data[ 'content' ] = dataStr
