@@ -6,10 +6,8 @@ import json
 def index():
 	if IsDebugFormat():
 		return GenerateDebugResponse()
-	elif IsJsonFormat():
-		return GenerateJsonResponse()
 	else:
-		return GenerateHtmlResponse()
+		return GenerateNormalResponse()
 
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
@@ -47,16 +45,23 @@ def GenerateDebugResponse():
 	}
 	return json.dumps( info, encoding = 'utf-8', indent = 2, sort_keys = True )
 
-def GenerateJsonResponse():
-	identifier = {
-		'server_type' : 'topic-models',
-		'server_version' : '0.1',
-		'server_models' : [
+def GenerateNormalResponse():
+	data = {
+		'server_type' : 'topic_models',
+		'dataset_identifier' : '20newsgroups',
+		'model_types' : [
 			'lda'
 		]
 	}
-	return json.dumps( identifier, encoding = 'utf-8', indent = 2, sort_keys = True )
-
-def GenerateHtmlResponse():
-	text = "This is a Termite server."
-	return text
+	if IsJsonFormat():
+		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	else:
+		body = {
+			'server_type' : "<a href='/'>topic_models</a>",
+			'dataset_identifier' : "<b>20newsgroups</b>",
+			'model_types' : [
+				"<a href='lda/'>lda</a>"
+			]
+		}
+		data[ "body" ] = json.dumps( body, encoding = 'utf-8', indent = 2, sort_keys = True )
+		return data

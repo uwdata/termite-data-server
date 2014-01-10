@@ -3,19 +3,11 @@
 import os
 import json
 
-def test():
-	return { 'message' : "Yo" }
-	
 def index():
-	if IsJsonFormat():
-		return GenerateJsonResponse()
-	else:
-		return GenerateHtmlResponse()
-
-def GenerateJsonResponse():
-	identifier = {
+	data = {
+		'server_type' : 'topic_models',
+		'dataset_identifier' : '20newsgroups',
 		'model_type' : 'lda',
-		'model_version' : '0.1',
 		'model_api' : [
 			'DocIndex',
 			'TermIndex',
@@ -24,13 +16,23 @@ def GenerateJsonResponse():
 			'DocTopicMatrix'
 		]
 	}
-	return json.dumps( identifier, encoding = 'utf-8', indent = 2, sort_keys = True )
-
-def GenerateHtmlResponse():
-	text = "This is an LDA model."
-	return text
-	
-	# return { 'message' : 'This is an LDA model generated from an HTML template' }
+	if IsJsonFormat():
+		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	else:
+		body = {
+			'server_type' : "<a href='/'>topic_models</a>",
+			'dataset_identifier' : "<a href='..'>20newsgroups</a>",
+			'model_type' : "<b>lda</b>",
+			'model_api' : [
+				"<a href='DocIndex/'>DocIndex</a>",
+				"<a href='TermIndex/'>TermIndex</a>",
+				"<a href='TopicIndex/'>TopicIndex</a>",
+				"<a href='TermTopicMatrix/'>TermTopicMatrix</a>",
+				"<a href='DocTopicMatrix/'>DocTopicMatrix</a>"
+			]
+		}
+		data[ "body" ] = json.dumps( body, encoding = 'utf-8', indent = 2, sort_keys = True )
+		return data
 
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
@@ -79,37 +81,61 @@ def DocIndex():
 	docLimit = 100
 	docIndex = GetDocIndex( limit = docLimit )
 	data = {
+		'server_type' : 'topic_models',
+		'dataset_identifier' : '20newsgroups',
+		'model_type' : 'lda',
 		'api_type' : 'TermIndex',
-		'api_version' : '0.1',
 		'docLimit' : docLimit,
 		'docCount' : len(docIndex),
 		'DocIndex' : docIndex
 	}
-	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return dataStr
+	else:
+		response.view = 'lda/api.html'
+		data[ "body" ] = dataStr
+		return data
 
 def TermIndex():
 	termLimit = 100
 	termIndex = GetTermIndex( limit = termLimit )
 	data = {
+		'server_type' : 'topic_models',
+		'dataset_identifier' : '20newsgroups',
+		'model_type' : 'lda',
 		'api_type' : 'TermIndex',
-		'api_version' : '0.1',
 		'termLimit' : termLimit,
 		'termCount' : len(termIndex),
 		'TermIndex' : termIndex
 	}
-	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return dataStr
+	else:
+		response.view = 'lda/api.html'
+		data[ "body" ] = dataStr
+		return data
 
 def TopicIndex():
 	topicLimit = 50
 	topicIndex = GetTopicIndex( limit = topicLimit )
 	data = {
-		'api_type' : 'TopicIndex',
-		'api_version' : '0.1',
+		'server_type' : 'topic_models',
+		'dataset_identifier' : '20newsgroups',
+		'model_type' : 'lda',
+		'api_type' : 'TermIndex',
 		'topicLimit' : topicLimit,
 		'topicCount' : len(topicIndex),
 		'TopicIndex' : topicIndex
 	}
-	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return data
+	else:
+		response.view = 'lda/api.html'
+		data[ "body" ] = dataStr
+		return data
 
 def TermTopicMatrix():
 	termLimit = 100
@@ -118,8 +144,10 @@ def TermTopicMatrix():
 	topicIndex = GetTopicIndex( limit = topicLimit )
 	termTopicMatrix = GetTermTopicMatrix( termLimit = termLimit, topicLimit = topicLimit )
 	data = {
-		'api_type' : 'TermTopicMatrix',
-		'api_version' : '0.1',
+		'server_type' : 'topic_models',
+		'dataset_identifier' : '20newsgroups',
+		'model_type' : 'lda',
+		'api_type' : 'TermIndex',
 		'termLimit' : termLimit,
 		'termCount' : len(termIndex),
 		'topicLimit' : topicLimit,
@@ -128,7 +156,13 @@ def TermTopicMatrix():
 		'TopicIndex' : topicIndex,
 		'TermTopicMatrix' : termTopicMatrix
 	}
-	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return dataStr
+	else:
+		response.view = 'lda/api.html'
+		data[ "body" ] = dataStr
+		return data
 
 def DocTopicMatrix():
 	docLimit = 100
@@ -137,8 +171,10 @@ def DocTopicMatrix():
 	topicIndex = GetTopicIndex( limit = topicLimit )
 	docTopicMatrix = GetDocTopicMatrix( docLimit = docLimit, topicLimit = topicLimit )
 	data = {
-		'api_type' : 'DocTopicMatrix',
-		'api_version' : '0.1',
+		'server_type' : 'topic_models',
+		'dataset_identifier' : '20newsgroups',
+		'model_type' : 'lda',
+		'api_type' : 'TermIndex',
 		'docLimit' : docLimit,
 		'docCount' : len(docIndex),
 		'topicLimit' : topicLimit,
@@ -147,4 +183,10 @@ def DocTopicMatrix():
 		'TopicIndex' : topicIndex,
 		'DocTopicMatrix' : docTopicMatrix
 	}
-	return json.dumps( data, encoding = 'utf-8', sort_keys = True )
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return dataStr
+	else:
+		response.view = 'lda/api.html'
+		data[ "body" ] = dataStr
+		return data

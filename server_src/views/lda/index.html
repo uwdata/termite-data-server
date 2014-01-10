@@ -1,3 +1,5 @@
 {{extend 'layout.html'}}
 
-<div>{{=message}}</div>
+<h4>Termite Web Server | Dataset = {{=dataset_identifier}} | Model = {{=model_type}}</h4>
+
+<div style="white-space: pre; font-family: monospace">{{response.write( body, escape = False )}}</div>
