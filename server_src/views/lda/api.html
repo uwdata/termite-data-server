@@ -5,9 +5,6 @@ var onSelectAttribute = function( select ) {
 	if ( select.value !== "NONE" ) {
 		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/" + select.value;
 	}
-	else {
-		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}";
-	}
 }
 </script>
 
@@ -22,7 +19,6 @@ var onSelectAttribute = function( select ) {
 	<div class="sep">/</div>
 	<div class="subtitle">
 		<select onchange="onSelectAttribute(this)">
-			<option value="NONE">&mdash; Available Attributes &mdash;</option>
 			{{for n, attr in enumerate(model_attributes):}}
 			<option value="{{=attr}}" {{if model_attribute == attr:}}selected="selected"{{pass}}>{{=attr}}</option>
 			{{pass}}
