@@ -63,7 +63,7 @@ function __import_model__ {
 	echo
 	echo "bin/import_mallet.sh $MODEL_PATH 20newsgroups"
 	echo
-	bin/import_mallet.sh $MODEL_PATH 20newsgroups
+	bin/ImportMallet.py $MODEL_PATH 20newsgroups
 }
 
 bin/setup.sh
