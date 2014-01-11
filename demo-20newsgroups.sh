@@ -61,9 +61,9 @@ function __train_model__ {
 function __import_model__ {
 	echo "# Importing an LDA model..."
 	echo
-	echo "bin/import_model.sh $MODEL_PATH 20newsgroups"
+	echo "bin/import_mallet.sh $MODEL_PATH 20newsgroups"
 	echo
-	bin/import_model.sh $MODEL_PATH 20newsgroups
+	bin/import_mallet.sh $MODEL_PATH 20newsgroups
 }
 
 bin/setup.sh
