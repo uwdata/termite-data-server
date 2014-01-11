@@ -1,0 +1,35 @@
+
+package topicmod_projects_ldawn;
+
+message WordNetFile {
+  message Synset {
+    required int32 offset = 1;
+    optional string key = 2;
+    repeated uint32 children_offsets = 3;
+
+    // The total count of the synset's words ONLY
+    optional double raw_count = 4;
+
+    // The total count of the synset's words AND hyponym words
+    optional double hyponym_count = 5;
+
+    message Word {
+      required uint32 term_id = 1;
+      // TODO(jbg): Make this explicitly a language
+      optional uint32 lang_id = 2[default = 0];
+
+      required string term_str = 3;
+      optional string lang_str = 4;
+
+      optional double x_location = 5;
+      optional double y_location = 6;
+
+      optional int32 depth = 7;
+      optional double count = 8;
+    }
+    repeated Word words = 6;
+    optional string hyperparameter = 7;
+  }
+  repeated Synset synsets = 1;
+  required int32 root = 2;
+}

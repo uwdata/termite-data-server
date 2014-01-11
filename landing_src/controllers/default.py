@@ -6,13 +6,10 @@ import json
 def index():
 	if IsDebugMode():
 		return GenerateDebugResponse()
-
+	
 	data = {
 		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_types' : [
-			'lda'
-		]
+		'dataset_identifiers' : GetDatasetIdentifiers()
 	}
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
@@ -27,8 +24,18 @@ def IsJsonFormat():
 def GetServerIdentifier():
 	return request.env['HTTP_HOST']
 
-def GetDatasetIdentifier():
-	return request.application
+def GetDatasetIdentifiers():
+	FOLDER_EXCLUSIONS = frozenset( [ 'admin', 'examples', 'welcome', 'termite' ] )
+	applications_parent = request.env['applications_parent']
+	applications_path = '{}/applications'.format( applications_parent )
+	folders = []
+	for folder in os.listdir( applications_path ):
+		applications_subpath = '{}/{}'.format( applications_path, folder )
+		if os.path.isdir( applications_subpath ):
+			if folder not in FOLDER_EXCLUSIONS:
+				folders.append( folder )
+	folders = sorted( folders )
+	return folders
 
 def IsDebugMode():
 	return 'debug' in request.vars
@@ -47,7 +54,7 @@ def GenerateDebugResponse():
 			else:
 				data[ key ] = 'N/A'
 		return data
-
+	
 	info = {
 		'env' : GetEnv( request.env ),
 		'cookies' : request.cookies,
