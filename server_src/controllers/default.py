@@ -10,9 +10,7 @@ def index():
 	data = {
 		'server_identifier' : GetServerIdentifier(),
 		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_types' : [
-			'lda'
-		]
+		'model_types' : GetModelTypes()
 	}
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
@@ -29,6 +27,12 @@ def GetServerIdentifier():
 
 def GetDatasetIdentifier():
 	return request.application
+
+def GetModelTypes():
+	return [
+		'lda',
+		'treetm'
+	]
 
 def IsDebugMode():
 	return 'debug' in request.vars

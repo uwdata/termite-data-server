@@ -1,6 +1,10 @@
 #!/bin/bash
 
 DEMO_PATH=demo-20newsgroups
+DEMO_APP=20newsgroups
+DOWNLOAD_PATH=$DEMO_PATH/download
+CORPUS_PATH=$DEMO_PATH/corpus
+MODEL_PATH=$DEMO_PATH/model
 
 function __create_folder__ {
 	FOLDER=$1
@@ -13,10 +17,6 @@ function __create_folder__ {
 }
 
 function __demo_fetch_data__ {
-	DOWNLOAD_PATH=$DEMO_PATH/download
-	CORPUS_PATH=$DEMO_PATH/corpus
-	MODEL_PATH=$DEMO_PATH/model
-
 	echo "# Setting up the 20newsgroups dataset..."
 	__create_folder__ $DEMO_PATH "    "
 	
@@ -61,9 +61,9 @@ function __train_model__ {
 function __import_model__ {
 	echo "# Importing an LDA model..."
 	echo
-	echo "bin/import_mallet.sh $MODEL_PATH 20newsgroups"
+	echo "bin/import_mallet.sh $MODEL_PATH $DEMO_APP"
 	echo
-	bin/import_mallet.sh $MODEL_PATH 20newsgroups
+	bin/ImportMallet.py $MODEL_PATH $DEMO_APP
 }
 
 bin/setup.sh
