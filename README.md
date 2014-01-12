@@ -38,7 +38,7 @@ Executing the following command will download the InfoVis dataset (449 documents
 ./demo-infovis.sh
 ```
 
-The resulting topic model will be available at:
+The resulting topic model(s) will be available at:
 
 ```
 http://127.0.0.1:8000/
