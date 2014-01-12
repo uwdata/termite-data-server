@@ -12,7 +12,7 @@ function __create_folder__ {
 	fi
 }
 
-function __demo_fetch_data__ {
+function __fetch_data__ {
 	DOWNLOAD_PATH=$DEMO_PATH/download
 	CORPUS_PATH=$DEMO_PATH/corpus
 	MODEL_PATH=$DEMO_PATH/model
@@ -53,9 +53,9 @@ function __demo_fetch_data__ {
 function __train_model__ {
 	echo "# Training an LDA mode..."
 	echo
-	echo "bin/train_from_folder.sh $CORPUS_PATH $MODEL_PATH"
+	echo "bin/train_mallet_from_folder.sh $CORPUS_PATH $MODEL_PATH"
 	echo
-	bin/train_from_folder.sh $CORPUS_PATH $MODEL_PATH
+	bin/train_mallet_from_folder.sh $CORPUS_PATH $MODEL_PATH
 }
 
 function __import_model__ {
@@ -67,7 +67,7 @@ function __import_model__ {
 }
 
 bin/setup.sh
-__demo_fetch_data__
+__fetch_data__
 __train_model__
 __import_model__
 bin/start_server.sh
