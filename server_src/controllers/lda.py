@@ -25,6 +25,24 @@ def index():
 
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
+	
+def GetDocLimit():
+    limit = 100
+    if 'docLim' in request.vars and int(request.vars['docLim']) > 0:
+        limit = int(request.vars['docLim'])
+    return limit
+
+def GetTermLimit():
+    limit = 100
+    if 'termLim' in request.vars and int(request.vars['termLim']) > 0:
+        limit = int(request.vars['termLim'])
+    return limit
+    
+def GetTopicLimit():
+    limit = 50
+    if 'topicLim' in request.vars and int(request.vars['topicLim']) > 0:
+        limit = int(request.vars['topicLim'])
+    return limit
 
 def GetServerIdentifier():
 	return request.env['HTTP_HOST']
@@ -85,7 +103,7 @@ def GetDocTopicMatrix( docLimit = 100, topicLimit = 50 ):
 	return content
 
 def DocIndex():
-	docLimit = 100
+	docLimit = GetDocLimit()
 	docIndex, docMaxCount = GetDocIndex( limit = docLimit )
 	data = {
 		'server_identifier' : GetServerIdentifier(),
@@ -113,7 +131,7 @@ def DocIndex():
 		return data
 
 def TermIndex():
-	termLimit = 100
+	termLimit = GetTermLimit()
 	termIndex, termMaxCount = GetTermIndex( limit = termLimit )
 	data = {
 		'server_identifier' : GetServerIdentifier(),
@@ -141,7 +159,7 @@ def TermIndex():
 		return data
 
 def TopicIndex():
-	topicLimit = 50
+	topicLimit = GetTopicLimit()
 	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
 	data = {
 		'server_identifier' : GetServerIdentifier(),
@@ -169,8 +187,8 @@ def TopicIndex():
 		return data
 
 def TermTopicMatrix():
-	termLimit = 100
-	topicLimit = 50
+	termLimit = GetTermLimit()
+	topicLimit = GetTopicLimit()
 	termIndex, termMaxCount = GetTermIndex( limit = termLimit )
 	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
 	termTopicMatrix = GetTermTopicMatrix( termLimit = termLimit, topicLimit = topicLimit )
@@ -205,8 +223,8 @@ def TermTopicMatrix():
 		return data
 
 def DocTopicMatrix():
-	docLimit = 100
-	topicLimit = 50
+	docLimit = GetDocLimit()
+	topicLimit = GetTopicLimit()
 	docIndex, docMaxCount = GetDocIndex( limit = docLimit )
 	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
 	docTopicMatrix = GetDocTopicMatrix( docLimit = docLimit, topicLimit = topicLimit )
