@@ -1,15 +1,32 @@
 {{extend 'layout.html'}}
 
-<h1>Termite Web Server</h1>
+<script type="text/javascript">
+var onSelectModel = function( select ) {
+	if ( select.value !== "NONE" ) {
+		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/" + select.value;
+	}
+}
+</script>
 
-<h3>Dataset</h3>
-<ul>
-	<li><b>{{=dataset_identifier}}</b></li>
-</ul>
-	
-<h3>Models</h3>
-<ul>
-{{for model_type in model_types:}}
-	<li><a href="{{=model_type}}/">{{=model_type}}</a></li>
-{{pass}}
-</ul>
+<div class="head">
+	<div class="title">Termite Web Server</div>
+	<div class="sep">http://</div>
+	<div class="subtitle"><a href="http://{{=server_identifier}}">{{=server_identifier}}</a></div>
+	<div class="sep">/</div>
+	<div class="subtitle"><a href="http://{{=server_identifier}}/{{=dataset_identifier}}">{{=dataset_identifier}}</a></div>
+	<div class="sep">/</div>
+	<div class="subtitle">
+		<select onchange="onSelectModel(this)">
+			<option value="NONE">&mdash; Available Models &mdash;</option>
+			{{for n, model_type in enumerate(model_types):}}
+			<option value="{{=model_type}}">{{=model_type}}</option>
+			{{pass}}
+		</select>
+	</div>
+</div>
+
+<div class="body">
+	<div class="heading">Server Response</div>
+	<div class="extras">[<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">JSON format</a>]</div>
+	<div class="content">{{=content}}</div>
+</div>

@@ -4,16 +4,34 @@ import os
 import json
 
 def index():
-	if IsDebugFormat():
+	if IsDebugMode():
 		return GenerateDebugResponse()
+
+	data = {
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_types' : [
+			'lda'
+		]
+	}
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return dataStr
 	else:
-		return GenerateNormalResponse()
+		data[ 'content' ] = dataStr
+		return data
 
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
 
-def IsDebugFormat():
-	return 'format' in request.vars and 'debug' == request.vars['format'].lower()
+def GetServerIdentifier():
+	return request.env['HTTP_HOST']
+
+def GetDatasetIdentifier():
+	return request.application
+
+def IsDebugMode():
+	return 'debug' in request.vars
 
 def GenerateDebugResponse():
 	def GetEnv( env ):
@@ -29,7 +47,7 @@ def GenerateDebugResponse():
 			else:
 				data[ key ] = 'N/A'
 		return data
-	
+
 	info = {
 		'env' : GetEnv( request.env ),
 		'cookies' : request.cookies,
@@ -38,22 +56,10 @@ def GenerateDebugResponse():
 		'post_vars' : request.post_vars,
 		'folder' : request.folder,
 		'application' : request.application,
+		'controller' : request.controller,
 		'function' : request.function,
 		'args' : request.args,
 		'extension' : request.extension,
 		'now' : str( request.now )
 	}
 	return json.dumps( info, encoding = 'utf-8', indent = 2, sort_keys = True )
-
-def GenerateNormalResponse():
-	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifier' : '20newsgroups',
-		'model_types' : [
-			'lda'
-		]
-	}
-	if IsJsonFormat():
-		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	else:
-		return data

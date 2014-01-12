@@ -4,16 +4,41 @@ import os
 import json
 
 def index():
-	if IsDebugFormat():
+	if IsDebugMode():
 		return GenerateDebugResponse()
+	
+	data = {
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifiers' : GetDatasetIdentifiers()
+	}
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return dataStr
 	else:
-		return GenerateNormalResponse()
+		data[ 'content' ] = dataStr
+		return data
 
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
 
-def IsDebugFormat():
-	return 'format' in request.vars and 'debug' == request.vars['format'].lower()
+def GetServerIdentifier():
+	return request.env['HTTP_HOST']
+
+def GetDatasetIdentifiers():
+	FOLDER_EXCLUSIONS = frozenset( [ 'admin', 'examples', 'welcome', 'termite' ] )
+	applications_parent = request.env['applications_parent']
+	applications_path = '{}/applications'.format( applications_parent )
+	folders = []
+	for folder in os.listdir( applications_path ):
+		applications_subpath = '{}/{}'.format( applications_path, folder )
+		if os.path.isdir( applications_subpath ):
+			if folder not in FOLDER_EXCLUSIONS:
+				folders.append( folder )
+	folders = sorted( folders )
+	return folders
+
+def IsDebugMode():
+	return 'debug' in request.vars
 
 def GenerateDebugResponse():
 	def GetEnv( env ):
@@ -38,21 +63,10 @@ def GenerateDebugResponse():
 		'post_vars' : request.post_vars,
 		'folder' : request.folder,
 		'application' : request.application,
+		'controller' : request.controller,
 		'function' : request.function,
 		'args' : request.args,
 		'extension' : request.extension,
 		'now' : str( request.now )
 	}
 	return json.dumps( info, encoding = 'utf-8', indent = 2, sort_keys = True )
-
-def GenerateNormalResponse():
-	data = {
-		'server_type' : 'topic_models',
-		'dataset_identifiers' : [
-			'20newsgroups'
-		]
-	}
-	if IsJsonFormat():
-		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	else:
-		return data

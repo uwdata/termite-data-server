@@ -1,0 +1,41 @@
+{{extend 'layout.html'}}
+
+<script type="text/javascript">
+var onSelectDataset = function( select ) {
+	if ( select.value !== "NONE" ) {
+		window.location.href = "http://{{=server_identifier}}/" + select.value;
+	}
+}
+</script>
+
+<div class="head">
+	<div class="title">Termite Web Server</div>
+	<div class="sep">http://</div>
+	<div class="subtitle"><a href="http://{{=server_identifier}}">{{=server_identifier}}</a></div>
+	<div class="sep">/</div>
+	<div class="subtitle">
+		<select onchange="onSelectDataset(this)">
+			<option value="NONE">&mdash; Available Datasets &mdash;</option>
+			{{for n, dataset_identifier in enumerate(dataset_identifiers):}}
+			<option value="{{=dataset_identifier}}">{{=dataset_identifier}}</option>
+			{{pass}}
+		</select>
+	</div>
+</div>
+
+<div class="info">
+
+	<div class="heading">Server for Topic Model Visualization</div>
+	<div class="content">This server reads the output of <a href="http://mallet.cs.umass.edu/">MALLET</a> topic models and distributes the content over the internet via a RESTful interface. For more information, see the <a href="http://github.com/uwdata/termite-mallet">Termite Web Server for MALLET</a> repository.</div>
+
+	<div class="heading">API Format</div>
+	<div class="content">All API calls are in following format.</div>
+	<div class="code">http:// [server] / [dataset] / [model] / [attribute]</div>
+	<div class="content">By default, this server generates a human-readable HTML document (like this page!). To request a machine-readable response in JSON format, append <a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json"><span class="code">?format=json</span></a> to any GET or POST actions.</div>
+</div>
+
+<div class="body">
+	<div class="heading">Server Response</div>
+	<div class="extras">[<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">JSON format</a>]</div>
+	<div class="content">{{=content}}</div>
+</div>
