@@ -25,7 +25,7 @@ def GetServerIdentifier():
 	return request.env['HTTP_HOST']
 
 def GetDatasetIdentifiers():
-	FOLDER_EXCLUSIONS = frozenset( [ 'admin', 'examples', 'welcome', 'termite' ] )
+	FOLDER_EXCLUSIONS = frozenset( [ 'admin', 'examples', 'welcome', 'init' ] )
 	applications_parent = request.env['applications_parent']
 	applications_path = '{}/applications'.format( applications_parent )
 	folders = []
