@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DEMO_PATH=demo-20newsgroups
-DEMO_APP=20newsgroups
+DEMO_PATH=demo-infovis
+DEMO_APP=infovis
 
 function __create_folder__ {
 	FOLDER=$1
@@ -18,7 +18,7 @@ function __fetch_data__ {
 	CORPUS_PATH=$DEMO_PATH/corpus
 	MODEL_PATH=$DEMO_PATH/model
 
-	echo "# Setting up the 20newsgroups dataset..."
+	echo "# Setting up the infovis dataset..."
 	__create_folder__ $DEMO_PATH "    "
 	
 	if [ ! -e "$DEMO_PATH/README" ]
@@ -29,10 +29,8 @@ function __fetch_data__ {
 	if [ ! -d "$DOWNLOAD_PATH" ]
 	then
 		__create_folder__ $DOWNLOAD_PATH "    "
-		echo "    Downloading the 20newsgroups dataset..."
-		curl --insecure --location http://qwone.com/~jason/20Newsgroups/20news-18828.tar.gz > $DOWNLOAD_PATH/20news-18828.tar.gz
-		echo "    Setting up 20newsgroups information page..."
-		echo "<html><head><meta http-equiv='refresh' content='0;url=http://qwone.com/~jason/20Newsgroups/'></head></html>" > $DOWNLOAD_PATH/index.html
+		echo "    Downloading the infovis dataset..."
+		curl --insecure --location http://homes.cs.washington.edu/~jcchuang/misc/files/infovis-papers.zip > $DOWNLOAD_PATH/infovis-papers.zip
 	else
 		echo "    Already downloaded: $DOWNLOAD_PATH"
 	fi
@@ -40,10 +38,10 @@ function __fetch_data__ {
 	if [ ! -d "$CORPUS_PATH" ]
 	then
 		__create_folder__ $CORPUS_PATH "    "
-		echo "    Uncompressing the 20newsgroups dataset..."
-		tar -zxf $DOWNLOAD_PATH/20news-18828.tar.gz 20news-18828 &&\
-			mv 20news-18828/* $CORPUS_PATH &&\
-			rmdir 20news-18828
+		echo "    Uncompressing the infovis dataset..."
+		unzip $DOWNLOAD_PATH/infovis-papers.zip -d $CORPUS_PATH &&\
+		    mv $CORPUS_PATH/infovis-papers/* $CORPUS_PATH &&\
+		    rmdir $CORPUS_PATH/infovis-papers
 	else
 		echo "    Already available: $CORPUS_PATH"
 	fi
@@ -54,17 +52,17 @@ function __fetch_data__ {
 function __train_model__ {
 	echo "# Training an LDA mode..."
 	echo
-	echo "bin/train_mallet_from_folder.sh $CORPUS_PATH $MODEL_PATH"
+	echo "bin/train_mallet_from_file.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH"
 	echo
-	bin/train_mallet_from_folder.sh $CORPUS_PATH $MODEL_PATH
+	bin/train_mallet_from_file.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH
 }
 
 function __import_model__ {
 	echo "# Importing an LDA model..."
 	echo
-	echo "bin/ImportMallet.py $MODEL_PATH $DEMO_APP"
+	echo "bin/ImportMallet.py $MODEL_PATH $DEMO_APP --meta $CORPUS_PATH/infovis-papers-meta.txt"
 	echo
-	bin/ImportMallet.py $MODEL_PATH $DEMO_APP
+	bin/ImportMallet.py $MODEL_PATH $DEMO_APP --meta $CORPUS_PATH/infovis-papers-meta.txt
 }
 
 bin/setup.sh

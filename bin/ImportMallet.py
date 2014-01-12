@@ -29,13 +29,15 @@ class ImportMallet( object ):
 		handler.setLevel( logging_level )
 		self.logger.addHandler( handler )
 	
-	def execute( self, filenameTopicWordWeights, filenameDocTopicMixtures ):
+	def execute( self, filenameTopicWordWeights, filenameDocTopicMixtures, filenameDocMetadata ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		self.logger.info( 'Importing a MALLET topic model as a web2py application...'                        )
 		self.logger.info( '       model = %s', self.model_path                                               )
 		self.logger.info( '         app = %s', self.app_path                                                 )
 		self.logger.info( ' topic-words = %s', filenameTopicWordWeights                                      )
 		self.logger.info( '  doc-topics = %s', filenameDocTopicMixtures                                      )
+		if filenameDocMetadata is not None:
+			self.logger.info( '    doc-meta = %s', filenameDocMetadata                                       )
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		
 		if not os.path.exists( self.app_path ):
@@ -48,17 +50,22 @@ class ImportMallet( object ):
 		self.docs = None
 		self.terms = None
 		self.topics = None
-		self.docPaths = None
+		self.docIDs = None
 		self.termFreqs = None
 		self.topicFreqs = None
 		self.docsAndTopics = None
 		self.topicsAndTerms = None
+		self.meta = None
 		
 		self.logger.info( 'Reading topic-term matrix: %s/%s', self.model_path, filenameTopicWordWeights )
 		self.ExtractTopicWordWeights( filenameTopicWordWeights )
 		
 		self.logger.info( 'Reading doc-topic matrix: %s/%s', self.model_path, filenameDocTopicMixtures )
 		self.ExtractDocTopicMixtures( filenameDocTopicMixtures )
+		
+		if filenameDocMetadata is not None:
+			self.logger.info( 'Reading document metadata: %s', filenameDocMetadata )
+			self.ExtractDocMetadata( filenameDocMetadata )
 		
 		self.logger.info( 'Preparing output data...' )
 		self.Package()
@@ -119,7 +126,7 @@ class ImportMallet( object ):
 	def ExtractDocTopicMixtures( self, filename ):
 		docs = set()
 		topics = set()
-		docPaths = {}
+		docIDs = {}
 		topicFreqs = {}
 		docsAndTopics = {}
 		
@@ -133,7 +140,7 @@ class ImportMallet( object ):
 				else:
 					fields = line.split( '\t' )
 					doc = int(fields[0])
-					docPath = fields[1]
+					docID = fields[1]
 					topicKeys = [ int(field) for n, field in enumerate(fields[2:]) if n == 0 ]
 					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n == 1 ]
 					for n in range(len(topicKeys)):
@@ -141,7 +148,7 @@ class ImportMallet( object ):
 						value = topicValues[n]
 						if doc not in docs:
 							docs.add( doc )
-							docPaths[ doc ] = docPath
+							docIDs[ doc ] = docID
 							docsAndTopics[ doc ] = {}
 						if topic not in topics:
 							topics.add( topic )
@@ -150,10 +157,37 @@ class ImportMallet( object ):
 						topicFreqs[ topic ] += value
 		
 		self.docs = docs
-		self.docPaths = docPaths
+		self.docIDs = docIDs
 		self.docsAndTopics = docsAndTopics
 		assert( len(self.topics) == len(topics) )
 		assert( len(self.topicFreqs) == len(topicFreqs) )
+	
+	def ExtractDocMetadata( self, filename ):
+		with open( filename, 'r' ) as f:
+			allDocIDs = frozenset( self.docIDs.values() )
+			header = None
+			meta = {}
+			for index, line in enumerate( f ):
+				values = line[:-1].decode( 'utf-8' ).split( '\t' )
+				if header is None:
+					header = values
+				else:
+					record = {}
+					for n, value in enumerate( values ):
+						if n < len(header):
+							key = header[n]
+						else:
+							key = 'Field{:d}'.format( n+1 )
+						record[ key ] = value
+					if 'DocID' in record:
+						key = record['DocID']
+						if key in allDocIDs:
+							meta[ key ] = record
+					elif 'docID' in record:
+						key = record['docID']
+						if key in allDocIDs:
+							meta[ key ] = record
+		self.meta = meta
 	
 	def Package( self ):
 		self.docs = sorted( self.docs )
@@ -168,7 +202,7 @@ class ImportMallet( object ):
 		for n, doc in enumerate( self.docs ):
 			self.docIndex[n] = {
 				'index' : n,
-				'path' : self.docPaths[ doc ]
+				'docID' : self.docIDs[ doc ]
 			}
 		for n, term in enumerate( self.terms ):
 			self.termIndex[n] = {
@@ -192,16 +226,16 @@ class ImportMallet( object ):
 			for topic, value in self.docsAndTopics[ doc ].iteritems():
 				row[ topic ] = value
 			self.docTopicMatrix[ doc ] = row
-	
+		
 	def SaveToDisk( self ):
 		filename = '{}/doc-index.json'.format( self.app_data_lda_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		filename = '{}/doc-index.txt'.format( self.app_data_lda_path )
 		with open( filename, 'w' ) as f:
-			f.write( u'{}\t{}\n'.format( 'DocIndex', 'DocPath' ) )
+			f.write( u'{}\t{}\n'.format( 'DocIndex', 'DocID' ) )
 			for d in self.docIndex:
-				f.write( u'{}\t{}\n'.format( d['index'], d['path'] ) )
+				f.write( u'{}\t{}\n'.format( d['index'], d['docID'] ) )
 		
 		filename = '{}/term-index.json'.format( self.app_data_lda_path )
 		with open( filename, 'w' ) as f:
@@ -231,14 +265,20 @@ class ImportMallet( object ):
 			for row in self.docTopicMatrix:
 				f.write( u'{}\n'.format( '\t'.join( [ str( value ) for value in row ] ) ) )
 
+		if self.meta is not None:
+			filename = '{}/doc-meta.json'.format( self.app_data_lda_path )
+			with open( filename, 'w' ) as f:
+				json.dump( self.meta, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
-	parser.add_argument( 'model_path'   , type = str,                               help = 'MALLET topic model path.'                )
-	parser.add_argument( 'app_name'     , type = str,                               help = 'Web2py application identifier'           )
-	parser.add_argument( '--apps_root'  , type = str, default = APPS_ROOT         , help = 'Web2py application path.'                )
-	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.' )
-	parser.add_argument( '--doc_topics' , type = str, default = DOC_TOPIC_MIXTURES, help = 'File containing doc vs. topic mixtures.' )
-	parser.add_argument( '--logging'    , type = int, default = 20                , help = 'Override default logging level.'         )
+	parser.add_argument( 'model_path'   , type = str,                               help = 'MALLET topic model path.'                   )
+	parser.add_argument( 'app_name'     , type = str,                               help = 'Web2py application identifier'              )
+	parser.add_argument( '--apps_root'  , type = str, default = APPS_ROOT         , help = 'Web2py application path.'                   )
+	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.'    )
+	parser.add_argument( '--doc_topics' , type = str, default = DOC_TOPIC_MIXTURES, help = 'File containing doc vs. topic mixtures.'    )
+	parser.add_argument( '--meta_file'  , type = str, default = None              , help = 'Optional file containing document metadata' )
+	parser.add_argument( '--logging'    , type = int, default = 20                , help = 'Override default logging level.'            )
 	args = parser.parse_args()
 	
 	ImportMallet(
@@ -248,7 +288,8 @@ def main():
 		logging_level = args.logging
 	).execute(
 		args.topic_words,
-		args.doc_topics
+		args.doc_topics,
+		args.meta_file
 	)
 
 if __name__ == '__main__':
