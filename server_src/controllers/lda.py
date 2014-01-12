@@ -4,18 +4,7 @@ import os
 import json
 
 def index():
-	data = {
-		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_type' : GetModelType(),
-		'model_attributes' : [
-			'DocIndex',
-			'TermIndex',
-			'TopicIndex',
-			'TermTopicMatrix',
-			'DocTopicMatrix'
-		]
-	}
+	data = InitData()
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
 		return dataStr
@@ -25,62 +14,97 @@ def index():
 
 def IsJsonFormat():
 	return 'format' in request.vars and 'json' == request.vars['format'].lower()
-	
-def GetDocLimit():
-    limit = 100
-    if 'docLim' in request.vars and int(request.vars['docLim']) > 0:
-        limit = int(request.vars['docLim'])
-    return limit
 
-def GetTermLimit():
-    limit = 100
-    if 'termLim' in request.vars and int(request.vars['termLim']) > 0:
-        limit = int(request.vars['termLim'])
-    return limit
-    
-def GetTopicLimit():
-    limit = 50
-    if 'topicLim' in request.vars and int(request.vars['topicLim']) > 0:
-        limit = int(request.vars['topicLim'])
-    return limit
+def InitData( keysAndValues = {} ):
+	def GetServerIdentifier():
+		return request.env['HTTP_HOST']
 
-def GetServerIdentifier():
-	return request.env['HTTP_HOST']
+	def GetDatasetIdentifier():
+		return request.application
 
-def GetDatasetIdentifier():
-	return request.application
+	def GetModelType():
+		return request.controller
 
-def GetModelType():
-	return request.controller
+	def GetModelAttribute():
+		return request.function
 
-def GetModelAttribute():
-	return request.function
+	data = {
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attribute' : GetModelAttribute(),
+		'model_attributes' : [
+			'DocIndex',
+			'TermIndex',
+			'TopicIndex',
+			'TermTopicMatrix',
+			'DocTopicMatrix'
+		]
+	}
+	data.update( keysAndValues )
+	return data
+		
+def GetParams():
+	def GetDocLimit():
+	    limit = 100
+	    if 'docLimit' in request.vars:
+			try:
+				n = int( request.vars['docLimit'] )
+				if n > 0:
+					limit = n
+			except ValueError:
+				pass
+	    return limit
 
-def GetDocIndex( limit = 100 ):
+	def GetTermLimit():
+	    limit = 100
+	    if 'termLimit' in request.vars and int( request.vars['termLimit'] ) > 0:
+	        limit = int(request.vars['termLimit'])
+	    return limit
+
+	def GetTopicLimit():
+	    limit = 50
+	    if 'topicLimit' in request.vars and int( request.vars['topicLimit'] ) > 0:
+	        limit = int(request.vars['topicLimit'])
+	    return limit
+
+	params = {
+		'docLimit' : GetDocLimit(),
+		'termLimit' : GetTermLimit(),
+		'topicLimit' : GetTopicLimit()
+	}
+	return params
+
+def GetDocIndex( params ):
+	docLimit = params['docLimit']
 	filename = os.path.join( request.folder, 'data/lda', 'doc-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
 	maxCount = len(content)
-	content=content[:limit]
+	content = content[:docLimit]
 	return content, maxCount
 
-def GetTermIndex( limit = 100 ):
+def GetTermIndex( params ):
+	termLimit = params['termLimit']
 	filename = os.path.join( request.folder, 'data/lda', 'term-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
 	maxCount = len(content)
-	content=content[:limit]
+	content = content[:termLimit]
 	return content, maxCount
 
-def GetTopicIndex( limit = 50 ):
+def GetTopicIndex( params ):
+	topicLimit = params['topicLimit']
 	filename = os.path.join( request.folder, 'data/lda', 'topic-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
 	maxCount = len(content)
-	content=content[:limit]
+	content = content[:topicLimit]
 	return content, maxCount
 
-def GetTermTopicMatrix( termLimit = 100, topicLimit = 50 ):
+def GetTermTopicMatrix( params ):
+	termLimit = params['termLimit']
+	topicLimit = params['topicLimit']
 	filename = os.path.join( request.folder, 'data/lda', 'term-topic-matrix.txt' )
 	content = []
 	with open( filename ) as f:
@@ -91,7 +115,9 @@ def GetTermTopicMatrix( termLimit = 100, topicLimit = 50 ):
 				break
 	return content
 
-def GetDocTopicMatrix( docLimit = 100, topicLimit = 50 ):
+def GetDocTopicMatrix( params ):
+	docLimit = params['docLimit']
+	topicLimit = params['topicLimit']
 	filename = os.path.join( request.folder, 'data/lda', 'doc-topic-matrix.txt' )
 	content = []
 	with open( filename ) as f:
@@ -103,157 +129,93 @@ def GetDocTopicMatrix( docLimit = 100, topicLimit = 50 ):
 	return content
 
 def DocIndex():
-	docLimit = GetDocLimit()
-	docIndex, docMaxCount = GetDocIndex( limit = docLimit )
-	data = {
-		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_type' : GetModelType(),
-		'model_attribute' : GetModelAttribute(),
-		'model_attributes' : [
-			'DocIndex',
-			'TermIndex',
-			'TopicIndex',
-			'TermTopicMatrix',
-			'DocTopicMatrix'
-		],
-		'docLimit' : docLimit,
+	params = GetParams()
+	docIndex, docMaxCount = GetDocIndex( params )
+	data = InitData({
+		'params' : params,
 		'docCount' : len(docIndex),
 		'docMaxCount' : docMaxCount,
 		'DocIndex' : docIndex
-	}
+	})
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
 		return dataStr
 	else:
-		response.view = 'lda/api.html'
 		data[ 'content' ] = dataStr
 		return data
 
 def TermIndex():
-	termLimit = GetTermLimit()
-	termIndex, termMaxCount = GetTermIndex( limit = termLimit )
-	data = {
-		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_type' : GetModelType(),
-		'model_attribute' : GetModelAttribute(),
-		'model_attributes' : [
-			'DocIndex',
-			'TermIndex',
-			'TopicIndex',
-			'TermTopicMatrix',
-			'DocTopicMatrix'
-		],
-		'termLimit' : termLimit,
+	params = GetParams()
+	termIndex, termMaxCount = GetTermIndex( params )
+	data = InitData({
+		'params' : params,
 		'termCount' : len(termIndex),
 		'termMaxCount' : termMaxCount,
 		'TermIndex' : termIndex
-	}
+	})
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
 		return dataStr
 	else:
-		response.view = 'lda/api.html'
 		data[ 'content' ] = dataStr
 		return data
 
 def TopicIndex():
-	topicLimit = GetTopicLimit()
-	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
-	data = {
-		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_type' : GetModelType(),
-		'model_attribute' : GetModelAttribute(),
-		'model_attributes' : [
-			'DocIndex',
-			'TermIndex',
-			'TopicIndex',
-			'TermTopicMatrix',
-			'DocTopicMatrix'
-		],
-		'topicLimit' : topicLimit,
+	params = GetParams()
+	topicIndex, topicMaxCount = GetTopicIndex( params )
+	data = InitData({
+		'params' : params,
 		'topicCount' : len(topicIndex),
 		'topicMaxCount' : topicMaxCount,
 		'TopicIndex' : topicIndex
-	}
+	})
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
 		return dataStr
 	else:
-		response.view = 'lda/api.html'
 		data[ 'content' ] = dataStr
 		return data
 
 def TermTopicMatrix():
-	termLimit = GetTermLimit()
-	topicLimit = GetTopicLimit()
-	termIndex, termMaxCount = GetTermIndex( limit = termLimit )
-	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
-	termTopicMatrix = GetTermTopicMatrix( termLimit = termLimit, topicLimit = topicLimit )
-	data = {
-		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_type' : GetModelType(),
-		'model_attribute' : GetModelAttribute(),
-		'model_attributes' : [
-			'DocIndex',
-			'TermIndex',
-			'TopicIndex',
-			'TermTopicMatrix',
-			'DocTopicMatrix'
-		],
-		'termLimit' : termLimit,
+	params = GetParams()
+	termIndex, termMaxCount = GetTermIndex( params )
+	topicIndex, topicMaxCount = GetTopicIndex( params )
+	termTopicMatrix = GetTermTopicMatrix( params )
+	data = InitData({
+		'params' : params,
 		'termCount' : len(termIndex),
 		'termMaxCount' : termMaxCount,
-		'topicLimit' : topicLimit,
 		'topicCount' : len(topicIndex),
 		'topicMaxCount' : topicMaxCount,
 		'TermIndex' : termIndex,
 		'TopicIndex' : topicIndex,
 		'TermTopicMatrix' : termTopicMatrix
-	}
+	})
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
 		return dataStr
 	else:
-		response.view = 'lda/api.html'
 		data[ 'content' ] = dataStr
 		return data
 
 def DocTopicMatrix():
-	docLimit = GetDocLimit()
-	topicLimit = GetTopicLimit()
-	docIndex, docMaxCount = GetDocIndex( limit = docLimit )
-	topicIndex, topicMaxCount = GetTopicIndex( limit = topicLimit )
-	docTopicMatrix = GetDocTopicMatrix( docLimit = docLimit, topicLimit = topicLimit )
-	data = {
-		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_type' : GetModelType(),
-		'model_attribute' : GetModelAttribute(),
-		'model_attributes' : [
-			'DocIndex',
-			'TermIndex',
-			'TopicIndex',
-			'TermTopicMatrix',
-			'DocTopicMatrix'
-		],
-		'docLimit' : docLimit,
+	params = GetParams()
+	docIndex, docMaxCount = GetDocIndex( params )
+	topicIndex, topicMaxCount = GetTopicIndex( params )
+	docTopicMatrix = GetDocTopicMatrix( params )
+	data = InitData({
+		'params' : params,
 		'docCount' : len(docIndex),
 		'docMaxCount' : docMaxCount,
-		'topicLimit' : topicLimit,
 		'topicCount' : len(topicIndex),
 		'topicMaxCount' : topicMaxCount,
 		'DocIndex' : docIndex,
 		'TopicIndex' : topicIndex,
 		'DocTopicMatrix' : docTopicMatrix
-	}
+	})
 	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	if IsJsonFormat():
 		return dataStr
 	else:
-		response.view = 'lda/api.html'
 		data[ 'content' ] = dataStr
 		return data

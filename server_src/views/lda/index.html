@@ -1,9 +1,9 @@
 {{extend 'layout.html'}}
 
 <script type="text/javascript">
-var onSelectAttribute = function( select ) {
-	if ( select.value !== "NONE" ) {
-		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/" + select.value;
+var onSelectAttribute = function( model_attribute ) {
+	if ( model_attribute.value !== "NONE" ) {
+		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/" + model_attribute.value;
 	}
 }
 </script>
@@ -28,30 +28,8 @@ var onSelectAttribute = function( select ) {
 </div>
 
 <div class="body">
-	<div class="heading">Server Response</div>
-	
-	<p>vars ={{=request.vars}}</p>
-	<div class="extras">  
-	    {{link = "http://" + request.env['HTTP_HOST'] + request.env['PATH_INFO'] + "?"}}
-	    {{for k,v in request.vars.items(): 
-	        temp = k+"="+v+"&"
-	        link += temp}}{{pass}}
-	    
-	    {{if 'format' not in request.vars.keys():}}
-	    [<a href="{{=link}}format=json">JSON format</a>]
-	    {{pass}}
-
-	    {{if 'docLimit' not in request.vars.keys():}}
-	    [<a href="{{=link}}docLimit=100">Document limit</a>]
-	    {{pass}}
-	    
-	    {{if 'topicLimit' not in request.vars.keys():}}
-	    [<a href="{{=link}}topicLimit=50">Topic limit</a>]
-	    {{pass}}
-	    
-	    {{if 'termLimit' not in request.vars.keys():}}
-	    [<a href="{{=link}}termLimit=100">Term limit</a>]
-	    {{pass}}
-	    </div>
+	<div class="heading">Server Response
+		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">Display as a JSON object</a>)</span>
+	</div>
 	<div class="content">{{=content}}</div>
 </div>

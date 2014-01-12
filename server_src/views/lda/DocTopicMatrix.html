@@ -1,0 +1,31 @@
+{{extend 'layout.html'}}
+{{include 'lda/api.html'}}
+
+<div class="body">
+	<div class="heading">Request Parameters</div>
+	<div class="params">
+		<div class="param">docLimit = 
+			<select onchange="onSelectParams(this)">
+				<option value="{{response.write(QueryString('docLimit','5'),escape=False)}}" {{if params['docLimit'] == 5:}}selected="selected"{{pass}}>5</option>
+				<option value="{{response.write(QueryString('docLimit','10'),escape=False)}}" {{if params['docLimit'] == 10:}}selected="selected"{{pass}}>10</option>
+				<option value="{{response.write(QueryString('docLimit','20'),escape=False)}}" {{if params['docLimit'] == 20:}}selected="selected"{{pass}}>20</option>
+				<option value="{{response.write(QueryString('docLimit','50'),escape=False)}}" {{if params['docLimit'] == 50:}}selected="selected"{{pass}}>50</option>
+				<option value="{{response.write(QueryString('docLimit','100'),escape=False)}}" {{if params['docLimit'] == 100:}}selected="selected"{{pass}}>100</option>
+			</select>
+		</div>
+		<div class="param">topicLimit = 
+			<select onchange="onSelectParams(this)">
+				<option value="{{response.write(QueryString('topicLimit','5'),escape=False)}}" {{if params['topicLimit'] == 5:}}selected="selected"{{pass}}>5</option>
+				<option value="{{response.write(QueryString('topicLimit','10'),escape=False)}}" {{if params['topicLimit'] == 10:}}selected="selected"{{pass}}>10</option>
+				<option value="{{response.write(QueryString('topicLimit','20'),escape=False)}}" {{if params['topicLimit'] == 20:}}selected="selected"{{pass}}>20</option>
+				<option value="{{response.write(QueryString('topicLimit','50'),escape=False)}}" {{if params['topicLimit'] == 50:}}selected="selected"{{pass}}>50</option>
+				<option value="{{response.write(QueryString('topicLimit','100'),escape=False)}}" {{if params['topicLimit'] == 100:}}selected="selected"{{pass}}>100</option>
+			</select>
+		</div>
+	</div>
+
+	<div class="heading">Server Response
+		<span class="extra">(<a href="{{response.write('http://'+request.env['HTTP_HOST']+request.env['PATH_INFO']+QueryString('format','json'))}}">Display as a JSON object</a>)</span>
+	</div>
+	<div class="content">{{=content}}</div>
+</div>

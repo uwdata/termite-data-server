@@ -54,10 +54,22 @@ div.body {
 	color: #aaa;
 }
 div.body div.heading {
-	font-size: 12pt;
+	margin: 20px 0 2px 0;
+	font-size: 14pt;
 }
-div.body div.extras {
+div.body span.extra {
 	font-size: 8pt;
+}
+div.body div.params {
+	display: inline-block;
+	padding: 15px;
+	margin: 5px 0;
+	border: 1px solid #ccc;
+	min-width: 320px;
+	color: #000;
+}
+div.body div.param {
+	font-size: 10pt;
 }
 div.body div.content {
 	display: inline-block;
