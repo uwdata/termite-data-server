@@ -4,18 +4,12 @@ import os
 import json
 
 def index():
-	data = InitData()
-	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	if IsJsonFormat():
-		return dataStr
-	else:
-		data[ 'content' ] = dataStr
-		return data
+	return GenerateResponse()
 
-def IsJsonFormat():
-	return 'format' in request.vars and 'json' == request.vars['format'].lower()
+def GenerateResponse( keysAndValues = {} ):
+	def IsJsonFormat():
+		return 'format' in request.vars and 'json' == request.vars['format'].lower()
 
-def InitData( keysAndValues = {} ):
 	def GetServerIdentifier():
 		return request.env['HTTP_HOST']
 
@@ -28,22 +22,30 @@ def InitData( keysAndValues = {} ):
 	def GetModelAttribute():
 		return request.function
 
-	data = {
-		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_type' : GetModelType(),
-		'model_attribute' : GetModelAttribute(),
-		'model_attributes' : [
+	def GetModelAttributes():
+		return [
 			'DocIndex',
 			'TermIndex',
 			'TopicIndex',
 			'TermTopicMatrix',
 			'DocTopicMatrix'
 		]
+
+	data = {
+		'server_identifier' : GetServerIdentifier(),
+		'dataset_identifier' : GetDatasetIdentifier(),
+		'model_type' : GetModelType(),
+		'model_attribute' : GetModelAttribute(),
+		'model_attributes' : GetModelAttributes()
 	}
 	data.update( keysAndValues )
-	return data
-		
+	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	if IsJsonFormat():
+		return dataStr
+	else:
+		data[ 'content' ] = dataStr
+		return data
+	
 def GetParams():
 	def GetDocLimit():
 	    limit = 100
@@ -131,57 +133,39 @@ def GetDocTopicMatrix( params ):
 def DocIndex():
 	params = GetParams()
 	docIndex, docMaxCount = GetDocIndex( params )
-	data = InitData({
+	return GenerateResponse({
 		'params' : params,
 		'docCount' : len(docIndex),
 		'docMaxCount' : docMaxCount,
 		'DocIndex' : docIndex
 	})
-	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	if IsJsonFormat():
-		return dataStr
-	else:
-		data[ 'content' ] = dataStr
-		return data
 
 def TermIndex():
 	params = GetParams()
 	termIndex, termMaxCount = GetTermIndex( params )
-	data = InitData({
+	return GenerateResponse({
 		'params' : params,
 		'termCount' : len(termIndex),
 		'termMaxCount' : termMaxCount,
 		'TermIndex' : termIndex
 	})
-	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	if IsJsonFormat():
-		return dataStr
-	else:
-		data[ 'content' ] = dataStr
-		return data
 
 def TopicIndex():
 	params = GetParams()
 	topicIndex, topicMaxCount = GetTopicIndex( params )
-	data = InitData({
+	return GenerateResponse({
 		'params' : params,
 		'topicCount' : len(topicIndex),
 		'topicMaxCount' : topicMaxCount,
 		'TopicIndex' : topicIndex
 	})
-	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	if IsJsonFormat():
-		return dataStr
-	else:
-		data[ 'content' ] = dataStr
-		return data
 
 def TermTopicMatrix():
 	params = GetParams()
 	termIndex, termMaxCount = GetTermIndex( params )
 	topicIndex, topicMaxCount = GetTopicIndex( params )
 	termTopicMatrix = GetTermTopicMatrix( params )
-	data = InitData({
+	return GenerateResponse({
 		'params' : params,
 		'termCount' : len(termIndex),
 		'termMaxCount' : termMaxCount,
@@ -191,19 +175,13 @@ def TermTopicMatrix():
 		'TopicIndex' : topicIndex,
 		'TermTopicMatrix' : termTopicMatrix
 	})
-	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	if IsJsonFormat():
-		return dataStr
-	else:
-		data[ 'content' ] = dataStr
-		return data
 
 def DocTopicMatrix():
 	params = GetParams()
 	docIndex, docMaxCount = GetDocIndex( params )
 	topicIndex, topicMaxCount = GetTopicIndex( params )
 	docTopicMatrix = GetDocTopicMatrix( params )
-	data = InitData({
+	return GenerateResponse({
 		'params' : params,
 		'docCount' : len(docIndex),
 		'docMaxCount' : docMaxCount,
@@ -213,9 +191,3 @@ def DocTopicMatrix():
 		'TopicIndex' : topicIndex,
 		'DocTopicMatrix' : docTopicMatrix
 	})
-	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	if IsJsonFormat():
-		return dataStr
-	else:
-		data[ 'content' ] = dataStr
-		return data

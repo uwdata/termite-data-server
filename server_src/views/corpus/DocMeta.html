@@ -1,0 +1,9 @@
+{{extend 'layout.html'}}
+{{include 'api.html'}}
+
+<div class="body">
+	<div class="heading">Server Response
+		<span class="extra">(<a href="{{response.write('http://'+request.env['HTTP_HOST']+request.env['PATH_INFO']+QueryString('format','json'))}}">Display as a JSON object</a>)</span>
+	</div>
+	<div class="content">{{=content}}</div>
+</div>

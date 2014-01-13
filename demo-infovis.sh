@@ -60,9 +60,14 @@ function __train_model__ {
 function __import_model__ {
 	echo "# Importing an LDA model..."
 	echo
-	echo "bin/ImportMallet.py $MODEL_PATH $DEMO_APP --meta $CORPUS_PATH/infovis-papers-meta.txt"
+	echo "bin/ImportMallet.py $MODEL_PATH $DEMO_APP"
 	echo
-	bin/ImportMallet.py $MODEL_PATH $DEMO_APP --meta $CORPUS_PATH/infovis-papers-meta.txt
+	bin/ImportMallet.py $MODEL_PATH $DEMO_APP
+	echo
+	echo "bin/ImportCorpus.py $DEMO_APP $CORPUS_PATH/infovis-papers-meta.txt"
+	echo
+	bin/ImportCorpus.py $DEMO_APP $CORPUS_PATH/infovis-papers-meta.txt
+	echo
 }
 
 bin/setup.sh
