@@ -11,7 +11,6 @@ then
 	echo "    This script should be run from the root of the git repo."
 	echo
 	exit -1
-	
 fi
 
 function __create_folder__ {
