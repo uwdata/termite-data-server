@@ -47,86 +47,85 @@ def GenerateResponse( keysAndValues = {} ):
 		return data
 	
 def GetParams():
-	def GetDocLimit():
-	    limit = 100
-	    if 'docLimit' in request.vars:
-			try:
-				n = int( request.vars['docLimit'] )
-				if n > 0:
-					limit = n
-			except ValueError:
-				pass
-	    return limit
-
-	def GetTermLimit():
-	    limit = 100
-	    if 'termLimit' in request.vars and int( request.vars['termLimit'] ) > 0:
-	        limit = int(request.vars['termLimit'])
-	    return limit
-
-	def GetTopicLimit():
-	    limit = 50
-	    if 'topicLimit' in request.vars and int( request.vars['topicLimit'] ) > 0:
-	        limit = int(request.vars['topicLimit'])
-	    return limit
+	def GetNonNegativeInteger( key, defaultValue ):
+		try:
+			n = int( request.vars[ key ] )
+			if n >= 0:
+				return n
+			else:
+				return 0
+		except:
+			return defaultValue
 
 	params = {
-		'docLimit' : GetDocLimit(),
-		'termLimit' : GetTermLimit(),
-		'topicLimit' : GetTopicLimit()
+		'docLimit' : GetNonNegativeInteger( 'docLimit', 100 ),
+		'termLimit' : GetNonNegativeInteger( 'termLimit', 100 ),
+		'topicLimit' : GetNonNegativeInteger( 'topicLimit', 50 ),
+		'docOffset' : GetNonNegativeInteger( 'docOffset', 0 ),
+		'termOffset' : GetNonNegativeInteger( 'termOffset', 0 ),
+		'topicOffset' : GetNonNegativeInteger( 'topicOffset', 0 )
 	}
 	return params
 
 def GetDocIndex( params ):
 	docLimit = params['docLimit']
+	docOffset = params['docOffset']
 	filename = os.path.join( request.folder, 'data/lda', 'doc-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
 	maxCount = len(content)
-	content = content[:docLimit]
+	content = content[docOffset:docOffset+docLimit]
 	return content, maxCount
 
 def GetTermIndex( params ):
 	termLimit = params['termLimit']
+	termOffset = params['termOffset']
 	filename = os.path.join( request.folder, 'data/lda', 'term-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
 	maxCount = len(content)
-	content = content[:termLimit]
+	content = content[termOffset:termOffset+termLimit]
 	return content, maxCount
 
 def GetTopicIndex( params ):
 	topicLimit = params['topicLimit']
+	topicOffset = params['topicOffset']
 	filename = os.path.join( request.folder, 'data/lda', 'topic-index.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
 	maxCount = len(content)
-	content = content[:topicLimit]
+	content = content[topicOffset:topicOffset+topicLimit]
 	return content, maxCount
 
 def GetTermTopicMatrix( params ):
 	termLimit = params['termLimit']
+	termOffset = params['termOffset']
 	topicLimit = params['topicLimit']
+	topicOffset = params['topicOffset']
 	filename = os.path.join( request.folder, 'data/lda', 'term-topic-matrix.txt' )
 	content = []
 	with open( filename ) as f:
-		for line in f:
-			values = [ float(value) for value in line[:-1].split('\t') ]
-			content.append( values[:topicLimit] )
-			if len(content) >= termLimit:
+		for termIndex, line in enumerate( f ):
+			if termOffset <= termIndex < termOffset+termLimit:
+				values = [ float(value) for value in line[:-1].split('\t') ]
+				content.append( values[topicOffset:topicOffset+topicLimit] )
+			if termIndex > termOffset+termLimit:
 				break
 	return content
 
 def GetDocTopicMatrix( params ):
 	docLimit = params['docLimit']
+	docOffset = params['docOffset']
 	topicLimit = params['topicLimit']
+	topicOffset = params['topicOffset']
 	filename = os.path.join( request.folder, 'data/lda', 'doc-topic-matrix.txt' )
 	content = []
 	with open( filename ) as f:
-		for line in f:
-			values = [ float(value) for value in line[:-1].split('\t') ]
-			content.append( values[:topicLimit] )
-			if len(content) >= docLimit:
+		for docIndex, line in enumerate( f ):
+			if docOffset <= docIndex < docOffset+docLimit:
+				values = [ float(value) for value in line[:-1].split('\t') ]
+				content.append( values[topicOffset:topicOffset+topicLimit] )
+			if docIndex > docOffset+docLimit:
 				break
 	return content
 

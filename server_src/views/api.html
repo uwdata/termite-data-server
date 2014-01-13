@@ -1,11 +1,11 @@
 <script type="text/javascript">
-var onSelectAttribute = function( model_attribute ) {
-	if ( model_attribute.value !== "NONE" ) {
-		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/" + model_attribute.value;
+var onSelectAttribute = function( srcElement ) {
+	if ( srcElement.value !== "NONE" ) {
+		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/" + srcElement.value;
 	}
 }
-var onSelectParams = function( params ) {
-	window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/{{=model_attribute}}" + params.value;
+var onSelectParam = function( srcElement ) {
+	window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/{{=model_attribute}}" + srcElement.value;
 }
 </script>
 
@@ -20,8 +20,8 @@ var onSelectParams = function( params ) {
 	<div class="sep">/</div>
 	<div class="subtitle">
 		<select onchange="onSelectAttribute(this)">
-			{{for n, attr in enumerate(model_attributes):}}
-			<option value="{{=attr}}" {{if model_attribute == attr:}}selected="selected"{{pass}}>{{=attr}}</option>
+			{{for value in model_attributes:}}
+			<option value="{{=value}}" {{if model_attribute == value:}}selected="selected"{{pass}}>{{=value}}</option>
 			{{pass}}
 		</select>
 	</div>

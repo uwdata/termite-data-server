@@ -1,9 +1,9 @@
 {{extend 'layout.html'}}
 
 <script type="text/javascript">
-var onSelectAttribute = function( model_attribute ) {
-	if ( model_attribute.value !== "NONE" ) {
-		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/" + model_attribute.value;
+var onSelectAttribute = function( srcElement ) {
+	if ( srcElement.value !== "NONE" ) {
+		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/{{=model_type}}/" + srcElement.value;
 	}
 }
 </script>
@@ -20,8 +20,8 @@ var onSelectAttribute = function( model_attribute ) {
 	<div class="subtitle">
 		<select onchange="onSelectAttribute(this)">
 			<option value="NONE">&mdash; Available Attributes &mdash;</option>
-			{{for n, model_attribute in enumerate(model_attributes):}}
-			<option value="{{=model_attribute}}">{{=model_attribute}}</option>
+			{{for value in model_attributes:}}
+			<option value="{{=value}}">{{=value}}</option>
 			{{pass}}
 		</select>
 	</div>

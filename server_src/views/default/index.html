@@ -1,9 +1,9 @@
 {{extend 'layout.html'}}
 
 <script type="text/javascript">
-var onSelectModel = function( select ) {
-	if ( select.value !== "NONE" ) {
-		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/" + select.value;
+var onSelectModel = function( srcElement ) {
+	if ( srcElement.value !== "NONE" ) {
+		window.location.href = "http://{{=server_identifier}}/{{=dataset_identifier}}/" + srcElement.value;
 	}
 }
 </script>
@@ -18,8 +18,8 @@ var onSelectModel = function( select ) {
 	<div class="subtitle">
 		<select onchange="onSelectModel(this)">
 			<option value="NONE">&mdash; Available Models &mdash;</option>
-			{{for n, model_type in enumerate(model_types):}}
-			<option value="{{=model_type}}">{{=model_type}}</option>
+			{{for value in model_types:}}
+			<option value="{{=value}}">{{=value}}</option>
 			{{pass}}
 		</select>
 	</div>

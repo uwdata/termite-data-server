@@ -2,15 +2,20 @@
 {{include 'api.html'}}
 
 <div class="body">
-	<div class="heading">Request Parameter</div>
+	<div class="heading">Request Parameters</div>
 	<div class="params">
 		<div class="param">termLimit = 
-			<select onchange="onSelectParams(this)">
-				<option value="{{response.write(QueryString('termLimit','5'),escape=False)}}" {{if params['termLimit'] == 5:}}selected="selected"{{pass}}>5</option>
-				<option value="{{response.write(QueryString('termLimit','10'),escape=False)}}" {{if params['termLimit'] == 10:}}selected="selected"{{pass}}>10</option>
-				<option value="{{response.write(QueryString('termLimit','20'),escape=False)}}" {{if params['termLimit'] == 20:}}selected="selected"{{pass}}>20</option>
-				<option value="{{response.write(QueryString('termLimit','50'),escape=False)}}" {{if params['termLimit'] == 50:}}selected="selected"{{pass}}>50</option>
-				<option value="{{response.write(QueryString('termLimit','100'),escape=False)}}" {{if params['termLimit'] == 100:}}selected="selected"{{pass}}>100</option>
+			<select onchange="onSelectParam(this)">
+				{{for n in [5,10,20,50,100,200,500]:}}
+					<option value="{{response.write(QueryString('termLimit',n),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+				{{pass}}
+			</select>
+		</div>
+		<div class="param">termOffset = 
+			<select onchange="onSelectParam(this)">
+				{{for n in range(0,100,5):}}
+					<option value="{{response.write(QueryString('termOffset',n),escape=False)}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+				{{pass}}
 			</select>
 		</div>
 	</div>
