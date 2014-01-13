@@ -62,6 +62,14 @@ We thank their respective authors for developing and distributing these tools.
   Paper website: http://www.cs.umd.edu/~ynhu  
   Developed by Yuening Hu, et al.  
 
+  MALLET (MAchine Learning for LanguagE Toolkit)  
+  Project website: http://mallet.cs.umass.edu  
+  Developed by Andrew McCallum, et al.  
+
   The web2py Web Framework  
   Project website: http://web2py.com  
   Developed by Massimo Di Pierro, et al.  
+
+  Font Awesome  
+  Project website: http://fontawesome.io  
+  Developed by Dave Gandy  
