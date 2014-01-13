@@ -2,6 +2,9 @@
 
 DEMO_PATH=demo-infovis
 DEMO_APP=infovis
+DOWNLOAD_PATH=$DEMO_PATH/download
+CORPUS_PATH=$DEMO_PATH/corpus
+MODEL_PATH=$DEMO_PATH/model
 
 function __create_folder__ {
 	FOLDER=$1
@@ -14,10 +17,6 @@ function __create_folder__ {
 }
 
 function __fetch_data__ {
-	DOWNLOAD_PATH=$DEMO_PATH/download
-	CORPUS_PATH=$DEMO_PATH/corpus
-	MODEL_PATH=$DEMO_PATH/model
-
 	echo "# Setting up the infovis dataset..."
 	__create_folder__ $DEMO_PATH "    "
 	
