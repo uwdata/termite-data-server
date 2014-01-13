@@ -13,7 +13,7 @@ MALLET_ROOT=tools/mallet-2.0.7
 NUM_TOPICS=20
 NUM_ITERS=1000
 
-echo "# Building a topic model: [$CORPUS_FOLDER] --> [$MODEL_FOLDER]"
+echo "# Building a topic model: [$CORPUS_FILENAME] --> [$MODEL_FOLDER]"
 
 if [ ! -d "$MODEL_FOLDER" ]
 then

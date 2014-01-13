@@ -2,6 +2,10 @@
 
 DEMO_PATH=demo-20newsgroups
 DEMO_APP=20newsgroups
+TREETM_APP=20newsgroups_treetm
+DOWNLOAD_PATH=$DEMO_PATH/download
+CORPUS_PATH=$DEMO_PATH/corpus
+MODEL_PATH=$DEMO_PATH/model
 
 function __create_folder__ {
 	FOLDER=$1
@@ -14,10 +18,6 @@ function __create_folder__ {
 }
 
 function __fetch_data__ {
-	DOWNLOAD_PATH=$DEMO_PATH/download
-	CORPUS_PATH=$DEMO_PATH/corpus
-	MODEL_PATH=$DEMO_PATH/model
-
 	echo "# Setting up the 20newsgroups dataset..."
 	__create_folder__ $DEMO_PATH "    "
 	
@@ -78,9 +78,9 @@ function __train_tree_model__ {
 function __import_tree_model__ {
 	echo "# Importing a TreeTM model..."
 	echo
-	echo "bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP-treetm"
+	echo "bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP_TREETM"
 	echo
-	bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP-treetm
+	bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP_TREETM
 }
 
 bin/setup.sh

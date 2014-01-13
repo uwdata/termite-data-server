@@ -2,6 +2,10 @@
 
 DEMO_PATH=demo-infovis
 DEMO_APP=infovis
+TREETM_APP=infovis_treetm
+DOWNLOAD_PATH=$DEMO_PATH/download
+CORPUS_PATH=$DEMO_PATH/corpus
+MODEL_PATH=$DEMO_PATH/model
 
 function __create_folder__ {
 	FOLDER=$1
@@ -14,10 +18,6 @@ function __create_folder__ {
 }
 
 function __fetch_data__ {
-	DOWNLOAD_PATH=$DEMO_PATH/download
-	CORPUS_PATH=$DEMO_PATH/corpus
-	MODEL_PATH=$DEMO_PATH/model
-
 	echo "# Setting up the infovis dataset..."
 	__create_folder__ $DEMO_PATH "    "
 	
@@ -81,13 +81,13 @@ function __train_tree_model__ {
 function __import_tree_model__ {
 	echo "# Importing an LDA model..."
 	echo
-	echo "bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP-treetm"
+	echo "bin/ImportTreeTM.py $MODEL_PATH-treetm $TREETM_APP"
 	echo
-	bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP-treetm
+	bin/ImportTreeTM.py $MODEL_PATH-treetm $TREETM_APP
 	echo
-	echo "bin/ImportCorpus.py $DEMO_APP-treetm $CORPUS_PATH/infovis-papers-meta.txt"
+	echo "bin/ImportCorpus.py $TREETM_APP $CORPUS_PATH/infovis-papers-meta.txt"
 	echo
-	bin/ImportCorpus.py $DEMO_APP-treetm $CORPUS_PATH/infovis-papers-meta.txt
+	bin/ImportCorpus.py $TREETM_APP $CORPUS_PATH/infovis-papers-meta.txt
 	echo
 }
 
