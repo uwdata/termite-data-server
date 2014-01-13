@@ -57,7 +57,7 @@ div.body div.heading {
 	margin: 20px 0 2px 0;
 	font-size: 14pt;
 }
-div.body span.extra {
+div.body div.heading span.extra {
 	font-size: 8pt;
 }
 div.body div.params {
@@ -68,7 +68,12 @@ div.body div.params {
 	min-width: 320px;
 	color: #000;
 }
-div.body div.param {
+div.body div.params div.param {
+	font-size: 10pt;
+}
+div.body div.params div.extra {
+	margin: 10px 0 0 0;
+	color: #999;
 	font-size: 10pt;
 }
 div.body div.content {

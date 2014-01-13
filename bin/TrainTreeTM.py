@@ -74,7 +74,7 @@ echo
 
 	INIT_TRAINING_SCRIPT = """
 echo "# Generating correlations..."
-java -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.GenerateTree \\
+java -Xmx6g -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.GenerateTree \\
 	--vocab {MODEL_PATH}/corpus.voc \\
 	--constraint {THIS_RUN_PATH}/constraint.all \\
 	--tree {THIS_RUN_PATH}/corpus.wn \\
@@ -82,7 +82,7 @@ java -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.GenerateTr
 echo
 
 echo "# Start training a topic model..."
-java -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
+java -Xmx6g -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
 	--input {MODEL_PATH}/corpus.mallet \\
 	--output-interval 25 \\
 	--output-dir {THIS_RUN_PATH}/model \\
@@ -104,7 +104,7 @@ echo
 """
 	RESUME_TRAINING_SCRIPT = """
 echo "# Generating correlations..."
-java -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.GenerateTree \\
+java -Xmx6g -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.GenerateTree \\
 	--vocab {MODEL_PATH}/corpus.voc \\
 	--constraint {THIS_RUN_PATH}/constraint.all \\
 	--tree {THIS_RUN_PATH}/corpus.wn \\
@@ -112,7 +112,7 @@ java -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.GenerateTr
 echo
 
 echo "# Resume training a topic model..."
-java -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
+java -Xmx6g -cp {TREETM_ROOT}/class:{TREETM_ROOT}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
 	--input {MODEL_PATH}/corpus.mallet \\
 	--output-interval 25 \\
 	--output-dir {THIS_RUN_PATH}/model \\
@@ -389,7 +389,7 @@ def main():
 	parser.add_argument( '--treetm_root', type = str , help = 'Path to TreeTM'       , default = TREETM_ROOT )
 	parser.add_argument( '--parent'     , type = int , help = 'Parent run'           , default = -1          )
 	parser.add_argument( '--topics'     , type = int , help = 'Number of topics'     , default = 20          )
-	parser.add_argument( '--iters'      , type = int , help = 'Number of iterations' , default = 1000        )
+	parser.add_argument( '--iters'      , type = int , help = 'Number of iterations' , default = 50          )
 	parser.add_argument( '--is_file'    , help = 'Import as file (instead of folder)', action = 'store_const', const = True, default = False )
 	parser.add_argument( '--logging'    , type = int , help = 'Override default logging level', default = 20 )
 	args = parser.parse_args()

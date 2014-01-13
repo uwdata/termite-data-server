@@ -50,7 +50,7 @@ function __fetch_data__ {
 }
 
 function __train_model__ {
-	echo "# Training an LDA mode..."
+	echo "# Training an LDA model..."
 	echo
 	echo "bin/train_mallet_from_file.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH"
 	echo
@@ -70,8 +70,31 @@ function __import_model__ {
 	echo
 }
 
+function __train_tree_model__ {
+	echo "# Training an LDA model..."
+	echo
+	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 1000 --is_file"
+	echo
+	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 1000 --is_file
+}
+
+function __import_tree_model__ {
+	echo "# Importing an LDA model..."
+	echo
+	echo "bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP-treetm"
+	echo
+	bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP-treetm
+	echo
+	echo "bin/ImportCorpus.py $DEMO_APP-treetm $CORPUS_PATH/infovis-papers-meta.txt"
+	echo
+	bin/ImportCorpus.py $DEMO_APP-treetm $CORPUS_PATH/infovis-papers-meta.txt
+	echo
+}
+
 bin/setup.sh
 __fetch_data__
 __train_model__
 __import_model__
+__train_tree_model__
+__import_tree_model__
 bin/start_server.sh
