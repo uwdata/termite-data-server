@@ -49,7 +49,7 @@ function __fetch_data__ {
 }
 
 function __train_model__ {
-	echo "# Training an LDA mode..."
+	echo "# Training an LDA model..."
 	echo
 	echo "bin/train_mallet_from_file.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH"
 	echo
