@@ -4,6 +4,15 @@ EXTERNALS_PATH=externals
 TOOLS_PATH=tools
 APPS_PATH=apps
 
+if [ ! -d "server_src" ] || [ ! -d "landing_src" ]
+then
+	echo "Usage: bin/setup.sh"
+	echo "    Download requires tools for Termite Web Server."
+	echo "    This script should be run from the root of the git repo."
+	echo
+	exit -1
+fi
+
 function __create_folder__ {
 	FOLDER=$1
 	TAB=$2
@@ -76,12 +85,11 @@ function __setup_web2py__ {
 		echo "    Removing 'no password, no web admin interface' dialogue box..."
 		sed -i bkp "s/self.error('no password, no web admin interface')/pass #self.error('no password, no web admin interface')/g" $TOOLS_SUBPATH/gluon/widget.py
 		
-		__create_folder__ $TOOLS_SUBPATH/applications/termite "    "
-		echo "    Setting up a default app..."
-		ln -s ../../../../landing_src/controllers $TOOLS_SUBPATH/applications/termite/controllers
-		ln -s ../../../../landing_src/views $TOOLS_SUBPATH/applications/termite/views
-		ln -s ../../../../landing_src/static $TOOLS_SUBPATH/applications/termite/static
-		sed -i bkp "s/redirect(URL('welcome', 'default', 'index'))/redirect(URL('termite', 'default', 'index'))/g" $TOOLS_SUBPATH/gluon/main.py
+		__create_folder__ $TOOLS_SUBPATH/applications/init "    "
+		echo "    Setting up init app..."
+		ln -s ../../../../landing_src/controllers $TOOLS_SUBPATH/applications/init/controllers
+		ln -s ../../../../landing_src/views $TOOLS_SUBPATH/applications/init/views
+		ln -s ../../../../landing_src/static $TOOLS_SUBPATH/applications/init/static
 	else
 		echo "    Already available: $TOOLS_SUBPATH"
 	fi

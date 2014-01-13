@@ -24,7 +24,7 @@ def GenerateResponse( keysAndValues = {} ):
 
 	def GetModelAttributes():
 		return [
-			'TermTopicConstraints'
+			'DocMeta'
 		]
 
 	data = {
@@ -45,7 +45,7 @@ def GenerateResponse( keysAndValues = {} ):
 def GetParams():
 	return {}
 	
-def TermTopicConstraints():
+def DocMeta():
 	params = GetParams()
 	return GenerateResponse({
 		'params' : params

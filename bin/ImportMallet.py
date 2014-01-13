@@ -48,7 +48,7 @@ class ImportMallet( object ):
 		self.docs = None
 		self.terms = None
 		self.topics = None
-		self.docPaths = None
+		self.docIDs = None
 		self.termFreqs = None
 		self.topicFreqs = None
 		self.docsAndTopics = None
@@ -119,7 +119,7 @@ class ImportMallet( object ):
 	def ExtractDocTopicMixtures( self, filename ):
 		docs = set()
 		topics = set()
-		docPaths = {}
+		docIDs = {}
 		topicFreqs = {}
 		docsAndTopics = {}
 		
@@ -133,7 +133,7 @@ class ImportMallet( object ):
 				else:
 					fields = line.split( '\t' )
 					doc = int(fields[0])
-					docPath = fields[1]
+					docID = fields[1]
 					topicKeys = [ int(field) for n, field in enumerate(fields[2:]) if n == 0 ]
 					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n == 1 ]
 					for n in range(len(topicKeys)):
@@ -141,7 +141,7 @@ class ImportMallet( object ):
 						value = topicValues[n]
 						if doc not in docs:
 							docs.add( doc )
-							docPaths[ doc ] = docPath
+							docIDs[ doc ] = docID
 							docsAndTopics[ doc ] = {}
 						if topic not in topics:
 							topics.add( topic )
@@ -150,7 +150,7 @@ class ImportMallet( object ):
 						topicFreqs[ topic ] += value
 		
 		self.docs = docs
-		self.docPaths = docPaths
+		self.docIDs = docIDs
 		self.docsAndTopics = docsAndTopics
 		assert( len(self.topics) == len(topics) )
 		assert( len(self.topicFreqs) == len(topicFreqs) )
@@ -168,7 +168,7 @@ class ImportMallet( object ):
 		for n, doc in enumerate( self.docs ):
 			self.docIndex[n] = {
 				'index' : n,
-				'path' : self.docPaths[ doc ]
+				'docID' : self.docIDs[ doc ]
 			}
 		for n, term in enumerate( self.terms ):
 			self.termIndex[n] = {
@@ -192,16 +192,16 @@ class ImportMallet( object ):
 			for topic, value in self.docsAndTopics[ doc ].iteritems():
 				row[ topic ] = value
 			self.docTopicMatrix[ doc ] = row
-	
+		
 	def SaveToDisk( self ):
 		filename = '{}/doc-index.json'.format( self.app_data_lda_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		filename = '{}/doc-index.txt'.format( self.app_data_lda_path )
 		with open( filename, 'w' ) as f:
-			f.write( u'{}\t{}\n'.format( 'DocIndex', 'DocPath' ) )
+			f.write( u'{}\t{}\n'.format( 'DocIndex', 'DocID' ) )
 			for d in self.docIndex:
-				f.write( u'{}\t{}\n'.format( d['index'], d['path'] ) )
+				f.write( u'{}\t{}\n'.format( d['index'], d['docID'] ) )
 		
 		filename = '{}/term-index.json'.format( self.app_data_lda_path )
 		with open( filename, 'w' ) as f:
@@ -233,12 +233,12 @@ class ImportMallet( object ):
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
-	parser.add_argument( 'model_path'   , type = str,                               help = 'MALLET topic model path.'                )
-	parser.add_argument( 'app_name'     , type = str,                               help = 'Web2py application identifier'           )
-	parser.add_argument( '--apps_root'  , type = str, default = APPS_ROOT         , help = 'Web2py application path.'                )
-	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.' )
-	parser.add_argument( '--doc_topics' , type = str, default = DOC_TOPIC_MIXTURES, help = 'File containing doc vs. topic mixtures.' )
-	parser.add_argument( '--logging'    , type = int, default = 20                , help = 'Override default logging level.'         )
+	parser.add_argument( 'model_path'   , type = str,                               help = 'MALLET topic model path.'                   )
+	parser.add_argument( 'app_name'     , type = str,                               help = 'Web2py application identifier'              )
+	parser.add_argument( '--apps_root'  , type = str, default = APPS_ROOT         , help = 'Web2py application path.'                   )
+	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.'    )
+	parser.add_argument( '--doc_topics' , type = str, default = DOC_TOPIC_MIXTURES, help = 'File containing doc vs. topic mixtures.'    )
+	parser.add_argument( '--logging'    , type = int, default = 20                , help = 'Override default logging level.'            )
 	args = parser.parse_args()
 	
 	ImportMallet(

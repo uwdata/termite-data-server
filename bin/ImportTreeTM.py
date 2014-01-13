@@ -19,12 +19,13 @@ class ImportMallet( object ):
 		self.model_path = model_path
 		self.app_path = '{}/{}'.format( apps_root, app_name )
 		self.app_data_lda_path = '{}/{}/data/lda'.format( apps_root, app_name )
+		self.app_data_treetm_path = '{}/{}/data/treetm'.format( apps_root, app_name )
 		self.app_controller_path = '{}/{}/controllers'.format( apps_root, app_name )
 		self.app_views_path = '{}/{}/views'.format( apps_root, app_name )
 		self.app_static_path = '{}/{}/static'.format( apps_root, app_name )
 		self.web2py_app_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
 		self.latest_run = self.GetLatestRun()
-		self.logger = logging.getLogger( 'ImportMallet' )
+		self.logger = logging.getLogger( 'ImportTreeTM' )
 		self.logger.setLevel( logging_level )
 		handler = logging.StreamHandler( sys.stderr )
 		handler.setLevel( logging_level )
@@ -44,6 +45,9 @@ class ImportMallet( object ):
 		if not os.path.exists( self.app_data_lda_path ):
 			self.logger.info( 'Creating app data folder: %s', self.app_data_lda_path )
 			os.makedirs( self.app_data_lda_path )
+		if not os.path.exists( self.app_data_treetm_path ):
+			self.logger.info( 'Creating app data folder: %s', self.app_data_treetm_path )
+			os.makedirs( self.app_data_treetm_path )
 		
 		self.run_path = self.GetRunPath( self.latest_run )
 		self.docs = None

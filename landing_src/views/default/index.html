@@ -1,9 +1,9 @@
 {{extend 'layout.html'}}
 
 <script type="text/javascript">
-var onSelectDataset = function( select ) {
-	if ( select.value !== "NONE" ) {
-		window.location.href = "http://{{=server_identifier}}/" + select.value;
+var onSelectDataset = function( srcElement ) {
+	if ( srcElement.value !== "NONE" ) {
+		window.location.href = "http://{{=server_identifier}}/" + srcElement.value;
 	}
 }
 </script>
@@ -16,8 +16,8 @@ var onSelectDataset = function( select ) {
 	<div class="subtitle">
 		<select onchange="onSelectDataset(this)">
 			<option value="NONE">&mdash; Available Datasets &mdash;</option>
-			{{for n, dataset_identifier in enumerate(dataset_identifiers):}}
-			<option value="{{=dataset_identifier}}">{{=dataset_identifier}}</option>
+			{{for value in dataset_identifiers:}}
+			<option value="{{=value}}">{{=value}}</option>
 			{{pass}}
 		</select>
 	</div>
@@ -35,7 +35,8 @@ var onSelectDataset = function( select ) {
 </div>
 
 <div class="body">
-	<div class="heading">Server Response</div>
-	<div class="extras">[<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">JSON format</a>]</div>
+	<div class="heading">Server Response
+		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">Display as a JSON object</a>)</span>
+	</div>
 	<div class="content">{{=content}}</div>
 </div>
