@@ -14,7 +14,7 @@ All API calls are in following format.
 http:// [server] / [dataset] / [model] / [attribute]
 ```
 
-The string `[server]` is base portion of the URL.  As multiple projects can be hosted on the same server, `[dataset]` uniquely identifies a project. A web-based visualization can access the content of a topic model by specifying remaining URL `[model]/[attribute]` such as `lda/TermTopicMatrix` and `treetm/TermTopicConstraints` to retrieve the term-topic matrix and send user-defined constraints, respectively.
+The string `[server]` is base portion of the URL.  As multiple projects can be hosted on the same server, `[dataset]` uniquely identifies a project. A web-based visualization can access the content of a topic model by specifying the remaining URL `[model]/[attribute]` such as `lda/TermTopicMatrix` and `treetm/TermTopicConstraints` to retrieve the term-topic matrix and send user-defined constraints, respectively.
 
 Using the software
 ------------------
