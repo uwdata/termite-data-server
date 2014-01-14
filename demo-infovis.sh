@@ -73,9 +73,9 @@ function __import_model__ {
 function __train_tree_model__ {
 	echo "# Training an LDA model..."
 	echo
-	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 1000 --is_file"
+	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 100 --is_file"
 	echo
-	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 1000 --is_file
+	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 100 --is_file
 }
 
 function __import_tree_model__ {
