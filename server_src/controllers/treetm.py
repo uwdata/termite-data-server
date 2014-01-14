@@ -43,7 +43,17 @@ def GenerateResponse( keysAndValues = {} ):
 		return data
 
 def GetParams():
-	return {}
+	def GetString( key, defaultValue ):
+		if key in request.vars:
+			return request.vars[key]
+		else:
+			return defaultValue
+			
+	return {
+		'termTopicPromotions' : GetString( 'termTopicPromotions', '' ),
+		'termTopicDemotions' : GetString( 'termTopicDemotions', '' ),
+		'termExclusions' : GetString( 'termExclusions', '' )
+	}
 	
 def TermTopicConstraints():
 	params = GetParams()

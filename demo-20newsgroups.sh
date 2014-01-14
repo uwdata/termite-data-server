@@ -87,6 +87,6 @@ bin/setup.sh
 __fetch_data__
 __train_model__
 __import_model__
-__train_tree_model__
-__import_tree_model__
+#__train_tree_model__
+#__import_tree_model__
 bin/start_server.sh
