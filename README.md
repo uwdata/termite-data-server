@@ -1,5 +1,5 @@
-Termite Web Server for MALLET
-=============================
+Termite Web Server for Topic Models
+===================================
 
 Termite is a visualization tool for inspecting the output of statistical topic models.
 
