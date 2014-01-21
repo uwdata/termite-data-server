@@ -43,10 +43,39 @@ def GenerateResponse( keysAndValues = {} ):
 		return data
 
 def GetParams():
-	return {}
+	def GetNonNegativeInteger( key, defaultValue ):
+		try:
+			n = int( request.vars[ key ] )
+			if n >= 0:
+				return n
+			else:
+				return 0
+		except:
+			return defaultValue
 	
+	def GetString( key, defaultValue ):
+		if key in request.vars:
+			return request.vars[ key ]
+		else:
+			return defaultValue
+
+	params = {
+		'searchLimit' : GetNonNegativeInteger( 'searchLimit', 100 ),
+		'searchOffset' : GetNonNegativeInteger( 'searchOffset', 0 ),
+		'searchText' : GetString( 'searchText', '' ),
+		'searchOrdering' : GetString( 'searchOrdering', '' )
+	}
+	return params
+
+def GetDocMeta():
+	filename = os.path.join( request.folder, 'data/corpus', 'doc-meta.json' )
+	with open( filename ) as f:
+		content = json.load( f, encoding = 'utf-8' )
+	return content
+
 def DocMeta():
 	params = GetParams()
+	data = GetDocMeta()
 	return GenerateResponse({
 		'params' : params
 	})
