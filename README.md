@@ -80,7 +80,7 @@ Termite requires the use of the following software. We thank their respective au
   * [MALLET (MAchine Learning for LanguagE Toolkit)](http://mallet.cs.umass.edu) by Andrew McCallum, et al.
   * [Interactive Topic Modeling](http://www.cs.umd.edu/~ynhu) by Yuening Hu, et al.
   * Structural Topic Models by Margaret Roberts, et al.
-  * [STMT (Stanford Topic Modeling Toolbox)](http://nlp.stanford.edu/downloads/tmt/tmt-0.4) by Daniel Ramage
+  * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4) by Daniel Ramage
   * [Gensim](http://radimrehurek.com/gensim) by Radim Řehůřek
   * [The web2py Web Framework](http://web2py.com) by Massimo Di Pierro, et al.
   * [Font Awesome](http://fontawesome.io) by Dave Gandy  
