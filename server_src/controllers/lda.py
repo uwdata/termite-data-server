@@ -45,7 +45,7 @@ def GenerateResponse( keysAndValues = {} ):
 	else:
 		data[ 'content' ] = dataStr
 		return data
-	
+
 def GetParams():
 	def GetNonNegativeInteger( key, defaultValue ):
 		try:
