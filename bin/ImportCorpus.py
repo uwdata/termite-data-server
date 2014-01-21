@@ -48,26 +48,22 @@ class ImportMallet( object ):
 		
 	def ExtractDocMetadata( self, filename ):
 		with open( filename, 'r' ) as f:
-			try:
-				meta = json.load( f, encoding = 'utf-8' )
-			except:
-				header = None
-				meta = {}
-				for index, line in enumerate( f ):
-					values = line[:-1].decode( 'utf-8' ).split( '\t' )
-					if header is None:
-						header = values
-					else:
-						record = {}
-						for n, value in enumerate( values ):
-							if n < len(header):
-								key = header[n]
-							else:
-								key = 'Field{:d}'.format( n+1 )
-							record[ key ] = value
-						key = record['DocID']
-						if key in allDocIDs:
-							meta[ key ] = record
+			header = None
+			meta = {}
+			for index, line in enumerate( f ):
+				values = line[:-1].decode( 'utf-8' ).split( '\t' )
+				if header is None:
+					header = values
+				else:
+					record = {}
+					for n, value in enumerate( values ):
+						if n < len(header):
+							key = header[n]
+						else:
+							key = 'Field{:d}'.format( n+1 )
+						record[ key ] = value
+					key = record['DocID']
+					meta[ key ] = record
 		self.meta = meta
 	
 	def SaveToDisk( self ):
