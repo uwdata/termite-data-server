@@ -2,7 +2,6 @@
 
 EXTERNALS_PATH=externals
 TOOLS_PATH=tools
-APPS_PATH=apps
 
 if [ $# -lt 1 ] || [ $1 != "DELETE" ]
 then
@@ -20,8 +19,4 @@ echo
 
 echo "# Removing all tools..."
 rm -rfv $TOOLS_PATH
-echo
-
-echo "# Removing web server and all web applications..."
-rm -rfv $APPS_PATH
 echo

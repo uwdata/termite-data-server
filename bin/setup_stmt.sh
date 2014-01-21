@@ -9,7 +9,7 @@ then
 	echo "    Download and set up Stanford Topic Modeling Toolbox."
 	echo "    This script should be run from the root of the git repo."
 	echo
-	echo "    STMT is not downloaded or set up by default."
+	echo "    STMT is not downloaded by default."
 	echo
 	exit -1
 fi
