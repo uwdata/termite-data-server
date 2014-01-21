@@ -53,9 +53,9 @@ function __fetch_data__ {
 function __train_model__ {
 	echo "# Training an LDA model..."
 	echo
-	echo "bin/train_mallet_from_folder.sh $CORPUS_PATH $MODEL_PATH"
+	echo "bin/train_mallet.sh $CORPUS_PATH $MODEL_PATH"
 	echo
-	bin/train_mallet_from_folder.sh $CORPUS_PATH $MODEL_PATH
+	bin/train_mallet.sh $CORPUS_PATH $MODEL_PATH
 }
 
 function __import_model__ {
