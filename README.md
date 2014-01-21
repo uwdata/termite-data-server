@@ -4,15 +4,27 @@ Termite Web Server for Topic Models
 Termite is a visualization tool for inspecting the output of statistical topic models.
 
 The tool contains two components:
-  * A web server for reading the output of a topic model and distributing the content over the internet.
+  * A web server for processing the output of a topic model and distributing the content over the internet.
   * A client interface for visualizing the topic model in a web browser.
 
-This repository contains the server-side component for processing the output of a MALLET topic model and hosting the content on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca), and distributed under the BSD-3 license. [MALLET](http://mallet.cs.umass.edu) is developed by Andrew McCallum, et al. [The web2py Web Framework](http://web2py.com) is developed by Massimo Di Pierro, et al.
+This repository contains the server component for processing topic models and hosting the content on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca), and distributed under the BSD-3 license.
 
-Using the software
-------------------
+Topic modeling
+--------------
 
-Run the setup script to fetch all required libraries. This script only needs to be run once when Termite Web Server for MALLET is first downloaded onto a new machine.
+Currently, this tool comes with scripts for training and importing:
+  * [MALLET Topic Models](http://mallet.cs.umass.edu)
+
+We are in the process of adding support for:
+  * [Interactive Topic Modeling](http://github.com/uwdata/termite-treetm)
+  * [Structural Topic Models](http://github.com/uwdata/termite-stm)
+  * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4/)
+  * [Gensim](http://radimrehurek.com/gensim/)
+
+Setting up this web server
+--------------------------
+
+Run the setup script to fetch all required libraries. This script only needs to be run once when Termite Web Server for Topic Models is first downloaded onto a new machine.
 
 ```
 bin/setup.sh
@@ -23,6 +35,9 @@ To launch the web server, execute the following command. A dialogue will appear.
 ```
 bin/start_server.sh
 ```
+
+Demo data and topic models
+--------------------------
 
 Two demo scripts are included in this repository.
 
@@ -43,6 +58,32 @@ The resulting topic model(s) will be available at:
 ```
 http://127.0.0.1:8075/
 ```
+
+API Format
+----------
+
+A goal of developing this server is to provide a common API (application programming interface), so that multiple topic model visualizations can interact with each other and with any number of topic modeling software.
+
+All API calls to this web server are in following format.
+
+```
+http:// [server] / [dataset] / [model] / [attribute]
+```
+
+The string `[server]` is the base portion of the URL, such as `http://localhost:8080` when running a local machine.  As multiple projects can be hosted on the same server, `[dataset]` is a string `[A-Za-z0-9_]+` that uniquely identifies a project. A web-based visualization can access the content of a topic model by specifying the remaining URL `[model]/[attribute]`, such as `lda/TermTopicMatrix` and `treetm/TermTopicConstraints` to retrieve the term-topic matrix and send user-defined constraints to the server, respectively.
+
+Credits
+-------
+
+Termite requires the use of the following software. We thank their respective authors for developing and distributing these tools.
+
+  * [MALLET (MAchine Learning for LanguagE Toolkit)](http://mallet.cs.umass.edu) by Andrew McCallum, et al.
+  * [Interactive Topic Modeling](http://www.cs.umd.edu/~ynhu) by Yuening Hu, et al.
+  * Structural Topic Models by Margaret Roberts, et al.
+  * [STMT (Stanford Topic Modeling Toolbox)](http://nlp.stanford.edu/downloads/tmt/tmt-0.4) by Daniel Ramage
+  * [Gensim](http://radimrehurek.com/gensim) by Radim Řehůřek
+  * [The web2py Web Framework](http://web2py.com) by Massimo Di Pierro, et al.
+  * [Font Awesome](http://fontawesome.io) by Dave Gandy  
 
 License
 -------
@@ -71,21 +112,3 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-Credits
--------
-
-Termite requires the use of the following libraries and tools.
-We thank their respective authors for developing and distributing these tools.
-
-  MALLET (MAchine Learning for LanguagE Toolkit)  
-  Project website: http://mallet.cs.umass.edu  
-  Developed by Andrew McCallum, et al.  
-
-  The web2py Web Framework  
-  Project website: http://web2py.com  
-  Developed by Massimo Di Pierro, et al.  
-
-  Font Awesome  
-  Project website: http://fontawesome.io  
-  Developed by Dave Gandy  
