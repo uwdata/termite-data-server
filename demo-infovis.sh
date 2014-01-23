@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DEMO_PATH=demo-infovis
-DEMO_APP=infovis
+NEWSGROUP_APP=infovis
 TREETM_APP=infovis_treetm
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
@@ -49,37 +49,37 @@ function __fetch_data__ {
 	echo
 }
 
-function __train_model__ {
-	echo "# Training an LDA model..."
+function __train_mallet_model__ {
+	echo "# Training a MALLET LDA model..."
 	echo
-	echo "bin/train_mallet_from_file.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH"
+	echo "bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH"
 	echo
-	bin/train_mallet_from_file.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH
+	bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH
 }
 
-function __import_model__ {
-	echo "# Importing an LDA model..."
+function __import_mallet_model__ {
+	echo "# Importing a MALLET LDA model..."
 	echo
-	echo "bin/ImportMallet.py $MODEL_PATH $DEMO_APP"
+	echo "bin/ImportMallet.py $MODEL_PATH $NEWSGROUP_APP"
 	echo
-	bin/ImportMallet.py $MODEL_PATH $DEMO_APP
+	bin/ImportMallet.py $MODEL_PATH $NEWSGROUP_APP
 	echo
-	echo "bin/ImportCorpus.py $DEMO_APP $CORPUS_PATH/infovis-papers-meta.txt"
+	echo "bin/ImportCorpus.py $NEWSGROUP_APP $CORPUS_PATH/infovis-papers-meta.txt"
 	echo
-	bin/ImportCorpus.py $DEMO_APP $CORPUS_PATH/infovis-papers-meta.txt
+	bin/ImportCorpus.py $NEWSGROUP_APP $CORPUS_PATH/infovis-papers-meta.txt
 	echo
 }
 
 function __train_tree_model__ {
-	echo "# Training an LDA model..."
+	echo "# Training a TreeTM model..."
 	echo
-	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 100 --is_file"
+	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 50 --is_file"
 	echo
-	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 100 --is_file
+	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 50 --is_file
 }
 
 function __import_tree_model__ {
-	echo "# Importing an LDA model..."
+	echo "# Importing a TreeTM model..."
 	echo
 	echo "bin/ImportTreeTM.py $MODEL_PATH-treetm $TREETM_APP"
 	echo
@@ -93,8 +93,8 @@ function __import_tree_model__ {
 
 bin/setup.sh
 __fetch_data__
-__train_model__
-__import_model__
+__train_mallet_model__
+__import_mallet_model__
 __train_tree_model__
 __import_tree_model__
 bin/start_server.sh
