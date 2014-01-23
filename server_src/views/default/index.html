@@ -27,7 +27,7 @@ var onSelectModel = function( srcElement ) {
 
 <div class="body">
 	<div class="heading">Server Response
-		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">Display as a JSON object</a>)</span>
+		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']+request.env['PATH_INFO']}}?format=json">Display as a JSON object</a>)</span>
 	</div>
 	<div class="content">{{=content}}</div>
 </div>
