@@ -83,9 +83,9 @@ function __train_gensim__ {
 function __import_gensim__ {
 	echo "# Importing a gensim LDA topic model..."
 	echo
-	echo "bin/ImportGensim.py $GENSIM_PATH $GENSIM_APP"
+	echo "bin/ImportGensim.py $GENSIM_PATH/corpus.dict $GENSIM_PATH/output.model $GENSIM_APP"
 	echo
-	bin/ImportGensim.py $GENSIM_PATH $GENSIM_APP
+	bin/ImportGensim.py $GENSIM_PATH/corpus.dict $GENSIM_PATH/output.model $GENSIM_APP
 	echo
 }
 

@@ -10,13 +10,12 @@ from gensim import corpora, models
 
 APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'tools/web2py'
-DICTIONARY_FILENAME = 'corpus.dict'
-MODEL_FILENAME = 'output.model'
 
 class ImportGensim( object ):
 	
-	def __init__( self, model_path, app_name, logging_level ):
-		self.model_path = model_path
+	def __init__( self, dictionary_filename, model_filename, app_name, logging_level ):
+		self.dictionary_filename = dictionary_filename
+		self.model_filename = model_filename
 		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
 		self.app_data_lda_path = '{}/{}/data/lda'.format( APPS_ROOT, app_name )
 		self.app_controller_path = '{}/{}/controllers'.format( APPS_ROOT, app_name )
@@ -29,13 +28,12 @@ class ImportGensim( object ):
 		handler.setLevel( logging_level )
 		self.logger.addHandler( handler )
 	
-	def execute( self, filenameDictionary, filenameModel ):
+	def execute( self ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		self.logger.info( 'Importing a gensim topic model as a web2py application...'                        )
-		self.logger.info( '       model = %s', self.model_path                                               )
 		self.logger.info( '         app = %s', self.app_path                                                 )
-		self.logger.info( '  dictionary = %s', filenameDictionary                                            )
-		self.logger.info( '       model = %s', filenameModel                                                 )
+		self.logger.info( '  dictionary = %s', self.dictionary_filename                                      )
+		self.logger.info( '       model = %s', self.model_filename                                           )
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		
 		if not os.path.exists( self.app_path ):
@@ -45,8 +43,8 @@ class ImportGensim( object ):
 			self.logger.info( 'Creating app data folder: %s', self.app_data_lda_path )
 			os.makedirs( self.app_data_lda_path )
 		
-		self.logger.info( 'Reading from %s, %s', filenameDictionary, filenameModel )
-		self.ExtractGensimModel( filenameDictionary, filenameModel )
+		self.logger.info( 'Reading from %s, %s', self.dictionary_filename, self.model_filename )
+		self.ExtractGensimModel()
 		
 		self.logger.info( 'Writing data to disk: %s', self.app_data_lda_path )
 		self.SaveToDisk()
@@ -69,11 +67,11 @@ class ImportGensim( object ):
 		
 		self.logger.info( '--------------------------------------------------------------------------------' )
 	
-	def ExtractGensimModel( self, filenameDictionary, filenameModel ):
+	def ExtractGensimModel( self ):
 		termTexts = {}
 		termLookup = {}
-		dictionary = corpora.Dictionary.load( '{}/{}'.format( self.model_path, filenameDictionary ) )
-		model = models.LdaModel.load( '{}/{}'.format( self.model_path, filenameModel ) )
+		dictionary = corpora.Dictionary.load( self.dictionary_filename )
+		model = models.LdaModel.load( self.model_filename )
 		for i in dictionary:
 			termTexts[i] = dictionary[i]
 			termLookup[dictionary[i]] = i
@@ -125,21 +123,18 @@ class ImportGensim( object ):
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
-	parser.add_argument( 'model_path'   , type = str,                                help = 'Gensim topic model path.'                   )
-	parser.add_argument( 'app_name'     , type = str,                                help = 'Web2py application identifier'              )
-	parser.add_argument( '--dictionary' , type = str, default = DICTIONARY_FILENAME, help = 'File containing a gensim dictionary'        )
-	parser.add_argument( '--model'      , type = str, default = MODEL_FILENAME     , help = 'File containing a gensim LDA model'         )
-	parser.add_argument( '--logging'    , type = int, default = 20                 , help = 'Override default logging level.'            )
+	parser.add_argument( 'dictionary' , type = str,               help = 'File containing a gensim dictionary'        )
+	parser.add_argument( 'model'      , type = str,               help = 'File containing a gensim LDA model'         )
+	parser.add_argument( 'app_name'   , type = str,               help = 'Web2py application identifier'              )
+	parser.add_argument( '--logging'  , type = int, default = 20, help = 'Override default logging level.'            )
 	args = parser.parse_args()
 	
 	ImportGensim(
-		model_path = args.model_path,
+		dictionary_filename = args.dictionary,
+		model_filename = args.model,
 		app_name = args.app_name,
 		logging_level = args.logging
-	).execute(
-		args.dictionary,
-		args.model
-	)
+	).execute()
 
 if __name__ == '__main__':
 	main()
