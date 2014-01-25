@@ -15,13 +15,13 @@ DOC_TOPIC_MIXTURES = 'doc-topic-mixtures.txt'
 
 class ImportMallet( object ):
 	
-	def __init__( self, model_path, apps_root, app_name, logging_level ):
+	def __init__( self, model_path, app_name, logging_level ):
 		self.model_path = model_path
-		self.app_path = '{}/{}'.format( apps_root, app_name )
-		self.app_data_lda_path = '{}/{}/data/lda'.format( apps_root, app_name )
-		self.app_controller_path = '{}/{}/controllers'.format( apps_root, app_name )
-		self.app_views_path = '{}/{}/views'.format( apps_root, app_name )
-		self.app_static_path = '{}/{}/static'.format( apps_root, app_name )
+		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
+		self.app_data_lda_path = '{}/{}/data/lda'.format( APPS_ROOT, app_name )
+		self.app_controller_path = '{}/{}/controllers'.format( APPS_ROOT, app_name )
+		self.app_views_path = '{}/{}/views'.format( APPS_ROOT, app_name )
+		self.app_static_path = '{}/{}/static'.format( APPS_ROOT, app_name )
 		self.web2py_app_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
 		self.logger = logging.getLogger( 'ImportMallet' )
 		self.logger.setLevel( logging_level )
@@ -39,26 +39,17 @@ class ImportMallet( object ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		
 		if not os.path.exists( self.app_path ):
-			self.logger.info( 'Creating output folder: %s', self.app_path )
+			self.logger.info( 'Creating app folder: %s', self.app_path )
 			os.makedirs( self.app_path )
 		if not os.path.exists( self.app_data_lda_path ):
 			self.logger.info( 'Creating app data folder: %s', self.app_data_lda_path )
 			os.makedirs( self.app_data_lda_path )
 		
-		self.docs = None
-		self.terms = None
-		self.topics = None
-		self.docIDs = None
-		self.termFreqs = None
-		self.topicFreqs = None
-		self.docsAndTopics = None
-		self.topicsAndTerms = None
-		
 		self.logger.info( 'Reading topic-term matrix: %s/%s', self.model_path, filenameTopicWordWeights )
-		self.ExtractTopicWordWeights( filenameTopicWordWeights )
+		self.termSet, self.topicSet, self.termFreqs, self.topicFreqs, self.topicsAndTerms = self.ExtractTopicWordWeights( filenameTopicWordWeights )
 		
 		self.logger.info( 'Reading doc-topic matrix: %s/%s', self.model_path, filenameDocTopicMixtures )
-		self.ExtractDocTopicMixtures( filenameDocTopicMixtures )
+		self.docSet, self.docIDs, self.docsAndTopics = self.ExtractDocTopicMixtures( filenameDocTopicMixtures )
 		
 		self.logger.info( 'Preparing output data...' )
 		self.Package()
@@ -85,8 +76,8 @@ class ImportMallet( object ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
 	
 	def ExtractTopicWordWeights( self, filename ):
-		terms = set()
-		topics = set()
+		termSet = set()
+		topicSet = set()
 		termFreqs = {}
 		topicFreqs = {}
 		topicsAndTerms = {}
@@ -98,27 +89,23 @@ class ImportMallet( object ):
 				topic, term, value = line.split( '\t' )
 				topic = int( topic, 10 )
 				value = float( value )
-				if topic not in topics:
-					topics.add( topic )
+				if topic not in topicSet:
+					topicSet.add( topic )
 					topicFreqs[ topic ] = 0.0
 					topicsAndTerms[ topic ] = {}
-				if term not in terms:
-					terms.add( term )
+				if term not in termSet:
+					termSet.add( term )
 					termFreqs[ term ] = 0.0
 				
 				topicsAndTerms[ topic ][ term ] = value
 				topicFreqs[ topic ] += value
 				termFreqs[ term ] += value
 		
-		self.terms = terms
-		self.topics = topics
-		self.termFreqs = termFreqs
-		self.topicFreqs = topicFreqs
-		self.topicsAndTerms = topicsAndTerms
+		return termSet, topicSet, termFreqs, topicFreqs, topicsAndTerms
 	
 	def ExtractDocTopicMixtures( self, filename ):
-		docs = set()
-		topics = set()
+		docSet = set()
+		topicSet = set()
 		docIDs = {}
 		topicFreqs = {}
 		docsAndTopics = {}
@@ -139,56 +126,54 @@ class ImportMallet( object ):
 					for n in range(len(topicKeys)):
 						topic = topicKeys[n]
 						value = topicValues[n]
-						if doc not in docs:
-							docs.add( doc )
+						if doc not in docSet:
+							docSet.add( doc )
 							docIDs[ doc ] = docID
 							docsAndTopics[ doc ] = {}
-						if topic not in topics:
-							topics.add( topic )
+						if topic not in topicSet:
+							topicSet.add( topic )
 							topicFreqs[ topic ] = 0.0
 						docsAndTopics[ doc ][ topic ] = value
 						topicFreqs[ topic ] += value
 		
-		self.docs = docs
-		self.docIDs = docIDs
-		self.docsAndTopics = docsAndTopics
-		assert( len(self.topics) == len(topics) )
+		assert( len(self.topicSet) == len(topicSet) )
 		assert( len(self.topicFreqs) == len(topicFreqs) )
+		return docSet, docIDs, docsAndTopics
 	
 	def Package( self ):
-		self.docs = sorted( self.docs )
-		self.terms = sorted( self.terms )
-		self.topics = sorted( self.topics )
-		self.docIndex = [ None ] * len( self.docs )
-		self.termIndex = [ None ] * len( self.terms )
-		self.topicIndex = [ None ] * len( self.topics )
-		self.termTopicMatrix = [ None ] * len( self.terms )
-		self.docTopicMatrix = [ None ] * len( self.docs )
+		docs = sorted( self.docSet )
+		terms = sorted( self.termSet )
+		topics = sorted( self.topicSet )
+		self.docIndex = [ None ] * len( docs )
+		self.termIndex = [ None ] * len( terms )
+		self.topicIndex = [ None ] * len( topics )
+		self.termTopicMatrix = [ None ] * len( terms )
+		self.docTopicMatrix = [ None ] * len( docs )
 		
-		for n, doc in enumerate( self.docs ):
+		for n, doc in enumerate( docs ):
 			self.docIndex[n] = {
 				'index' : n,
 				'docID' : self.docIDs[ doc ]
 			}
-		for n, term in enumerate( self.terms ):
+		for n, term in enumerate( terms ):
 			self.termIndex[n] = {
 				'index' : n,
 				'text' : term,
 				'freq' : self.termFreqs[ term ]
 			}
-		for n, topic in enumerate( self.topics ):
+		for n, topic in enumerate( topics ):
 			self.topicIndex[n] = {
 				'index' : n,
 				'freq' : self.topicFreqs[ topic ]
 			}
-		for n, term in enumerate( self.terms ):
-			row = [ 0.0 ] * len( self.topics )
-			for topic in self.topics:
+		for n, term in enumerate( terms ):
+			row = [ 0.0 ] * len( topics )
+			for topic in topics:
 				if topic in self.topicsAndTerms and term in self.topicsAndTerms[ topic ]:
 					row[ topic ] = self.topicsAndTerms[ topic ][ term ]
 			self.termTopicMatrix[ n ] = row
-		for doc in self.docs:
-			row = [ 0.0 ] * len( self.topics )
+		for doc in docs:
+			row = [ 0.0 ] * len( topics )
 			for topic, value in self.docsAndTopics[ doc ].iteritems():
 				row[ topic ] = value
 			self.docTopicMatrix[ doc ] = row
@@ -235,7 +220,6 @@ def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
 	parser.add_argument( 'model_path'   , type = str,                               help = 'MALLET topic model path.'                   )
 	parser.add_argument( 'app_name'     , type = str,                               help = 'Web2py application identifier'              )
-	parser.add_argument( '--apps_root'  , type = str, default = APPS_ROOT         , help = 'Web2py application path.'                   )
 	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.'    )
 	parser.add_argument( '--doc_topics' , type = str, default = DOC_TOPIC_MIXTURES, help = 'File containing doc vs. topic mixtures.'    )
 	parser.add_argument( '--logging'    , type = int, default = 20                , help = 'Override default logging level.'            )
@@ -243,7 +227,6 @@ def main():
 	
 	ImportMallet(
 		model_path = args.model_path,
-		apps_root = args.apps_root,
 		app_name = args.app_name,
 		logging_level = args.logging
 	).execute(
