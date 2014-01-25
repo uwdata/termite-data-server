@@ -14,12 +14,12 @@ Topic modeling
 
 Currently, this tool comes with scripts for training and importing:
   * [MALLET Topic Models](http://mallet.cs.umass.edu)
+  * [Gensim](http://radimrehurek.com/gensim/)
 
 We are in the process of adding support for:
   * [Interactive Topic Modeling](http://github.com/uwdata/termite-treetm)
   * [Structural Topic Models](http://github.com/uwdata/termite-stm)
   * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4/)
-  * [Gensim](http://radimrehurek.com/gensim/)
 
 Setting up this web server
 --------------------------

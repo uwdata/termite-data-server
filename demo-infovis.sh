@@ -1,10 +1,12 @@
 #!/bin/bash
 
 DEMO_PATH=demo-infovis
-DEMO_APP=infovis
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
-MODEL_PATH=$DEMO_PATH/model
+MALLET_PATH=$DEMO_PATH/model-mallet
+MALLET_APP=infovis
+GENSIM_PATH=$DEMO_PATH/model-gensim
+GENSIM_APP=infovis_gensim
 
 function __create_folder__ {
 	FOLDER=$1
@@ -48,29 +50,63 @@ function __fetch_data__ {
 	echo
 }
 
-function __train_model__ {
-	echo "# Training an LDA model..."
+function __train_mallet__ {
+	echo "# Training a MALLET LDA topic model..."
 	echo
-	echo "bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH"
+	echo "bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MALLET_PATH"
 	echo
-	bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH
-}
-
-function __import_model__ {
-	echo "# Importing an LDA model..."
-	echo
-	echo "bin/ImportMallet.py $MODEL_PATH $DEMO_APP"
-	echo
-	bin/ImportMallet.py $MODEL_PATH $DEMO_APP
-	echo
-	echo "bin/ImportCorpus.py $DEMO_APP $CORPUS_PATH/infovis-papers-meta.txt"
-	echo
-	bin/ImportCorpus.py $DEMO_APP $CORPUS_PATH/infovis-papers-meta.txt
+	bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MALLET_PATH
 	echo
 }
 
-bin/setup.sh
-__fetch_data__
-__train_model__
-__import_model__
+function __import_mallet__ {
+	echo "# Importing a MALLET LDA topic model..."
+	echo
+	echo "bin/ImportMallet.py $MALLET_PATH $MALLET_APP"
+	echo
+	bin/ImportMallet.py $MALLET_PATH $MALLET_APP
+	echo
+	echo "bin/ImportCorpus.py $MALLET_APP $CORPUS_PATH/infovis-papers-meta.txt"
+	echo
+	bin/ImportCorpus.py $MALLET_APP $CORPUS_PATH/infovis-papers-meta.txt
+	echo
+}
+
+function __train_gensim__ {
+	echo "# Training a gensim LDA topic model..."
+	echo
+	echo "bin/TrainGensim.py $CORPUS_PATH/infovis-papers.txt $GENSIM_PATH"
+	echo
+	bin/TrainGensim.py $CORPUS_PATH/infovis-papers.txt $GENSIM_PATH
+	echo
+}
+function __import_gensim__ {
+	echo "# Importing a gensim LDA topic model..."
+	echo
+	echo "bin/ImportGensim.py $GENSIM_PATH $GENSIM_APP"
+	echo
+	bin/ImportGensim.py $GENSIM_PATH $GENSIM_APP
+	echo
+}
+
+if [ $# -gt 0 ]
+then
+	MODEL=$1
+else
+	MODEL=mallet
+fi
+if [ "$MODEL" == "mallet" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup.sh
+	__fetch_data__
+	__train_mallet__
+	__import_mallet__
+elif [ "$MODEL" == "gensim" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup_web2py.sh
+	bin/setup_gensim.sh
+	__fetch_data__
+	__train_gensim__
+	__import_gensim__
+fi
 bin/start_server.sh
