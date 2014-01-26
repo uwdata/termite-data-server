@@ -8,7 +8,7 @@ import logging
 import json
 
 MALLET_ROOT = 'tools/mallet-2.0.7'
-TREETM_ROOT = 'tree_tm'
+TREETM_ROOT = 'tools/tree-tm'
 
 class TrainTreeTM:
 	def __init__( self, corpus_path, model_path, mallet_root, treetm_root, parent_run, logging_level ):

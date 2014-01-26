@@ -1,11 +1,12 @@
 #!/bin/bash
 
 DEMO_PATH=demo-infovis
-NEWSGROUP_APP=infovis
-TREETM_APP=infovis_treetm
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
-MODEL_PATH=$DEMO_PATH/model
+MALLET_PATH=$DEMO_PATH/model-mallet
+MALLET_APP=infovis_mallet
+TREETM_PATH=$DEMO_PATH/model-treetm
+TREETM_APP=infovis_treetm
 
 function __create_folder__ {
 	FOLDER=$1
@@ -52,38 +53,38 @@ function __fetch_data__ {
 function __train_mallet_model__ {
 	echo "# Training a MALLET LDA model..."
 	echo
-	echo "bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH"
+	echo "bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MALLET_PATH"
 	echo
-	bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MODEL_PATH
+	bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MALLET_PATH
 }
 
 function __import_mallet_model__ {
 	echo "# Importing a MALLET LDA model..."
 	echo
-	echo "bin/ImportMallet.py $MODEL_PATH $NEWSGROUP_APP"
+	echo "bin/ImportMallet.py $MALLET_PATH $MALLET_APP"
 	echo
-	bin/ImportMallet.py $MODEL_PATH $NEWSGROUP_APP
+	bin/ImportMallet.py $MALLET_PATH $MALLET_APP
 	echo
-	echo "bin/ImportCorpus.py $NEWSGROUP_APP $CORPUS_PATH/infovis-papers-meta.txt"
+	echo "bin/ImportCorpus.py $MALLET_APP $CORPUS_PATH/infovis-papers-meta.txt"
 	echo
-	bin/ImportCorpus.py $NEWSGROUP_APP $CORPUS_PATH/infovis-papers-meta.txt
+	bin/ImportCorpus.py $MALLET_APP $CORPUS_PATH/infovis-papers-meta.txt
 	echo
 }
 
-function __train_tree_model__ {
+function __train_treetm__ {
 	echo "# Training a TreeTM model..."
 	echo
-	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 50 --is_file"
+	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 50 --is_file"
 	echo
-	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $MODEL_PATH-treetm --iters 50 --is_file
+	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 50 --is_file
 }
 
-function __import_tree_model__ {
+function __import_treetm__ {
 	echo "# Importing a TreeTM model..."
 	echo
-	echo "bin/ImportTreeTM.py $MODEL_PATH-treetm $TREETM_APP"
+	echo "bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP"
 	echo
-	bin/ImportTreeTM.py $MODEL_PATH-treetm $TREETM_APP
+	bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP
 	echo
 	echo "bin/ImportCorpus.py $TREETM_APP $CORPUS_PATH/infovis-papers-meta.txt"
 	echo
@@ -95,6 +96,6 @@ bin/setup.sh
 __fetch_data__
 __train_mallet_model__
 __import_mallet_model__
-__train_tree_model__
-__import_tree_model__
+__train_treetm__
+__import_treetm__
 bin/start_server.sh

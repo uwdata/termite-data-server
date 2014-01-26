@@ -1,11 +1,12 @@
 #!/bin/bash
 
 DEMO_PATH=demo-20newsgroups
-DEMO_APP=20newsgroups
-TREETM_APP=20newsgroups_treetm
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
-MODEL_PATH=$DEMO_PATH/model
+MALLET_PATH=$DEMO_PATH/model-mallet
+MALLET_APP=20newsgroups_mallet
+TREETM_PATH=$DEMO_PATH/model-treetm
+TREETM_APP=20newsgroups_treetm
 
 function __create_folder__ {
 	FOLDER=$1
@@ -51,42 +52,46 @@ function __fetch_data__ {
 	echo
 }
 
-function __train_model__ {
-	echo "# Training an LDA model..."
+function __train_mallet__ {
+	echo "# Training a MALLET LDA topic model..."
 	echo
-	echo "bin/train_mallet_from_folder.sh $CORPUS_PATH $MODEL_PATH"
+	echo "bin/train_mallet.sh $CORPUS_PATH $MALLET_PATH"
 	echo
-	bin/train_mallet_from_folder.sh $CORPUS_PATH $MODEL_PATH
+	bin/train_mallet.sh $CORPUS_PATH $MALLET_PATH
+	echo
 }
 
-function __import_model__ {
-	echo "# Importing an LDA model..."
+function __import_mallet__ {
+	echo "# Importing a MALLET LDA topic model..."
 	echo
-	echo "bin/ImportMallet.py $MODEL_PATH $DEMO_APP"
+	echo "bin/ImportMallet.py $MALLET_PATH $MALLET_APP"
 	echo
-	bin/ImportMallet.py $MODEL_PATH $DEMO_APP
+	bin/ImportMallet.py $MALLET_PATH $MALLET_APP
+	echo
 }
 
-function __train_tree_model__ {
+function __train_treetm__ {
 	echo "# Training a TreeTM model..."
 	echo
-	echo "bin/TrainTreeTM.py $CORPUS_PATH $MODEL_PATH-treetm --iters 1000"
+	echo "bin/TrainTreeTM.py $CORPUS_PATH $TREETM_PATH --iters 1000"
 	echo
-	bin/TrainTreeTM.py $CORPUS_PATH $MODEL_PATH-treetm --iters 1000
+	bin/TrainTreeTM.py $CORPUS_PATH $TREETM_PATH --iters 1000
+	echo
 }
 
-function __import_tree_model__ {
+function __import_treetm__ {
 	echo "# Importing a TreeTM model..."
 	echo
-	echo "bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP_TREETM"
+	echo "bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP"
 	echo
-	bin/ImportTreeTM.py $MODEL_PATH-treetm $DEMO_APP_TREETM
+	bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP
+	echo
 }
 
 bin/setup.sh
 __fetch_data__
-__train_model__
-__import_model__
-#__train_tree_model__
-#__import_tree_model__
+__train_mallet__
+__import_mallet__
+__train_treetm__
+__import_treetm__
 bin/start_server.sh
