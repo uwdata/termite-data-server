@@ -5,6 +5,8 @@ DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
 MALLET_PATH=$DEMO_PATH/model-mallet
 MALLET_APP=20newsgroups
+TREETM_PATH=$DEMO_PATH/model-treetm
+TREETM_APP=20newsgroups_treetm
 
 function __create_folder__ {
 	FOLDER=$1
@@ -68,8 +70,42 @@ function __import_mallet__ {
 	echo
 }
 
-bin/setup.sh
-__fetch_data__
-__train_mallet__
-__import_mallet__
+function __train_treetm__ {
+	echo "# Training a TreeTM model..."
+	echo
+	echo "bin/TrainTreeTM.py $CORPUS_PATH $TREETM_PATH --iters 1000"
+	echo
+	bin/TrainTreeTM.py $CORPUS_PATH $TREETM_PATH --iters 1000
+	echo
+}
+
+function __import_treetm__ {
+	echo "# Importing a TreeTM model..."
+	echo
+	echo "bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP"
+	echo
+	bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP
+	echo
+}
+
+if [ $# -gt 0 ]
+then
+	MODEL=$1
+else
+	MODEL=mallet
+fi
+if [ "$MODEL" == "mallet" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup.sh
+	__fetch_data__
+	__train_mallet__
+	__import_mallet__
+elif [ "$MODEL" == "treetm" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup_web2py.sh
+	bin/setup_treetm.sh
+	__fetch_data__
+	__train_treetm__
+	__import_treetm__
+fi
 bin/start_server.sh
