@@ -34,7 +34,7 @@ class TrainGensim( object ):
 			self.logger.info( 'Creating model folder: %s', self.model_path )
 			os.makedirs( self.model_path )
 		
-		# Based on example code provided by Samuel Rönnqvist <sronnqvi@abo.fi>
+		# Based on example code provided by Samuel Rönnqvist
 		whitespaces = re.compile( r'\W+' )
 		documents = []
 		with open( self.corpus_path ) as f:
