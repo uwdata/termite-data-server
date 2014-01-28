@@ -7,6 +7,8 @@ import argparse
 import logging
 import math
 import json
+import sqlite3
+import random
 
 APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'tools/web2py'
@@ -47,6 +49,9 @@ class ImportCorpus( object ):
 		self.logger.info( 'Writing data to disk: %s', self.app_data_corpus_path )
 		self.SaveToDisk()
 
+		self.logger.info( 'Writing data to database: %s', self.app_data_corpus_path )
+		self.SaveToDB()
+
 		if not os.path.exists( self.app_controller_path ):
 			self.logger.info( 'Setting up app controllers: %s', self.app_controller_path )
 			os.system( 'ln -s ../../server_src/controllers {}'.format( self.app_controller_path ) )
@@ -66,24 +71,29 @@ class ImportCorpus( object ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		
 	def ExtractDocMetadata( self, filename ):
-		with open( filename, 'r' ) as f:
-			header = None
-			meta = {}
-			for index, line in enumerate( f ):
-				values = line[:-1].decode( 'utf-8' ).split( '\t' )
-				if header is None:
-					header = values
-				else:
-					record = {}
-					for n, value in enumerate( values ):
-						if n < len(header):
-							key = header[n]
-						else:
-							key = 'Field{:d}'.format( n+1 )
-						record[ key ] = value
-					key = record['DocID']
-					meta[ key ] = record
-		self.meta = meta
+		try:
+			with open( filename, 'r' ) as f:
+				header = None
+				meta = {}
+				for index, line in enumerate( f ):
+					values = line[:-1].decode( 'utf-8' ).split( '\t' )
+					if header is None:
+						header = values
+					else:
+						record = {}
+						for n, value in enumerate( values ):
+							if n < len(header):
+								key = header[n]
+							else:
+								key = 'Field{:d}'.format( n+1 )
+							record[ key ] = value
+						key = record['DocID']
+						meta[ key ] = record
+			self.header = sorted(header)
+			self.meta = meta
+		except:
+			self.header = None
+			self.meta = None
 	
 	def SaveToDisk( self ):
 		if self.meta is not None:
@@ -91,6 +101,42 @@ class ImportCorpus( object ):
 			with open( filename, 'w' ) as f:
 				json.dump( self.meta, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
+	def SaveToDB( self ):
+		def CreateTable():
+			columnDefs = [ [ f ] for f in self.header ]
+			for i, columnDef in enumerate(columnDefs):
+				column = self.header[i]
+				if column.lower() == 'year':
+					columnDef.append( 'INTEGER' )
+				else:
+					columnDef.append( 'STRING' )
+				if column.lower() == 'docid':
+					columnDef.append( 'UNIQUE' )
+				columnDef.append( 'NOT NULL' )
+					
+			columnDefs = ', '.join( [ ' '.join(d) for d in columnDefs ] )
+			sql = """CREATE TABLE IF NOT EXISTS {TABLE} ( Key INTEGER PRIMARY KEY AUTOINCREMENT, {COLUMN_DEFS} );""".format( TABLE = table, COLUMN_DEFS = columnDefs )
+			conn.execute( sql )
+			
+		def InsertData():
+			columns = ', '.join( self.header )
+			values = ', '.join( [ '?' for f in self.header ] )
+			sql = """INSERT OR IGNORE INTO {TABLE} ( {COLUMNS} ) VALUES( {VALUES} )""".format( TABLE = table, COLUMNS = columns, VALUES = values )
+			data = []
+			for d in self.meta.itervalues():
+				data.append( [ d[f] for f in self.header ] )
+			conn.executemany( sql, data )
+			
+		if self.meta is not None and self.header is not None:
+			table = 'DocMeta'
+			filename = '{}/doc-meta.sqlite'.format( self.app_data_corpus_path )
+			
+			conn = sqlite3.connect( filename )
+			CreateTable()
+			InsertData()
+			conn.commit()
+			conn.close()
+		
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
 	parser.add_argument( 'app_name'     , type = str,                      help = 'Web2py application identifier'                   )
