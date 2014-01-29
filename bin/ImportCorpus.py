@@ -8,7 +8,6 @@ import logging
 import math
 import json
 import sqlite3
-import random
 
 APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'tools/web2py'
