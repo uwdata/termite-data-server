@@ -71,11 +71,30 @@ def GetDocMeta():
 	filename = os.path.join( request.folder, 'data/corpus', 'doc-meta.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
-	return content
+		
+		# get params, setup results
+		results = {}
+		params = GetParams()
+		searchText = params["searchText"]
+		searchLimit = params["searchLimit"]
+		searchOffset = params["searchOffset"]
+
+		matchCount = 0
+		keys = sorted(content.keys())
+		for index in range(len(keys)):
+		    obj = content[keys[index]]
+		    docContent = obj["DocContent"]
+		    if searchText in docContent:
+		        matchCount += 1
+		        if matchCount <= searchLimit and index >= searchOffset:
+		           results[obj["DocID"]] = obj
+	results["metadata"] = {"numResults" : len(results), "totalMatches" : matchCount }
+	return results
 
 def DocMeta():
 	params = GetParams()
 	data = GetDocMeta()
 	return GenerateResponse({
-		'params' : params
+		'params' : params,
+		'data' : data
 	})
