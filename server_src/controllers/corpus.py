@@ -67,14 +67,13 @@ def GetParams():
 	}
 	return params
 
-def GetDocMeta():
+def GetDocMeta( params ):
 	filename = os.path.join( request.folder, 'data/corpus', 'doc-meta.json' )
 	with open( filename ) as f:
 		content = json.load( f, encoding = 'utf-8' )
 		
 		# get params, setup results
 		results = {}
-		params = GetParams()
 		searchText = params["searchText"]
 		searchLimit = params["searchLimit"]
 		searchOffset = params["searchOffset"]
@@ -93,8 +92,8 @@ def GetDocMeta():
 
 def DocMeta():
 	params = GetParams()
-	data = GetDocMeta()
+	docs = GetDocMeta( params )
 	return GenerateResponse({
 		'params' : params,
-		'data' : data
+		'Documents' : docs
 	})
