@@ -16,8 +16,7 @@ SUBFOLDERS = [ 'controllers', 'views', 'static', 'modules', 'models' ]
 
 class ImportMallet( object ):
 	
-	def __init__( self, model_path, app_name, logging_level ):
-		self.model_path = model_path
+	def __init__( self, app_name, logging_level ):
 		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
 		self.app_data_path = '{}/{}/data/lda'.format( APPS_ROOT, app_name )
 		self.web2py_app_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
@@ -27,11 +26,11 @@ class ImportMallet( object ):
 		handler.setLevel( logging_level )
 		self.logger.addHandler( handler )
 	
-	def execute( self, filenameTopicWordWeights, filenameDocTopicMixtures ):
+	def execute( self, modelPath, filenameTopicWordWeights, filenameDocTopicMixtures ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		self.logger.info( 'Importing a MALLET topic model as a web2py application...'                        )
 		self.logger.info( '         app = %s', self.app_path                                                 )
-		self.logger.info( '       model = %s', self.model_path                                               )
+		self.logger.info( '       model = %s', modelPath                                                     )
 		self.logger.info( ' topic-words = %s', filenameTopicWordWeights                                      )
 		self.logger.info( '  doc-topics = %s', filenameDocTopicMixtures                                      )
 		self.logger.info( '--------------------------------------------------------------------------------' )
@@ -52,11 +51,11 @@ class ImportMallet( object ):
 			self.logger.info( 'Setting up __init__.py' )
 			os.system( 'touch {}'.format( filename ) )
 		
-		self.logger.info( 'Reading topic-term matrix: %s/%s', self.model_path, filenameTopicWordWeights )
-		self.termSet, self.topicSet, self.termFreqs, self.topicFreqs, self.topicsAndTerms = self.ExtractTopicWordWeights( filenameTopicWordWeights )
+		self.logger.info( 'Reading topic-term matrix: %s/%s', modelPath, filenameTopicWordWeights )
+		self.termSet, self.topicSet, self.termFreqs, self.topicFreqs, self.topicsAndTerms = self.ExtractTopicWordWeights( modelPath, filenameTopicWordWeights )
 		
-		self.logger.info( 'Reading doc-topic matrix: %s/%s', self.model_path, filenameDocTopicMixtures )
-		self.docSet, self.docIDs, self.docsAndTopics = self.ExtractDocTopicMixtures( filenameDocTopicMixtures )
+		self.logger.info( 'Reading doc-topic matrix: %s/%s', modelPath, filenameDocTopicMixtures )
+		self.docSet, self.docIDs, self.docsAndTopics = self.ExtractDocTopicMixtures( modelPath, filenameDocTopicMixtures )
 		
 		self.logger.info( 'Preparing output data...' )
 		self.Package()
@@ -70,14 +69,14 @@ class ImportMallet( object ):
 		
 		self.logger.info( '--------------------------------------------------------------------------------' )
 	
-	def ExtractTopicWordWeights( self, filename ):
+	def ExtractTopicWordWeights( self, model_path, filename ):
 		termSet = set()
 		topicSet = set()
 		termFreqs = {}
 		topicFreqs = {}
 		topicsAndTerms = {}
 		
-		filename = '{}/{}'.format( self.model_path, filename )
+		filename = '{}/{}'.format( model_path, filename )
 		with open( filename, 'r' ) as f:
 			lines = f.read().decode( 'utf-8' ).splitlines()
 			for line in lines:
@@ -98,14 +97,14 @@ class ImportMallet( object ):
 		
 		return termSet, topicSet, termFreqs, topicFreqs, topicsAndTerms
 	
-	def ExtractDocTopicMixtures( self, filename ):
+	def ExtractDocTopicMixtures( self, model_path, filename ):
 		docSet = set()
 		topicSet = set()
 		docIDs = {}
 		topicFreqs = {}
 		docsAndTopics = {}
 		
-		filename = '{}/{}'.format( self.model_path, filename )
+		filename = '{}/{}'.format( model_path, filename )
 		header = None
 		with open( filename, 'r' ) as f:
 			lines = f.read().decode( 'utf-8' ).splitlines()
@@ -221,10 +220,10 @@ def main():
 	args = parser.parse_args()
 	
 	ImportMallet(
-		model_path = args.model_path,
 		app_name = args.app_name,
 		logging_level = args.logging
 	).execute(
+		args.model_path,
 		args.topic_words,
 		args.doc_topics
 	)
