@@ -6,15 +6,13 @@ from lda import LDA
 def index():
 	core = TermiteCore( request, response )
 	lda = LDA( request )
-	params = lda.GetParams()
-	return core.GenerateResponse( params )
+	return core.GenerateResponse( lda.params )
 
 def DocIndex():
 	core = TermiteCore( request, response )
 	lda = LDA( request )
-	params = lda.GetParams()
-	docIndex, docMaxCount = lda.GetDocIndex( params )
-	return core.GenerateResponse( params, {
+	docIndex, docMaxCount = lda.GetDocIndex()
+	return core.GenerateResponse( lda.params, {
 		'docCount' : len(docIndex),
 		'docMaxCount' : docMaxCount,
 		'DocIndex' : docIndex
@@ -23,9 +21,8 @@ def DocIndex():
 def TermIndex():
 	core = TermiteCore( request, response )
 	lda = LDA( request )
-	params = lda.GetParams()
-	termIndex, termMaxCount = lda.GetTermIndex( params )
-	return core.GenerateResponse( params, {
+	termIndex, termMaxCount = lda.GetTermIndex()
+	return core.GenerateResponse( lda.params, {
 		'termCount' : len(termIndex),
 		'termMaxCount' : termMaxCount,
 		'TermIndex' : termIndex
@@ -34,9 +31,8 @@ def TermIndex():
 def TopicIndex():
 	core = TermiteCore( request, response )
 	lda = LDA( request )
-	params = lda.GetParams()
-	topicIndex, topicMaxCount = lda.GetTopicIndex( params )
-	return core.GenerateResponse( params, {
+	topicIndex, topicMaxCount = lda.GetTopicIndex()
+	return core.GenerateResponse( lda.params, {
 		'topicCount' : len(topicIndex),
 		'topicMaxCount' : topicMaxCount,
 		'TopicIndex' : topicIndex
@@ -45,11 +41,10 @@ def TopicIndex():
 def TermTopicMatrix():
 	core = TermiteCore( request, response )
 	lda = LDA( request )
-	params = lda.GetParams()
-	termIndex, termMaxCount = lda.GetTermIndex( params )
-	topicIndex, topicMaxCount = lda.GetTopicIndex( params )
-	termTopicMatrix = lda.GetTermTopicMatrix( params )
-	return core.GenerateResponse( params, {
+	termIndex, termMaxCount = lda.GetTermIndex()
+	topicIndex, topicMaxCount = lda.GetTopicIndex()
+	termTopicMatrix = lda.GetTermTopicMatrix()
+	return core.GenerateResponse( lda.params, {
 		'termCount' : len(termIndex),
 		'termMaxCount' : termMaxCount,
 		'topicCount' : len(topicIndex),
@@ -62,11 +57,10 @@ def TermTopicMatrix():
 def DocTopicMatrix():
 	core = TermiteCore( request, response )
 	lda = LDA( request )
-	params = lda.GetParams()
-	docIndex, docMaxCount = lda.GetDocIndex( params )
-	topicIndex, topicMaxCount = lda.GetTopicIndex( params )
-	docTopicMatrix = lda.GetDocTopicMatrix( params )
-	return core.GenerateResponse( params, {
+	docIndex, docMaxCount = lda.GetDocIndex()
+	topicIndex, topicMaxCount = lda.GetTopicIndex()
+	docTopicMatrix = lda.GetDocTopicMatrix()
+	return core.GenerateResponse( lda.params, {
 		'docCount' : len(docIndex),
 		'docMaxCount' : docMaxCount,
 		'topicCount' : len(topicIndex),

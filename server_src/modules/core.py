@@ -33,11 +33,11 @@ class TermiteCore:
 						folders.append( folder )
 			folders = sorted( folders )
 			return folders
-
+		
 		def GetModels( dataset, model ):
 			if dataset == 'init':
 				return None
-				
+			
 			app_data_path = '{}/data'.format( self.request.folder )
 			folders = []
 			for folder in os.listdir( app_data_path ):
@@ -52,7 +52,7 @@ class TermiteCore:
 				return None
 			if model == 'default':
 				return None
-
+			
 			if model == 'lda':
 				return [
 					'DocIndex',
@@ -129,7 +129,7 @@ class TermiteCore:
 			'now' : str( self.request.now )
 		}
 		return json.dumps( info, encoding = 'utf-8', indent = 2, sort_keys = True )
-
+	
 	
 	def GenerateNormalResponse( self, params, keysAndValues = {} ):
 		data = {

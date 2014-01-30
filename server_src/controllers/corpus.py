@@ -6,12 +6,10 @@ from corpus import Corpus
 def index():
 	core = TermiteCore( request, response )
 	corpus = Corpus( request )
-	params = corpus.GetParams()
-	return core.GenerateResponse( params )
+	return core.GenerateResponse( corpus.params )
 
 def DocMeta():
 	core = TermiteCore( request, response )
 	corpus = Corpus( request )
-	params = corpus.GetParams()
-	results = corpus.GetDocMeta( params )
-	return core.GenerateResponse( params, results )
+	results = corpus.GetDocMeta()
+	return core.GenerateResponse( corpus.params, results )

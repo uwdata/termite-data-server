@@ -6,7 +6,8 @@ import json
 class Corpus:
 	def __init__( self, request ):
 		self.request = request
-		
+		self.params = self.GetParams()
+	
 	def GetParams( self ):
 		def GetNonNegativeInteger( key, defaultValue ):
 			try:
@@ -17,13 +18,13 @@ class Corpus:
 					return 0
 			except:
 				return defaultValue
-
+		
 		def GetString( key, defaultValue ):
 			if key in self.request.vars:
 				return self.request.vars[ key ]
 			else:
 				return defaultValue
-
+		
 		params = {
 			'searchLimit' : GetNonNegativeInteger( 'searchLimit', 100 ),
 			'searchOffset' : GetNonNegativeInteger( 'searchOffset', 0 ),
@@ -31,18 +32,18 @@ class Corpus:
 			'searchOrdering' : GetString( 'searchOrdering', '' )
 		}
 		return params
-
-	def GetDocMeta( self, params ):
+	
+	def GetDocMeta( self ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'doc-meta.json' )
 		with open( filename ) as f:
 			content = json.load( f, encoding = 'utf-8' )
-
-			# get params, setup results
+			
+			# get self.params, setup results
 			results = {}
-			searchText = params["searchText"]
-			searchLimit = params["searchLimit"]
-			searchOffset = params["searchOffset"]
-
+			searchText = self.params["searchText"]
+			searchLimit = self.params["searchLimit"]
+			searchOffset = self.params["searchOffset"]
+			
 			matchCount = 0
 			keys = sorted(content.keys())
 			for index in range(len(keys)):
