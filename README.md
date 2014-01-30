@@ -13,8 +13,8 @@ Topic modeling
 --------------
 
 Currently, this tool comes with scripts for training and importing:
-  * [MALLET Topic Models](http://mallet.cs.umass.edu)
-  * [Gensim](http://radimrehurek.com/gensim/)
+  * [MALLET topic models](http://mallet.cs.umass.edu)
+  * [Gensim topic models](http://radimrehurek.com/gensim/)
 
 We are in the process of adding support for:
   * [Interactive Topic Modeling](http://github.com/uwdata/termite-treetm)
@@ -41,13 +41,13 @@ Demo data and topic models
 
 Two demo scripts are included in this repository.
 
-Executing the following command will download the 20newsgroups dataset (18828 documents), build a LDA topic model with 20 latent topics, and launch the web server.
+Executing the following command will download the 20newsgroups dataset (18828 documents), build a LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
 ./demo-20newsgroups.sh
 ```
 
-Executing the following command will download the InfoVis dataset (449 documents with metadata), build a LDA topic model with 20 latent topics, and launch the web server.
+Executing the following command will download the InfoVis dataset (449 documents with metadata), build a LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
 ./demo-infovis.sh
