@@ -12,9 +12,9 @@ This repository contains the server component for processing topic models and ho
 Topic modeling
 --------------
 
-Currently, this tool comes with scripts for training and importing:
-  * [MALLET topic models](http://mallet.cs.umass.edu)
-  * [Gensim topic models](http://radimrehurek.com/gensim/)
+Currently, this tool comes with scripts for training topic models in, and importing from:
+  * [MALLET](http://mallet.cs.umass.edu)
+  * [Gensim](http://radimrehurek.com/gensim/)
 
 We are in the process of adding support for:
   * [Interactive Topic Modeling](http://github.com/uwdata/termite-treetm)
