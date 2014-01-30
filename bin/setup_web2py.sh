@@ -56,8 +56,11 @@ function __setup_web2py__ {
 		
 		__create_folder__ $TOOLS_SUBPATH/applications/init "    "
 		echo "    Setting up init app..."
-		ln -s ../../../../landing_src/controllers $TOOLS_SUBPATH/applications/init/controllers
+		touch $TOOLS_SUBPATH/applications/init/__init__.py
 		ln -s ../../../../landing_src/views $TOOLS_SUBPATH/applications/init/views
+		ln -s ../../../../landing_src/models $TOOLS_SUBPATH/applications/init/models
+		ln -s ../../../../landing_src/controllers $TOOLS_SUBPATH/applications/init/controllers
+		ln -s ../../../../landing_src/modules $TOOLS_SUBPATH/applications/init/modules
 		ln -s ../../../../landing_src/static $TOOLS_SUBPATH/applications/init/static
 	else
 		echo "    Already available: $TOOLS_SUBPATH"

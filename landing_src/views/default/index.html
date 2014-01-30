@@ -1,30 +1,7 @@
 {{extend 'template.html'}}
-
-<script type="text/javascript">
-var onSelectDataset = function( srcElement ) {
-	if ( srcElement.value !== "NONE" ) {
-		window.location.href = "http://{{=server_identifier}}/" + srcElement.value;
-	}
-}
-</script>
-
-<div class="head">
-	<div class="title">Web Server for Topic Models</div>
-	<div class="sep">http://</div>
-	<div class="subtitle"><a href="http://{{=server_identifier}}">{{=server_identifier}}</a></div>
-	<div class="sep">/</div>
-	<div class="subtitle">
-		<select onchange="onSelectDataset(this)">
-			<option value="NONE">&mdash; Available Datasets &mdash;</option>
-			{{for value in dataset_identifiers:}}
-			<option value="{{=value}}">{{=value}}</option>
-			{{pass}}
-		</select>
-	</div>
-</div>
+{{include 'server.html'}}
 
 <div class="info">
-
 	<div class="heading">Termite | Topic Model Visualization</div>
 	<div class="content">Termite is a visualization tool for inspecting the output of statistical topic models. The tool contains two components:</div>
 	<div class="content" style="margin-left:10px;margin-top:5px">(1) a web server for hosting the content of a topic model</div>

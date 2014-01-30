@@ -10,6 +10,7 @@ from gensim import corpora, models
 
 APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'tools/web2py'
+SUBFOLDERS = [ 'controllers', 'views', 'static', 'modules', 'models' ]
 
 class ImportGensim( object ):
 	
@@ -17,10 +18,7 @@ class ImportGensim( object ):
 		self.dictionary_filename = dictionary_filename
 		self.model_filename = model_filename
 		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
-		self.app_data_lda_path = '{}/{}/data/lda'.format( APPS_ROOT, app_name )
-		self.app_controller_path = '{}/{}/controllers'.format( APPS_ROOT, app_name )
-		self.app_views_path = '{}/{}/views'.format( APPS_ROOT, app_name )
-		self.app_static_path = '{}/{}/static'.format( APPS_ROOT, app_name )
+		self.app_data_path = '{}/{}/data/lda'.format( APPS_ROOT, app_name )
 		self.web2py_app_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
 		self.logger = logging.getLogger( 'ImportGensim' )
 		self.logger.setLevel( logging_level )
@@ -32,34 +30,31 @@ class ImportGensim( object ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		self.logger.info( 'Importing a gensim topic model as a web2py application...'                        )
 		self.logger.info( '         app = %s', self.app_path                                                 )
-		self.logger.info( '  dictionary = %s', self.dictionary_filename                                      )
 		self.logger.info( '       model = %s', self.model_filename                                           )
+		self.logger.info( '  dictionary = %s', self.dictionary_filename                                      )
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		
 		if not os.path.exists( self.app_path ):
 			self.logger.info( 'Creating app folder: %s', self.app_path )
 			os.makedirs( self.app_path )
-		if not os.path.exists( self.app_data_lda_path ):
-			self.logger.info( 'Creating app data folder: %s', self.app_data_lda_path )
-			os.makedirs( self.app_data_lda_path )
+		if not os.path.exists( self.app_data_path ):
+			self.logger.info( 'Creating app data folder: %s', self.app_data_path )
+			os.makedirs( self.app_data_path )
+		for subfolder in SUBFOLDERS:
+			path = '{}/{}'.format( self.app_path, subfolder )
+			if not os.path.exists( path ):
+				self.logger.info( 'Setting up app %s: %s', subfolder, path )
+				os.system( 'ln -s ../../server_src/{} {}/{}'.format( subfolder, self.app_path, subfolder ) )
+		filename = '{}/__init__.py'.format( self.app_path )
+		if not os.path.exists( filename ):
+			self.logger.info( 'Setting up __init__.py' )
+			os.system( 'touch {}'.format( filename ) )
 		
 		self.logger.info( 'Reading from %s, %s', self.dictionary_filename, self.model_filename )
 		self.ExtractGensimModel()
 		
-		self.logger.info( 'Writing data to disk: %s', self.app_data_lda_path )
+		self.logger.info( 'Writing data to disk: %s', self.app_data_path )
 		self.SaveToDisk()
-		
-		if not os.path.exists( self.app_controller_path ):
-			self.logger.info( 'Setting up app controllers: %s', self.app_controller_path )
-			os.system( 'ln -s ../../server_src/controllers {}'.format( self.app_controller_path ) )
-		
-		if not os.path.exists( self.app_views_path ):
-			self.logger.info( 'Setting up app views: %s', self.app_views_path )
-			os.system( 'ln -s ../../server_src/views {}'.format( self.app_views_path ) )
-		
-		if not os.path.exists( self.app_static_path ):
-			self.logger.info( 'Setting up app static folder: %s', self.app_static_path )
-			os.system( 'ln -s ../../server_src/static {}'.format( self.app_static_path ) )
 		
 		if not os.path.exists( self.web2py_app_path ):
 			self.logger.info( 'Adding app to web2py server: %s', self.web2py_app_path )
@@ -99,24 +94,24 @@ class ImportGensim( object ):
 				self.termTopicMatrix[ termID ][ n ] = freq
 
 	def SaveToDisk( self ):
-		filename = '{}/doc-index.json'.format( self.app_data_lda_path )
+		filename = '{}/doc-index.json'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
-		filename = '{}/term-index.json'.format( self.app_data_lda_path )
+		filename = '{}/term-index.json'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.termIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
-		filename = '{}/topic-index.json'.format( self.app_data_lda_path )
+		filename = '{}/topic-index.json'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.topicIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
-		filename = '{}/term-topic-matrix.txt'.format( self.app_data_lda_path )
+		filename = '{}/term-topic-matrix.txt'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			for row in self.termTopicMatrix:
 				f.write( u'{}\n'.format( '\t'.join( [ str( value ) for value in row ] ) ) )
 
-		filename = '{}/doc-topic-matrix.txt'.format( self.app_data_lda_path )
+		filename = '{}/doc-topic-matrix.txt'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			for row in self.docTopicMatrix:
 				f.write( u'{}\n'.format( '\t'.join( [ str( value ) for value in row ] ) ) )

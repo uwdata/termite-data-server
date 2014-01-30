@@ -1,0 +1,38 @@
+<script type="text/javascript">
+var onSelectDataset = function( srcElement ) {
+	if ( srcElement.value !== "NONE" )
+		window.location.href = "http://{{=configs['server']}}/" + srcElement.value;
+	else
+		window.location.href = "http://{{=configs['server']}}";
+};
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="head">
+	<div class="title">Termite Web Server</div>
+	<div class="sep">http://</div>
+	<div class="subtitle"><a href="http://{{=configs['server']}}">{{=configs['server']}}</a></div>
+	<div class="sep">/</div>
+	<div class="subtitle">
+		<select onchange="onSelectDataset(this)">
+			<option value="NONE">&mdash; Dataset &mdash;</option>
+			{{for value in configs['datasets']:}}
+			<option value="{{=value}}" {{if configs['dataset'] == value:}}selected="selected"{{pass}}>{{=value}}</option>
+			{{pass}}
+		</select>
+	</div>
+</div>
