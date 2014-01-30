@@ -21,10 +21,10 @@ We are in the process of adding support for:
   * [Structural Topic Models](http://github.com/uwdata/termite-stm)
   * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4/)
 
-Setting up this web server
---------------------------
+Set up this web server
+----------------------
 
-Run the setup script to fetch all required libraries. This script only needs to be run once when Termite Web Server for Topic Models is first downloaded onto a new machine.
+Run the following setup script to download all required libraries. This step only needs to be performed once when Termite Web Server is first downloaded onto a new machine.
 
 ```
 bin/setup.sh
@@ -36,8 +36,8 @@ To launch the web server, execute the following command. A dialogue will appear.
 bin/start_server.sh
 ```
 
-Demo data and topic models
---------------------------
+Build a topic model
+-------------------
 
 Two demo scripts are included in this repository.
 
