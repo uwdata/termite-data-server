@@ -68,6 +68,12 @@ function __import_mallet__ {
 	echo
 	bin/ImportMallet.py $MALLET_PATH $MALLET_APP
 	echo
+	echo "# Preparing data for group-in-a-box visualization..."
+	echo
+	echo "bin/PrepareGroupBox.py $CORPUS_PATH $MALLET_PATH $MALLET_APP"
+	echo
+	bin/PrepareGroupBox.py $CORPUS_PATH $MALLET_PATH $MALLET_APP
+	echo
 }
 
 function __train_treetm__ {
@@ -92,6 +98,6 @@ bin/setup.sh
 __fetch_data__
 __train_mallet__
 __import_mallet__
-__train_treetm__
-__import_treetm__
+#__train_treetm__
+#__import_treetm__
 bin/start_server.sh

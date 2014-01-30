@@ -6,7 +6,10 @@ import sys
 import argparse
 import logging
 import math
+import re
 import json
+import glob
+from ImportMallet import ImportMallet
 
 APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'tools/web2py'
@@ -14,25 +17,25 @@ TOPIC_WORD_WEIGHTS = 'topic-word-weights.txt'
 DOC_TOPIC_MIXTURES = 'doc-topic-mixtures.txt'
 SUBFOLDERS = [ 'controllers', 'views', 'static', 'modules', 'models' ]
 
-class ImportMallet( object ):
+class PrepareGroupBox( object ):
 	
 	def __init__( self, app_name, logging_level ):
+		self.app_name = app_name
 		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
-		self.app_data_path = '{}/{}/data/lda'.format( APPS_ROOT, app_name )
+		self.app_data_path = '{}/{}/data/group_box'.format( APPS_ROOT, app_name )
 		self.web2py_app_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
-		self.logger = logging.getLogger( 'ImportMallet' )
+		self.logger = logging.getLogger( 'PrepareGroupBox' )
 		self.logger.setLevel( logging_level )
 		handler = logging.StreamHandler( sys.stderr )
 		handler.setLevel( logging_level )
 		self.logger.addHandler( handler )
 	
-	def execute( self, modelPath, filenameTopicWordWeights, filenameDocTopicMixtures ):
+	def execute( self, corpus_path, model_path ):
 		self.logger.info( '--------------------------------------------------------------------------------' )
-		self.logger.info( 'Importing a MALLET topic model as a web2py application...'                        )
+		self.logger.info( 'Preparing term co-occurrence stats "%s"', self.app_name                           )
 		self.logger.info( '         app = %s', self.app_path                                                 )
-		self.logger.info( '       model = %s', modelPath                                                     )
-		self.logger.info( ' topic-words = %s', filenameTopicWordWeights                                      )
-		self.logger.info( '  doc-topics = %s', filenameDocTopicMixtures                                      )
+		self.logger.info( '      corpus = %s', corpus_path                                                   )
+		self.logger.info( '       model = %s', model_path                                                    )
 		self.logger.info( '--------------------------------------------------------------------------------' )
 		
 		if not os.path.exists( self.app_path ):
@@ -51,12 +54,21 @@ class ImportMallet( object ):
 			self.logger.info( 'Setting up __init__.py' )
 			os.system( 'touch {}'.format( filename ) )
 		
-		self.logger.info( 'Reading topic-term matrix: %s/%s', modelPath, filenameTopicWordWeights )
-		self.termSet, self.topicSet, self.termFreqs, self.topicFreqs, self.topicsAndTerms = self.ExtractTopicWordWeights( modelPath, filenameTopicWordWeights )
+		self.logger.info( 'Reading topic-term matrix: %s/%s', model_path, TOPIC_WORD_WEIGHTS )
+		self.termSet, self.topicSet, self.termFreqs, self.topicFreqs, self.topicsAndTerms = self.ExtractTopicWordWeights( model_path, TOPIC_WORD_WEIGHTS )
+
+		self.logger.info( 'Reading doc-topic matrix: %s/%s', model_path, DOC_TOPIC_MIXTURES )
+		self.docSet, self.docIDs, self.docsAndTopics = self.ExtractDocTopicMixtures( model_path, DOC_TOPIC_MIXTURES )
 		
-		self.logger.info( 'Reading doc-topic matrix: %s/%s', modelPath, filenameDocTopicMixtures )
-		self.docSet, self.docIDs, self.docsAndTopics = self.ExtractDocTopicMixtures( modelPath, filenameDocTopicMixtures )
+		self.logger.info( 'Reading corpus...' )
+		self.docsAndTokens = self.LoadCorpus( corpus_path )
+
+		self.logger.info( 'Computing term co-occurrence...' )
+		self.ComputeTermCooccurrence()
 		
+		self.logger.info( 'Computing topic co-occurrence...' )
+		self.ComputeTopicCooccurrence()
+
 		self.logger.info( 'Preparing output data...' )
 		self.Package()
 		
@@ -66,16 +78,64 @@ class ImportMallet( object ):
 		if not os.path.exists( self.web2py_app_path ):
 			self.logger.info( 'Adding app to web2py server: %s', self.web2py_app_path )
 			os.system( 'ln -s ../../../{} {}'.format( self.app_path, self.web2py_app_path ) )
-		
+
 		self.logger.info( '--------------------------------------------------------------------------------' )
 	
+	def LoadCorpus( self, corpus_path ):
+		docsAndTokens = {}
+		pattern = re.compile( r'[a-zA-Z]+' )
+		if os.path.exists( corpus_path ):
+			if os.path.isdir( corpus_path ):
+				filenames = glob.glob( '{}/*/*'.format( corpus_path ) )
+				for filename in filenames:
+					with open( filename, 'r' ) as f:
+						docContent = f.read().decode( 'utf-8', 'ignore' )
+						tokens = pattern.findall( docContent )
+						docsAndTokens[ filename ] = [ token.lower() for token in tokens if len(token) >= 3 ]
+			else:
+				with open( corpus_path, 'r' ) as f:
+					for line in f:
+						line = line[:-1].decode( 'utf-8' )
+						docID, docContent = line.split( '\t' )
+						tokens = pattern.findall( docContent )
+						docsAndTokens[ docID ] = [ token.lower() for token in tokens if len(token) >= 3 ]
+		return docsAndTokens
+						
+	def ComputeTermCooccurrence( self ):
+		terms = sorted( self.termSet )
+		matrix = {}
+		for docID, tokens in self.docsAndTokens.iteritems():
+			for firstTerm in tokens:
+				for secondTerm in tokens:
+					if firstTerm not in matrix:
+						matrix[firstTerm] = {}
+					if secondTerm not in matrix[firstTerm]:
+						matrix[firstTerm][secondTerm] = 0.0
+					matrix[firstTerm][secondTerm] += 1.0
+		filename = '{}/term-cooccurrence.json'.format( self.app_data_path )
+		with open( filename, 'w' ) as f:
+			json.dump( matrix, f, encoding = 'utf-8' )
+
+	def ComputeTopicCooccurrence( self ):
+		topics = sorted( self.topicSet )
+
+		matrix = [ [0.0]*len(topics) for i in range(len(topics)) ]
+		for docID, topicMixture in self.docsAndTopics.iteritems():
+			for i, firstTopic in enumerate(topics):
+				for j, secondTopic in enumerate(topics):
+					if firstTopic in topicMixture and secondTopic in topicMixture:
+						matrix[i][j] += topicMixture[firstTopic] * topicMixture[secondTopic]
+		filename = '{}/topic-cooccurrence.json'.format( self.app_data_path )
+		with open( filename, 'w' ) as f:
+			json.dump( matrix, f, encoding = 'utf-8' )
+		
 	def ExtractTopicWordWeights( self, model_path, filename ):
 		termSet = set()
 		topicSet = set()
 		termFreqs = {}
 		topicFreqs = {}
 		topicsAndTerms = {}
-		
+
 		filename = '{}/{}'.format( model_path, filename )
 		with open( filename, 'r' ) as f:
 			lines = f.read().decode( 'utf-8' ).splitlines()
@@ -90,20 +150,20 @@ class ImportMallet( object ):
 				if term not in termSet:
 					termSet.add( term )
 					termFreqs[ term ] = 0.0
-				
+
 				topicsAndTerms[ topic ][ term ] = value
 				topicFreqs[ topic ] += value
 				termFreqs[ term ] += value
-		
+
 		return termSet, topicSet, termFreqs, topicFreqs, topicsAndTerms
-	
+
 	def ExtractDocTopicMixtures( self, model_path, filename ):
 		docSet = set()
 		topicSet = set()
 		docIDs = {}
 		topicFreqs = {}
 		docsAndTopics = {}
-		
+
 		filename = '{}/{}'.format( model_path, filename )
 		header = None
 		with open( filename, 'r' ) as f:
@@ -129,11 +189,11 @@ class ImportMallet( object ):
 							topicFreqs[ topic ] = 0.0
 						docsAndTopics[ doc ][ topic ] = value
 						topicFreqs[ topic ] += value
-		
+
 		assert( len(self.topicSet) == len(topicSet) )
 		assert( len(self.topicFreqs) == len(topicFreqs) )
 		return docSet, docIDs, docsAndTopics
-	
+
 	def Package( self ):
 		docs = sorted( self.docSet )
 		terms = sorted( self.termSet )
@@ -143,7 +203,7 @@ class ImportMallet( object ):
 		self.topicIndex = [ None ] * len( topics )
 		self.termTopicMatrix = [ None ] * len( terms )
 		self.docTopicMatrix = [ None ] * len( docs )
-		
+
 		for n, doc in enumerate( docs ):
 			self.docIndex[n] = {
 				'index' : n,
@@ -171,47 +231,32 @@ class ImportMallet( object ):
 			for topic, value in self.docsAndTopics[ doc ].iteritems():
 				row[ topic ] = value
 			self.docTopicMatrix[ doc ] = row
-		
+
 	def SaveToDisk( self ):
 		filename = '{}/doc-index.json'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/doc-index.txt'.format( self.app_data_path )
-		with open( filename, 'w' ) as f:
-			f.write( u'{}\t{}\n'.format( 'DocIndex', 'DocID' ) )
-			for d in self.docIndex:
-				f.write( u'{}\t{}\n'.format( d['index'], d['docID'] ) )
-		
+
 		filename = '{}/term-index.json'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.termIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-index.txt'.format( self.app_data_path )
-		with open( filename, 'w' ) as f:
-			f.write( u'{}\n'.format( 'TermIndex', 'TermText' ) )
-			for d in self.termIndex:
-				f.write( u'{}\n'.format( d['index'], d['text'] ).encode( 'utf-8' ) )
-		
+
 		filename = '{}/topic-index.json'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( self.topicIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/topic-index.txt'.format( self.app_data_path )
-		with open( filename, 'w' ) as f:
-			f.write( u'{}\t{}\n'.format( 'TopicIndex', 'TopicFreq' ) )
-			for d in self.topicIndex:
-				f.write( u'{}\t{}\n'.format( d['index'], d['freq'] ).encode( 'utf-8' ) )
-		
+
 		filename = '{}/term-topic-matrix.txt'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			for row in self.termTopicMatrix:
 				f.write( u'{}\n'.format( '\t'.join( [ str( value ) for value in row ] ) ) )
-		
+
 		filename = '{}/doc-topic-matrix.txt'.format( self.app_data_path )
 		with open( filename, 'w' ) as f:
 			for row in self.docTopicMatrix:
 				f.write( u'{}\n'.format( '\t'.join( [ str( value ) for value in row ] ) ) )
-
 def main():
-	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
+	parser = argparse.ArgumentParser( description = 'Prepare a MALLET topic model for group-in-a-box visualization.' )
+	parser.add_argument( 'corpus_path'  , type = str,                               help = 'Text corpus path'                           )
 	parser.add_argument( 'model_path'   , type = str,                               help = 'MALLET topic model path.'                   )
 	parser.add_argument( 'app_name'     , type = str,                               help = 'Web2py application identifier'              )
 	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.'    )
@@ -219,13 +264,12 @@ def main():
 	parser.add_argument( '--logging'    , type = int, default = 20                , help = 'Override default logging level.'            )
 	args = parser.parse_args()
 	
-	ImportMallet(
+	PrepareGroupBox(
 		app_name = args.app_name,
 		logging_level = args.logging
 	).execute(
-		args.model_path,
-		args.topic_words,
-		args.doc_topics
+		model_path = args.model_path,
+		corpus_path = args.corpus_path
 	)
 
 if __name__ == '__main__':
