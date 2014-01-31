@@ -23,8 +23,8 @@ function __create_folder__ {
 }
 
 function __setup_mallet__ {
-	EXTERNALS_SUBPATH=$EXTERNALS_PATH/mallet-2.0.7
-	TOOLS_SUBPATH=$TOOLS_PATH/mallet-2.0.7
+	EXTERNALS_SUBPATH=$EXTERNALS_PATH/mallet
+	TOOLS_SUBPATH=$TOOLS_PATH/mallet
 
 	echo "# Downloading MALLET (MAchine Learning for LanguagE Toolkit)..."
 	if [ ! -f "$EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz" ]
