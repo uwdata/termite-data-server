@@ -12,7 +12,7 @@ import sqlite3
 APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'tools/web2py'
 CORPUS_WRITER = 'utils/mallet/CorpusWriter.jar'
-SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules' ]
+SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules', 'databases' ]
 
 class ImportCorpus( object ):
 	

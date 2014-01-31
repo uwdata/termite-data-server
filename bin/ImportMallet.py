@@ -12,7 +12,7 @@ APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'tools/web2py'
 TOPIC_WORD_WEIGHTS = 'topic-word-weights.txt'
 DOC_TOPIC_MIXTURES = 'doc-topic-mixtures.txt'
-SUBFOLDERS = [ 'controllers', 'views', 'static', 'modules', 'models' ]
+SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules', 'databases' ]
 
 class ImportMallet( object ):
 	
@@ -71,7 +71,7 @@ class ImportMallet( object ):
 			lines = f.read().decode( 'utf-8' ).splitlines()
 			for line in lines:
 				topic, term, value = line.split( '\t' )
-				topic = int( topic, 10 )
+				topic = topic.strip()
 				value = float( value )
 				if topic not in topicSet:
 					topicSet.add( topic )
@@ -100,7 +100,7 @@ class ImportMallet( object ):
 				else:
 					fields = line.split( '\t' )
 					docID = fields[1]
-					topicKeys = [ int(field) for n, field in enumerate(fields[2:]) if n == 0 ]
+					topicKeys = [ field.strip() for n, field in enumerate(fields[2:]) if n == 0 ]
 					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n == 1 ]
 					for n in range(len(topicKeys)):
 						topic = topicKeys[n]
@@ -117,7 +117,7 @@ class ImportMallet( object ):
 		self.logger.info( 'Writing data to disk: %s', self.app_data_path )
 		docs = sorted( docSet )
 		terms = sorted( termSet, key = lambda x : -termFreqs[x] )
-		topics = sorted( topicSet )
+		topics = sorted( topicSet, key = lambda x : int(x) )
 		docIndex = [ None ] * len( docs )
 		termIndex = [ None ] * len( terms )
 		topicIndex = [ None ] * len( topics )
