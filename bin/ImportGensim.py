@@ -118,9 +118,9 @@ class ImportGensim( object ):
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
+	parser.add_argument( 'app_name'   , type = str,               help = 'Web2py application identifier'              )
 	parser.add_argument( 'dictionary' , type = str,               help = 'File containing a gensim dictionary'        )
 	parser.add_argument( 'model'      , type = str,               help = 'File containing a gensim LDA model'         )
-	parser.add_argument( 'app_name'   , type = str,               help = 'Web2py application identifier'              )
 	parser.add_argument( '--logging'  , type = int, default = 20, help = 'Override default logging level.'            )
 	args = parser.parse_args()
 	

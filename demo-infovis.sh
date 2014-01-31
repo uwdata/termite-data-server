@@ -64,22 +64,22 @@ function __train_mallet__ {
 function __import_mallet__ {
 	echo "# Importing a MALLET LDA topic model..."
 	echo
-	echo "bin/ImportMallet.py $MALLET_PATH $MALLET_APP"
+	echo "bin/ImportMallet.py $MALLET_APP $MALLET_PATH"
 	echo
-	bin/ImportMallet.py $MALLET_PATH $MALLET_APP
+	bin/ImportMallet.py $MALLET_APP $MALLET_PATH
 	echo
-	echo "bin/ImportCorpus.py $MALLET_APP $CORPUS_PATH/infovis-papers-meta.txt"
+	echo "bin/ImportCorpus.py $MALLET_APP --meta $CORPUS_PATH/infovis-papers-meta.txt --terms $MALLET_PATH/corpus.mallet"
 	echo
-	bin/ImportCorpus.py $MALLET_APP $CORPUS_PATH/infovis-papers-meta.txt
+	bin/ImportCorpus.py $MALLET_APP --meta $CORPUS_PATH/infovis-papers-meta.txt --terms $MALLET_PATH/corpus.mallet
 	echo
 }
 
 function __train_treetm__ {
 	echo "# Training a TreeTM model..."
 	echo
-	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 100 --is_file"
+	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 100"
 	echo
-	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 100 --is_file
+	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 100
 }
 
 function __import_treetm__ {
@@ -106,9 +106,9 @@ function __train_gensim__ {
 function __import_gensim__ {
 	echo "# Importing a gensim LDA topic model..."
 	echo
-	echo "bin/ImportGensim.py $GENSIM_PATH/corpus.dict $GENSIM_PATH/output.model $GENSIM_APP"
+	echo "bin/ImportGensim.py $GENSIM_APP $GENSIM_PATH/corpus.dict $GENSIM_PATH/output.model"
 	echo
-	bin/ImportGensim.py $GENSIM_PATH/corpus.dict $GENSIM_PATH/output.model $GENSIM_APP
+	bin/ImportGensim.py $GENSIM_APP $GENSIM_PATH/corpus.dict $GENSIM_PATH/output.model
 	echo
 }
 

@@ -29,9 +29,11 @@ class LDA:
 		}
 		return params
 	
-	def GetDocIndex( self ):
-		docLimit = self.params['docLimit']
-		docOffset = self.params['docOffset']
+	def GetDocIndex( self, params = None ):
+		if params is None:
+			params = self.params
+		docLimit = params['docLimit']
+		docOffset = params['docOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'doc-index.json' )
 		with open( filename ) as f:
 			content = json.load( f, encoding = 'utf-8' )
@@ -39,9 +41,11 @@ class LDA:
 		content = content[docOffset:docOffset+docLimit]
 		return content, maxCount
 	
-	def GetTermIndex( self ):
-		termLimit = self.params['termLimit']
-		termOffset = self.params['termOffset']
+	def GetTermIndex( self,	params = None ):
+		if params is None:
+			params = self.params
+		termLimit = params['termLimit']
+		termOffset = params['termOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'term-index.json' )
 		with open( filename ) as f:
 			content = json.load( f, encoding = 'utf-8' )
@@ -49,9 +53,11 @@ class LDA:
 		content = content[termOffset:termOffset+termLimit]
 		return content, maxCount
 	
-	def GetTopicIndex( self ):
-		topicLimit = self.params['topicLimit']
-		topicOffset = self.params['topicOffset']
+	def GetTopicIndex( self, params = None ):
+		if params is None:
+			params = self.params
+		topicLimit = params['topicLimit']
+		topicOffset = params['topicOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'topic-index.json' )
 		with open( filename ) as f:
 			content = json.load( f, encoding = 'utf-8' )
@@ -59,11 +65,13 @@ class LDA:
 		content = content[topicOffset:topicOffset+topicLimit]
 		return content, maxCount
 	
-	def GetTermTopicMatrix( self ):
-		termLimit = self.params['termLimit']
-		termOffset = self.params['termOffset']
-		topicLimit = self.params['topicLimit']
-		topicOffset = self.params['topicOffset']
+	def GetTermTopicMatrix( self, params = None ):
+		if params is None:
+			params = self.params
+		termLimit = params['termLimit']
+		termOffset = params['termOffset']
+		topicLimit = params['topicLimit']
+		topicOffset = params['topicOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'term-topic-matrix.txt' )
 		content = []
 		with open( filename ) as f:
@@ -75,11 +83,13 @@ class LDA:
 					break
 		return content
 	
-	def GetDocTopicMatrix( self ):
-		docLimit = self.params['docLimit']
-		docOffset = self.params['docOffset']
-		topicLimit = self.params['topicLimit']
-		topicOffset = self.params['topicOffset']
+	def GetDocTopicMatrix( self, params = None ):
+		if params is None:
+			params = self.params
+		docLimit = params['docLimit']
+		docOffset = params['docOffset']
+		topicLimit = params['topicLimit']
+		topicOffset = params['topicOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'doc-topic-matrix.txt' )
 		content = []
 		with open( filename ) as f:

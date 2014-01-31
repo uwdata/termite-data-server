@@ -63,7 +63,9 @@ class TermiteCore:
 				]
 			elif model == 'corpus':
 				return [
-					'DocMeta'
+					'DocMeta',
+					'TermFreqs',
+					'TermCoFreqs'
 				]
 			else:
 				return []

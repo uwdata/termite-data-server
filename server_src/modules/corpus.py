@@ -59,3 +59,15 @@ class Corpus:
 			"docMaxCount" : matchCount
 		}
 		return results
+
+	def GetTermFreqs( self ):
+		filename = os.path.join( self.request.folder, 'data/corpus', 'term-freqs.json' )
+		with open( filename ) as f:
+			content = json.load( f, encoding = 'utf-8' )
+		return content
+
+	def GetTermCoFreqs( self ):
+		filename = os.path.join( self.request.folder, 'data/corpus', 'term-co-freqs.json' )
+		with open( filename ) as f:
+			content = json.load( f, encoding = 'utf-8' )
+		return content
