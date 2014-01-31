@@ -3,8 +3,10 @@
 *.py~
 *.pyc
 *.sh~
+*.class
 externals/
 tools/
 apps/
 demo-20newsgroups/
 demo-infovis/
+utils/mallet/CorpusWriter.jar
