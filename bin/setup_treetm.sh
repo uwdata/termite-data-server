@@ -48,6 +48,7 @@ function __setup_treetm__ {
 		echo "    Uncompressing TreeTM..."
 		unzip $EXTERNALS_SUBPATH/tree-tm.zip -d $TOOLS_SUBPATH &&\
 			mv $TOOLS_SUBPATH/tree-TM/* $TOOLS_SUBPATH &&\
+			rm -rf $TOOLS_SUBPATH/__MACOSX &&\
 			rmdir $TOOLS_SUBPATH/tree-TM
 		
 		echo "    Compiling TreeTM..."
