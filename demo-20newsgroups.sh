@@ -4,7 +4,7 @@ DEMO_PATH=demo-20newsgroups
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
 MALLET_PATH=$DEMO_PATH/model-mallet
-MALLET_APP=20newsgroups_mallet
+MALLET_APP=20newsgroups
 TREETM_PATH=$DEMO_PATH/model-treetm
 TREETM_APP=20newsgroups_treetm
 
@@ -68,12 +68,6 @@ function __import_mallet__ {
 	echo
 	bin/ImportMallet.py $MALLET_PATH $MALLET_APP
 	echo
-	echo "# Preparing data for group-in-a-box visualization..."
-	echo
-	echo "bin/PrepareGroupBox.py $CORPUS_PATH $MALLET_PATH $MALLET_APP"
-	echo
-	bin/PrepareGroupBox.py $CORPUS_PATH $MALLET_PATH $MALLET_APP
-	echo
 }
 
 function __train_treetm__ {
@@ -94,10 +88,24 @@ function __import_treetm__ {
 	echo
 }
 
-bin/setup.sh
-__fetch_data__
-__train_mallet__
-__import_mallet__
-#__train_treetm__
-#__import_treetm__
+if [ $# -gt 0 ]
+then
+	MODEL=$1
+else
+	MODEL=mallet
+fi
+if [ "$MODEL" == "mallet" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup.sh
+	__fetch_data__
+	__train_mallet__
+	__import_mallet__
+elif [ "$MODEL" == "treetm" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup_web2py.sh
+	bin/setup_treetm.sh
+	__fetch_data__
+	__train_treetm__
+	__import_treetm__
+fi
 bin/start_server.sh

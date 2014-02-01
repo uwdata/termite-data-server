@@ -49,8 +49,6 @@ def TermTopicMatrix():
 		'termMaxCount' : termMaxCount,
 		'topicCount' : len(topicIndex),
 		'topicMaxCount' : topicMaxCount,
-		'TermIndex' : termIndex,
-		'TopicIndex' : topicIndex,
 		'TermTopicMatrix' : termTopicMatrix
 	})
 
@@ -65,7 +63,5 @@ def DocTopicMatrix():
 		'docMaxCount' : docMaxCount,
 		'topicCount' : len(topicIndex),
 		'topicMaxCount' : topicMaxCount,
-		'DocIndex' : docIndex,
-		'TopicIndex' : topicIndex,
 		'DocTopicMatrix' : docTopicMatrix
 	})

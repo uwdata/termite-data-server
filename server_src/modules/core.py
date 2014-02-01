@@ -63,15 +63,9 @@ class TermiteCore:
 				]
 			elif model == 'corpus':
 				return [
-					'DocMeta'
-				]
-			elif model == 'treetm':
-				return [
-					'TermTopicConstraints'
-				]
-			if model == 'group_box':
-				return [
-					'TermTopicData'
+					'DocMeta',
+					'TermFreqs',
+					'TermCoFreqs'
 				]
 			else:
 				return []

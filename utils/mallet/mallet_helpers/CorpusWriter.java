@@ -28,13 +28,11 @@ public class CorpusWriter {
 		}
 		return sb.toString();
 	}
-	public static void writeCorpusTokens(String inputFilename, String outputFilename) {
-		System.err.println("Processing mallet corpus: [" + inputFilename + "] --> [" + outputFilename + "]");
+	public static void writeCorpusTokens(String corpusFilename) {
+		System.err.println("Processing mallet corpus: [" + corpusFilename + "]");
 		try {
-			final File inputFile = new File(inputFilename);
+			final File inputFile = new File(corpusFilename);
 			final InstanceList data = InstanceList.load(inputFile);
-			final File outputFile = new File(outputFilename);
-			final PrintStream writer = new PrintStream(outputFile);
 			int count = 0;
 			for (Instance instance : data) {
 				if (count > 0 && count % 1000 == 0) {
@@ -47,22 +45,20 @@ public class CorpusWriter {
 					tokens[i] = (String) features.getObjectAtPosition(i);
 				}
 				final String tokenStr = join(tokens, " ");
-				writer.println(docID + "\t" + tokenStr);
+				System.out.println(docID + "\t" + tokenStr);
 				count++;
 			}
-			writer.close();
 			System.err.println("    finished processing all " + count + " documents!");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	public static void main(String[] args) {
-		if (args.length < 2) {
-			System.err.println("Usage: java -jar [mallet-corpus] [output-corpus]");
+		if (args.length < 1) {
+			System.err.println("Usage: java -jar [mallet-corpus]");
 			System.exit(-1);
 		}
-		final String inputFilename = args[0];
-		final String outputFilename = args[1];
-		writeCorpusTokens(inputFilename, outputFilename);
+		final String corpusFilename = args[0];
+		writeCorpusTokens(corpusFilename);
 	}
 }

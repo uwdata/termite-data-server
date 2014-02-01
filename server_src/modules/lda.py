@@ -29,9 +29,11 @@ class LDA:
 		}
 		return params
 	
-	def GetDocIndex( self ):
-		docLimit = self.params['docLimit']
-		docOffset = self.params['docOffset']
+	def GetDocIndex( self, params = None ):
+		if params is None:
+			params = self.params
+		docLimit = params['docLimit']
+		docOffset = params['docOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'doc-index.json' )
 		with open( filename ) as f:
 			content = json.load( f, encoding = 'utf-8' )
@@ -39,9 +41,11 @@ class LDA:
 		content = content[docOffset:docOffset+docLimit]
 		return content, maxCount
 	
-	def GetTermIndex( self ):
-		termLimit = self.params['termLimit']
-		termOffset = self.params['termOffset']
+	def GetTermIndex( self,	params = None ):
+		if params is None:
+			params = self.params
+		termLimit = params['termLimit']
+		termOffset = params['termOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'term-index.json' )
 		with open( filename ) as f:
 			content = json.load( f, encoding = 'utf-8' )
@@ -49,9 +53,11 @@ class LDA:
 		content = content[termOffset:termOffset+termLimit]
 		return content, maxCount
 	
-	def GetTopicIndex( self ):
-		topicLimit = self.params['topicLimit']
-		topicOffset = self.params['topicOffset']
+	def GetTopicIndex( self, params = None ):
+		if params is None:
+			params = self.params
+		topicLimit = params['topicLimit']
+		topicOffset = params['topicOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'topic-index.json' )
 		with open( filename ) as f:
 			content = json.load( f, encoding = 'utf-8' )
@@ -59,34 +65,40 @@ class LDA:
 		content = content[topicOffset:topicOffset+topicLimit]
 		return content, maxCount
 	
-	def GetTermTopicMatrix( self ):
-		termLimit = self.params['termLimit']
-		termOffset = self.params['termOffset']
-		topicLimit = self.params['topicLimit']
-		topicOffset = self.params['topicOffset']
+	def GetTermTopicMatrix( self, params = None ):
+		if params is None:
+			params = self.params
+		termIndex, _ = self.GetTermIndex( params )
+		topicIndex, _ = self.GetTopicIndex( params )
+		termSet = frozenset( d['text'] for d in termIndex )
+		topicSet = frozenset( d['index'] for d in topicIndex )
 		filename = os.path.join( self.request.folder, 'data/lda', 'term-topic-matrix.txt' )
-		content = []
 		with open( filename ) as f:
-			for termIndex, line in enumerate( f ):
-				if termOffset <= termIndex < termOffset+termLimit:
-					values = [ float(value) for value in line[:-1].split('\t') ]
-					content.append( values[topicOffset:topicOffset+topicLimit] )
-				if termIndex > termOffset+termLimit:
-					break
-		return content
+			content = json.load( f, encoding = 'utf-8' )
+		submatrix = {}
+		for term in content:
+			if term in termSet:
+				submatrix[term] = {}
+				for topic in content[term]:
+					if topic in topicSet:
+						submatrix[term][topic] = content[term][topic]
+		return submatrix
 	
-	def GetDocTopicMatrix( self ):
-		docLimit = self.params['docLimit']
-		docOffset = self.params['docOffset']
-		topicLimit = self.params['topicLimit']
-		topicOffset = self.params['topicOffset']
+	def GetDocTopicMatrix( self, params = None ):
+		if params is None:
+			params = self.params
+		docIndex, _ = self.GetDocIndex( params )
+		topicIndex, _ = self.GetTopicIndex( params )
+		docSet = frozenset( d['docID'] for d in docIndex )
+		topicSet = frozenset( d['index'] for d in topicIndex )
 		filename = os.path.join( self.request.folder, 'data/lda', 'doc-topic-matrix.txt' )
-		content = []
 		with open( filename ) as f:
-			for docIndex, line in enumerate( f ):
-				if docOffset <= docIndex < docOffset+docLimit:
-					values = [ float(value) for value in line[:-1].split('\t') ]
-					content.append( values[topicOffset:topicOffset+topicLimit] )
-				if docIndex > docOffset+docLimit:
-					break
-		return content
+			content = json.load( f, encoding = 'utf-8' )
+		submatrix = {}
+		for docID in content:
+			if docID in docSet:
+				submatrix[docID] = {}
+				for topic in content[docID]:
+					if topic in topicSet:
+						submatrix[docID][topic] = content[docID][topic]
+		return submatrix

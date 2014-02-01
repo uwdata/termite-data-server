@@ -4,9 +4,11 @@ DEMO_PATH=demo-infovis
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
 MALLET_PATH=$DEMO_PATH/model-mallet
-MALLET_APP=infovis_mallet
+MALLET_APP=infovis
 TREETM_PATH=$DEMO_PATH/model-treetm
 TREETM_APP=infovis_treetm
+GENSIM_PATH=$DEMO_PATH/model-gensim
+GENSIM_APP=infovis_gensim
 
 function __create_folder__ {
 	FOLDER=$1
@@ -50,33 +52,34 @@ function __fetch_data__ {
 	echo
 }
 
-function __train_mallet_model__ {
-	echo "# Training a MALLET LDA model..."
+function __train_mallet__ {
+	echo "# Training a MALLET LDA topic model..."
 	echo
 	echo "bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MALLET_PATH"
 	echo
 	bin/train_mallet.sh $CORPUS_PATH/infovis-papers.txt $MALLET_PATH
+	echo
 }
 
-function __import_mallet_model__ {
-	echo "# Importing a MALLET LDA model..."
+function __import_mallet__ {
+	echo "# Importing a MALLET LDA topic model..."
 	echo
-	echo "bin/ImportMallet.py $MALLET_PATH $MALLET_APP"
+	echo "bin/ImportMallet.py $MALLET_APP $MALLET_PATH"
 	echo
-	bin/ImportMallet.py $MALLET_PATH $MALLET_APP
+	bin/ImportMallet.py $MALLET_APP $MALLET_PATH
 	echo
-	echo "bin/ImportCorpus.py $MALLET_APP $CORPUS_PATH/infovis-papers-meta.txt"
+	echo "bin/ImportCorpus.py $MALLET_APP --meta $CORPUS_PATH/infovis-papers-meta.txt --terms $MALLET_PATH/corpus.mallet"
 	echo
-	bin/ImportCorpus.py $MALLET_APP $CORPUS_PATH/infovis-papers-meta.txt
+	bin/ImportCorpus.py $MALLET_APP --meta $CORPUS_PATH/infovis-papers-meta.txt --terms $MALLET_PATH/corpus.mallet
 	echo
 }
 
 function __train_treetm__ {
 	echo "# Training a TreeTM model..."
 	echo
-	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 50 --is_file"
+	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 100"
 	echo
-	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 50 --is_file
+	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 100
 }
 
 function __import_treetm__ {
@@ -92,10 +95,48 @@ function __import_treetm__ {
 	echo
 }
 
-bin/setup.sh
-__fetch_data__
-__train_mallet_model__
-__import_mallet_model__
-__train_treetm__
-__import_treetm__
+function __train_gensim__ {
+	echo "# Training a gensim LDA topic model..."
+	echo
+	echo "bin/TrainGensim.py $CORPUS_PATH/infovis-papers.txt $GENSIM_PATH"
+	echo
+	bin/TrainGensim.py $CORPUS_PATH/infovis-papers.txt $GENSIM_PATH
+	echo
+}
+function __import_gensim__ {
+	echo "# Importing a gensim LDA topic model..."
+	echo
+	echo "bin/ImportGensim.py $GENSIM_APP $GENSIM_PATH/corpus.dict $GENSIM_PATH/output.model"
+	echo
+	bin/ImportGensim.py $GENSIM_APP $GENSIM_PATH/corpus.dict $GENSIM_PATH/output.model
+	echo
+}
+
+if [ $# -gt 0 ]
+then
+	MODEL=$1
+else
+	MODEL=mallet
+fi
+if [ "$MODEL" == "mallet" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup.sh
+	__fetch_data__
+	__train_mallet__
+	__import_mallet__
+elif [ "$MODEL" == "treetm" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup_web2py.sh
+	bin/setup_treetm.sh
+	__fetch_data__
+	__train_treetm__
+	__import_treetm__
+elif [ "$MODEL" == "gensim" ] || [ "$MODEL" == "all" ]
+then
+	bin/setup_web2py.sh
+	bin/setup_gensim.sh
+	__fetch_data__
+	__train_gensim__
+	__import_gensim__
+fi
 bin/start_server.sh
