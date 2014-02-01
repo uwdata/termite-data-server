@@ -136,7 +136,8 @@ class ImportCorpus( object ):
 	
 	def ExtractCorpusTerms( self, filename ):
 		self.logger.info( '    Reading mallet corpus: %s', filename )
-		process = subprocess.Popen( "java -jar {} {}".format( CORPUS_WRITER, filename ), stdout = subprocess.PIPE, stderr = subprocess.PIPE, shell = True )
+		command = [ "java", "-jar", CORPUS_WRITER, filename ]
+		process = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.PIPE )
 		( out, err ) = process.communicate()
 		self.logger.info( err )
 		corpus = {}
