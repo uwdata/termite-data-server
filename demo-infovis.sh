@@ -80,6 +80,7 @@ function __train_treetm__ {
 	echo "bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 100"
 	echo
 	bin/TrainTreeTM.py $CORPUS_PATH/infovis-papers.txt $TREETM_PATH --iters 100
+	echo
 }
 
 function __import_treetm__ {
@@ -89,9 +90,9 @@ function __import_treetm__ {
 	echo
 	bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP
 	echo
-	echo "bin/ImportCorpus.py $TREETM_APP $CORPUS_PATH/infovis-papers-meta.txt"
+	echo "bin/ImportCorpus.py $TREETM_APP --meta $CORPUS_PATH/infovis-papers-meta.txt --terms $MALLET_PATH/corpus.mallet"
 	echo
-	bin/ImportCorpus.py $TREETM_APP $CORPUS_PATH/infovis-papers-meta.txt
+	bin/ImportCorpus.py $TREETM_APP --meta $CORPUS_PATH/infovis-papers-meta.txt --terms $MALLET_PATH/corpus.mallet
 	echo
 }
 
