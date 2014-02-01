@@ -64,9 +64,13 @@ function __train_mallet__ {
 function __import_mallet__ {
 	echo "# Importing a MALLET LDA topic model..."
 	echo
-	echo "bin/ImportMallet.py $MALLET_PATH $MALLET_APP"
+	echo "bin/ImportMallet.py $MALLET_APP $MALLET_PATH"
 	echo
-	bin/ImportMallet.py $MALLET_PATH $MALLET_APP
+	bin/ImportMallet.py $MALLET_APP $MALLET_PATH
+	echo
+	echo "bin/ImportCorpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet"
+	echo
+	bin/ImportCorpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet
 	echo
 }
 
@@ -85,6 +89,10 @@ function __import_treetm__ {
 	echo "bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP"
 	echo
 	bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP
+	echo
+	echo "bin/ImportCorpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet"
+	echo
+	bin/ImportCorpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet
 	echo
 }
 
