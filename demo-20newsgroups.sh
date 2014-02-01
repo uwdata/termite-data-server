@@ -4,7 +4,7 @@ DEMO_PATH=demo-20newsgroups
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
 MALLET_PATH=$DEMO_PATH/model-mallet
-MALLET_APP=20newsgroups
+MALLET_APP=20newsgroups_mallet
 TREETM_PATH=$DEMO_PATH/model-treetm
 TREETM_APP=20newsgroups_treetm
 
