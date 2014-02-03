@@ -12,7 +12,7 @@ APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'tools/web2py'
 TOPIC_WORD_WEIGHTS = 'topic-word-weights.txt'
 DOC_TOPIC_MIXTURES = 'doc-topic-mixtures.txt'
-SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules', 'databases' ]
+SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules' ]
 
 class ImportMallet( object ):
 	
