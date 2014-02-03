@@ -7,7 +7,7 @@ The tool contains two components:
   * A web server for processing the output of a topic model and distributing the content over the internet.
   * A client interface for visualizing the topic model in a web browser.
 
-This repository contains the server component for processing topic models and hosting the content on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca), and distributed under the BSD-3 license.
+This repository contains the server component for processing topic models and hosting the content on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca) and Ashley Jin, and distributed under the BSD-3 license.
 
 Topic modeling
 --------------
