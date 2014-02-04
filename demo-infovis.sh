@@ -11,16 +11,6 @@ TREETM_APP=infovis_stmt
 GENSIM_PATH=$DEMO_PATH/model-gensim
 GENSIM_APP=infovis_gensim
 
-function __create_folder__ {
-	FOLDER=$1
-	TAB=$2
-	if [ ! -d $FOLDER ]
-	then
-		echo "${TAB}Creating folder: $FOLDER"
-		mkdir $FOLDER
-	fi
-}
-
 function __fetch_data__ {
 	bin/fetch_infovis.sh $DEMO_PATH
 }
