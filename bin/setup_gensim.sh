@@ -29,6 +29,8 @@ function __create_folder__ {
 function __setup_gensim__ {
 	EXTERNALS_SUBPATH=$EXTERNALS_PATH/gensim-0.8.9
 	TOOLS_SUBPATH=$TOOLS_PATH/gensim-0.8.9
+	SYMLINK_SUBPATH=$TOOLS_PATH/gensim
+	SYMLINK=gensim-0.8.9
 	
 	echo "# Downloading gensim..."
 	if [ ! -f "$EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz" ]
@@ -48,6 +50,7 @@ function __setup_gensim__ {
 		echo "    Uncompressing..."
 		tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9 &&\
 			mv gensim-0.8.9/* $TOOLS_SUBPATH &&\
+			ln -s $SYMLINK $SYMLINK_SUBPATH &&\
 			rmdir gensim-0.8.9
 
 		echo "    Extracting license..."
