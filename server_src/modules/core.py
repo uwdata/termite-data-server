@@ -39,7 +39,7 @@ class TermiteCore:
 				return None
 			
 			app_data_path = '{}/data'.format( self.request.folder )
-			folders = []
+			folders = [ 'vis' ]
 			for folder in os.listdir( app_data_path ):
 				app_data_subpath = '{}/{}'.format( app_data_path, folder )
 				if os.path.isdir( app_data_subpath ):
@@ -67,6 +67,10 @@ class TermiteCore:
 					'DocMeta',
 					'TermFreqs',
 					'TermCoFreqs'
+				]
+			elif model == 'vis':
+				return [
+					'GroupInABox'
 				]
 			else:
 				return []
