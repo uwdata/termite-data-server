@@ -19,12 +19,12 @@ $(DEMO_PATH)/10newsgroups_mallet: $(DEMO_PATH)/corpus
 $(DEMO_PATH)/15newsgroups_mallet: $(DEMO_PATH)/corpus
 	bin/train_mallet.sh $(DEMO_PATH)/corpus $(DEMO_PATH)/15newsgroups_mallet 15
 	bin/import_mallet.py 15newsgroups $(DEMO_PATH)/15newsgroups_mallet
-	ln -s ../../10newsgroups_mallet/data/corpus apps/15newsgroups/data/corpus
+	cp -r apps/10newsgroups/data/corpus apps/15newsgroups/data/corpus
 
 $(DEMO_PATH)/20newsgroups_mallet: $(DEMO_PATH)/corpus
 	bin/train_mallet.sh $(DEMO_PATH)/corpus $(DEMO_PATH)/20newsgroups_mallet 20
 	bin/import_mallet.py 20newsgroups $(DEMO_PATH)/20newsgroups_mallet
-	ln -s ../../10newsgroups_mallet/data/corpus apps/20newsgroups/data/corpus
+	cp -r apps/10newsgroups/data/corpus apps/20newsgroups/data/corpus
 
 clean:
 	rm -rf $(DEMO_PATH)
