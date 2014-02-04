@@ -23,8 +23,10 @@ function __create_folder__ {
 }
 
 function __setup_mallet__ {
-	EXTERNALS_SUBPATH=$EXTERNALS_PATH/mallet
-	TOOLS_SUBPATH=$TOOLS_PATH/mallet
+	EXTERNALS_SUBPATH=$EXTERNALS_PATH/mallet-2.0.7
+	TOOLS_SUBPATH=$TOOLS_PATH/mallet-2.0.7
+	SYMLINK_SUBPATH=$TOOLS_PATH/mallet
+	SYMLINK=mallet-2.0.7
 
 	echo "# Downloading MALLET (MAchine Learning for LanguagE Toolkit)..."
 	if [ ! -f "$EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz" ]
@@ -43,6 +45,7 @@ function __setup_mallet__ {
 		echo "    Uncompressing MALLET..."
 		tar -zxf $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz mallet-2.0.7 &&\
 			mv mallet-2.0.7/* $TOOLS_SUBPATH &&\
+			ln -s $SYMLINK $SYMLINK_SUBPATH &&\
 			rmdir mallet-2.0.7
 
 		echo "    Extracting MALLET License..."

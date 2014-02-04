@@ -27,6 +27,8 @@ function __create_folder__ {
 function __setup_stmt__ {
 	EXTERNALS_SUBPATH=$EXTERNALS_PATH/stmt-0.4.0
 	TOOLS_SUBPATH=$TOOLS_PATH/stmt-0.4.0
+	SYMLINK_SUBPATH=$TOOLS_PATH/stmt
+	SYMLINK=stmt-0.4.0
 
 	echo "# Downloading STMT (Stanford Topic Modeling Toolkit)..."
 	if [ ! -f "$EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz" ]
@@ -48,6 +50,7 @@ function __setup_stmt__ {
 		__create_folder__ $TOOLS_SUBPATH "    "
 		echo "    Downloading compiled binary..."
 		curl --insecure --location http://nlp.stanford.edu/software/tmt/tmt-0.4/tmt-0.4.0.jar > $TOOLS_SUBPATH/tmt-0.4.0.jar
+		ln -s $SYMLINK $SYMLINK_SUBPATH
 	else
 		echo "    Already available: $TOOLS_SUBPATH"
 	fi
