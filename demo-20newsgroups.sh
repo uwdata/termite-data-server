@@ -11,16 +11,6 @@ TREETM_APP=20newsgroups_stmt
 GENSIM_PATH=$DEMO_PATH/model-gensim
 GENSIM_APP=20newsgroups_gensim
 
-function __create_folder__ {
-	FOLDER=$1
-	TAB=$2
-	if [ ! -d $FOLDER ]
-	then
-		echo "${TAB}Creating folder: $FOLDER"
-		mkdir $FOLDER
-	fi
-}
-
 function __fetch_data__ {
 	bin/fetch_20newsgroups.sh $DEMO_PATH
 }
