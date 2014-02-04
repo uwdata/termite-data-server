@@ -137,13 +137,11 @@ def main():
 	parser.add_argument( 'model_path'   , type = str,                               help = 'MALLET topic model path.'                   )
 	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.'    )
 	parser.add_argument( '--doc_topics' , type = str, default = DOC_TOPIC_MIXTURES, help = 'File containing doc vs. topic mixtures.'    )
-	parser.add_argument( '--topic_cooccurrence', action = 'store_const', const = True, default = False, help = 'Compute topic co-occurrence statistics' )
 	args = parser.parse_args()
 	
 	importer = ImportMallet( app_name = args.app_name )
 	importer.ImportLDA( args.model_path, args.topic_words, args.doc_topics )
-	if args.topic_cooccurrence:
-		importer.ImportTopicCooccurrence()
+	importer.ImportTopicCooccurrence()
 	importer.AddToWeb2py()
 
 if __name__ == '__main__':

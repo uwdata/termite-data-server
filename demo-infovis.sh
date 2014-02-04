@@ -27,9 +27,9 @@ function __train_mallet__ {
 function __import_mallet__ {
 	echo "# Importing a MALLET LDA topic model..."
 	echo
-	echo "bin/import_mallet.py $MALLET_APP $MALLET_PATH --topic_cooccurrence"
+	echo "bin/import_mallet.py $MALLET_APP $MALLET_PATH"
 	echo
-	bin/import_mallet.py $MALLET_APP $MALLET_PATH --topic_cooccurrence
+	bin/import_mallet.py $MALLET_APP $MALLET_PATH
 	echo
 	echo "bin/import_corpus.py $MALLET_APP --meta $CORPUS_PATH/infovis-papers-meta.txt --terms $MALLET_PATH/corpus.mallet"
 	echo
