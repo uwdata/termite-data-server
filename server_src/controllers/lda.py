@@ -65,3 +65,12 @@ def DocTopicMatrix():
 		'topicMaxCount' : topicMaxCount,
 		'DocTopicMatrix' : docTopicMatrix
 	})
+
+def TopicCooccurrence():
+	core = TermiteCore( request, response )
+	lda = LDA( request )
+	topicCooccurrence = lda.GetTopicCooccurrence()
+	return core.GenerateResponse( lda.params, {
+		'TopicCooccurrence' : topicCooccurrence
+	})
+
