@@ -1,32 +1,14 @@
 {{extend 'template.html'}}
-
-<script type="text/javascript">
-var onSelectDataset = function( srcElement ) {
-	if ( srcElement.value !== "NONE" ) {
-		window.location.href = "http://{{=server_identifier}}/" + srcElement.value;
-	}
-}
-</script>
-
-<div class="head">
-	<div class="title">Termite Web Server</div>
-	<div class="sep">http://</div>
-	<div class="subtitle"><a href="http://{{=server_identifier}}">{{=server_identifier}}</a></div>
-	<div class="sep">/</div>
-	<div class="subtitle">
-		<select onchange="onSelectDataset(this)">
-			<option value="NONE">&mdash; Available Datasets &mdash;</option>
-			{{for value in dataset_identifiers:}}
-			<option value="{{=value}}">{{=value}}</option>
-			{{pass}}
-		</select>
-	</div>
-</div>
+{{include 'server.html'}}
 
 <div class="info">
+	<div class="heading">Termite | Topic Model Visualization</div>
+	<div class="content">Termite is a visualization tool for inspecting the output of statistical topic models. The tool contains two components:</div>
+	<div class="content" style="margin-left:10px;margin-top:5px">(1) a web server for hosting the content of a topic model</div>
+	<div class="content" style="margin-left:10px;margin-top:3px">(2) a client interface for visualizing the topic model in a web browser</div>
 
-	<div class="heading">Server for Topic Model Visualization</div>
-	<div class="content">This server reads the output of <a href="http://scholar.harvard.edu/bstewart/-models-open-ended-survey-responses-applications-experiments/">structural topic models</a> and distributes the content over the internet via a RESTful interface. For more information, please visit the <a href="http://github.com/uwdata/termite-stm">Termite Web Server for STM</a> repository.</div>
+	<div class="heading">Web Server for Topic Models</div>
+	<div class="content">This is the server component for processing the output of topic models (e.g., built in <a href="http://mallet.cs.umass.edu/">MALLET</a>, etc.) and distributing the content over the internet via a RESTful interface. For more information, see the <a href="http://github.com/uwdata/termite-mallet">Termite Server GitHub repository</a>.</div>
 
 	<div class="heading">API Format</div>
 	<div class="content">All API calls are in following format.</div>
@@ -36,7 +18,7 @@ var onSelectDataset = function( srcElement ) {
 
 <div class="body">
 	<div class="heading">Server Response
-		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']}}{{=request.env['PATH_INFO']}}?format=json">Display as a JSON object</a>)</span>
+		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']+request.env['PATH_INFO']}}?format=json">Display as a JSON object</a>)</span>
 	</div>
 	<div class="content">{{=content}}</div>
 </div>

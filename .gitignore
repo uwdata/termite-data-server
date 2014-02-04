@@ -3,6 +3,7 @@
 *.py~
 *.pyc
 *.sh~
+*.class
 externals/
 tools/
 apps/

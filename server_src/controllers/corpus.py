@@ -1,52 +1,31 @@
 #!/usr/bin/env python
 
-import os
-import json
+from core import TermiteCore
+from corpus import Corpus
 
 def index():
-	return GenerateResponse()
+	core = TermiteCore( request, response )
+	corpus = Corpus( request )
+	return core.GenerateResponse( corpus.params )
 
-def GenerateResponse( keysAndValues = {} ):
-	def IsJsonFormat():
-		return 'format' in request.vars and 'json' == request.vars['format'].lower()
-
-	def GetServerIdentifier():
-		return request.env['HTTP_HOST']
-
-	def GetDatasetIdentifier():
-		return request.application
-
-	def GetModelType():
-		return request.controller
-
-	def GetModelAttribute():
-		return request.function
-
-	def GetModelAttributes():
-		return [
-			'DocMeta'
-		]
-
-	data = {
-		'server_identifier' : GetServerIdentifier(),
-		'dataset_identifier' : GetDatasetIdentifier(),
-		'model_type' : GetModelType(),
-		'model_attribute' : GetModelAttribute(),
-		'model_attributes' : GetModelAttributes()
-	}
-	data.update( keysAndValues )
-	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	if IsJsonFormat():
-		return dataStr
-	else:
-		data[ 'content' ] = dataStr
-		return data
-
-def GetParams():
-	return {}
-	
 def DocMeta():
-	params = GetParams()
-	return GenerateResponse({
-		'params' : params
+	core = TermiteCore( request, response )
+	corpus = Corpus( request )
+	results = corpus.GetDocMeta()
+	return core.GenerateResponse( corpus.params, results )
+
+def TermFreqs():
+	core = TermiteCore( request, response )
+	corpus = Corpus( request )
+	termFreqs = corpus.GetTermFreqs()
+	return core.GenerateResponse( corpus.params, {
+		'TermFreqs' : termFreqs
+	})
+
+def TermCoFreqs():
+	core = TermiteCore( request, response )
+	corpus = Corpus( request )
+	termCoFreqs = corpus.GetTermCoFreqs()
+	return core.GenerateResponse( corpus.params, {
+		'TermCoFreqs' : termCoFreqs
 	})

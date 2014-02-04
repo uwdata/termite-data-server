@@ -1,0 +1,2 @@
+Main-Class: mallet_helpers.CorpusWriter
+Class-Path: lib/mallet.jar lib/mallet-deps.jar

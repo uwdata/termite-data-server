@@ -15,13 +15,13 @@ Using the software
 Run the setup script to fetch all required libraries. This script only needs to be run once when Termite Web Server for MALLET is first downloaded onto a new machine.
 
 ```
-bin/setup.sh
+./setup.sh
 ```
 
 To launch the web server, execute the following command. A dialogue will appear. Click on "start server" to proceed.
 
 ```
-bin/start_server.sh
+./start_server.sh
 ```
 
 Two demo scripts are included in this repository.
