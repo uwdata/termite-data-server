@@ -2,16 +2,26 @@
 
 if [ $# -lt 2 ]
 then
-	echo "Usage: `basename $0` corpus_path model_folder"
+	echo "Usage: `basename $0` corpus_path model_folder num_topics num_iters"
 	echo
 	exit -1
 fi
 
 CORPUS_PATH=$1
 MODEL_FOLDER=$2
+if [ $# -ge 3 ]
+then
+	NUM_TOPICS=$3
+else
+	NUM_TOPICS=20
+fi
+if [ $# -ge 4 ]
+then
+	NUM_ITERS=$4
+else
+	NUM_ITERS=1000
+fi
 MALLET_ROOT=tools/mallet
-NUM_TOPICS=20
-NUM_ITERS=1000
 
 echo "# Building a topic model: [$CORPUS_PATH] --> [$MODEL_FOLDER]"
 
