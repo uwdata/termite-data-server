@@ -176,7 +176,7 @@ class ImportCorpus( ImportAbstraction ):
 		filename = '{}/term-co-freqs.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termCoFreqs, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-co-freq-options.json'.format( self.data_path )
+		filename = '{}/term-co-freqs-options.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termCoFreqOptions, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
