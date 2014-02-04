@@ -1,67 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import subprocess
-import sys
 import argparse
-import logging
 import json
 import sqlite3
+import subprocess
+from import_abstr import ImportAbstraction
 
-APPS_ROOT = 'apps'
-WEB2PY_ROOT = 'tools/web2py'
 CORPUS_WRITER = 'utils/mallet/CorpusWriter.jar'
-SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules', 'databases' ]
 
-class ImportCorpus( object ):
+class ImportCorpus( ImportAbstraction ):
 	
-	def __init__( self, app_name, app_model = 'corpus', logging_level = 20 ):
-		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
-		self.app_data_path = '{}/{}/data/{}'.format( APPS_ROOT, app_name, app_model )
-		self.web2py_app_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
-		self.logger = logging.getLogger( 'ImportCorpus' )
-		self.logger.setLevel( logging_level )
-		handler = logging.StreamHandler( sys.stderr )
-		handler.setLevel( logging_level )
-		self.logger.addHandler( handler )
-		self.logger.info( '--------------------------------------------------------------------------------' )
-		self.logger.info( 'Import corpus information as a web2py application...'                             )
-		self.logger.info( '         app = %s', app_name                                                      )
-		self.logger.info( '       model = %s', app_model                                                     )
-		self.logger.info( '        path = %s', self.app_path                                                 )
-		self.logger.info( '      web2py = %s', self.web2py_app_path                                          )
-		self.logger.info( '--------------------------------------------------------------------------------' )
-		if not os.path.exists( self.app_path ):
-			self.logger.info( 'Creating app folder: %s', self.app_path )
-			os.makedirs( self.app_path )
-		if not os.path.exists( self.app_data_path ):
-			self.logger.info( 'Creating app subfolder: %s', self.app_data_path )
-			os.makedirs( self.app_data_path )
-		for subfolder in SUBFOLDERS:
-			app_subpath = '{}/{}'.format( self.app_path, subfolder )
-			if not os.path.exists( app_subpath ):
-				self.logger.info( 'Linking app subfolder: %s', app_subpath )
-				os.system( 'ln -s ../../server_src/{} {}/{}'.format( subfolder, self.app_path, subfolder ) )
-		filename = '{}/__init__.py'.format( self.app_path )
-		if not os.path.exists( filename ):
-			self.logger.info( 'Setting up __init__.py' )
-			os.system( 'touch {}'.format( filename ) )
-	
-	def AddToWeb2py( self ):
-		if not os.path.exists( self.web2py_app_path ):
-			self.logger.info( 'Adding app to web2py server: %s', self.web2py_app_path )
-			os.system( 'ln -s ../../../{} {}'.format( self.app_path, self.web2py_app_path ) )
-		self.logger.info( '--------------------------------------------------------------------------------' )
+	def __init__( self, app_name, app_model = 'corpus', app_desc = 'Corpus Metadata and Statistics' ):
+		ImportAbstraction.__init__( self, app_name, app_model, app_desc )
 	
 	def ImportMeta( self, filename ):
-		self.logger.info( 'Importing metadata...' )
+		print 'Importing metadata...' 
 		header, meta = self.ExtractDocMeta( filename )
 		self.SaveMetaToDisk( meta )
 		self.SaveMetaToDB( meta, header )
 
 	def ExtractDocMeta( self, filename ):
-		self.logger.info( '    Reading document metadata: %s', filename )
+		print 'Reading document metadata: {}'.format( filename )
 		try:
 			with open( filename, 'r' ) as f:
 				header = None
@@ -85,9 +45,9 @@ class ImportCorpus( object ):
 			return None, None
 	
 	def SaveMetaToDisk( self, meta ):
-		self.logger.info( '    Writing data to disk: %s', self.app_data_path )
+		print 'Writing data to disk: {}'.format( self.data_path )
 		if meta is not None:
-			filename = '{}/doc-meta.json'.format( self.app_data_path )
+			filename = '{}/doc-meta.json'.format( self.data_path )
 			with open( filename, 'w' ) as f:
 				json.dump( meta, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
@@ -116,10 +76,10 @@ class ImportCorpus( object ):
 				data.append( [ d[f] for f in header ] )
 			conn.executemany( sql, data )
 			
-		self.logger.info( '    Writing data to database: %s', self.app_data_path )
+		print 'Writing data to database: {}'.format( self.database_path )
 		if meta is not None and header is not None:
 			table = 'DocMeta'
-			filename = '{}/doc-meta.sqlite'.format( self.app_data_path )
+			filename = '{}/doc-meta.sqlite'.format( self.database_path )
 			
 			conn = sqlite3.connect( filename )
 			CreateTable()
@@ -128,26 +88,27 @@ class ImportCorpus( object ):
 			conn.close()
 	
 	def ImportTerms( self, filename, minFreq = 5, minDocFreq = 2, maxCount = 1000 ):
-		self.logger.info( 'Computing term frequencies and co-occurrences...' )
+		print 'Computing term frequencies and co-occurrences...' 
 		corpus = self.ExtractCorpusTerms( filename )
 		termFreqs, termDocFreqs = self.ComputeTermFreqs( corpus )
 		termCoFreqs, termCoFreqOptions = self.ComputeTermCoFreqs( corpus, termFreqs, termDocFreqs, minFreq, minDocFreq, maxCount )
 		self.SaveTermsToDisk( termFreqs, termDocFreqs, termCoFreqs, termCoFreqOptions )
 	
 	def ExtractCorpusTerms( self, filename ):
-		self.logger.info( '    Reading mallet corpus: %s', filename )
+		print 'Reading mallet corpus: {}'.format( filename )
 		command = [ "java", "-jar", CORPUS_WRITER, filename ]
+		print ' '.join(command)
 		process = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.PIPE )
 		( out, err ) = process.communicate()
-		self.logger.info( err )
+		print err
 		corpus = {}
 		for document in out.splitlines():
 			docID, docTokens = document.split( '\t' )
-			corpus[ docID ] = docTokens.split( ' ' )
+			corpus[ docID ] = docTokens.split( ' ' )		
 		return corpus
 	
 	def ComputeTermFreqs( self, corpus ):
-		self.logger.info( '    Computing term freqs...' )
+		print 'Computing term freqs...'
 		termFreqs = {}
 		termDocFreqs = {}
 		for docID, docTokens in corpus.iteritems():
@@ -171,7 +132,7 @@ class ImportCorpus( object ):
 			else:
 				return secondToken, firstToken
 				
-		self.logger.info( '    Computing term co-occurrences...' )
+		print 'Computing term co-occurrences...'
 		keys = set()
 		for term in termFreqs:
 			if termFreqs[term] >= minFreq:
@@ -205,17 +166,17 @@ class ImportCorpus( object ):
 		return termCoFreqs, options
 		
 	def SaveTermsToDisk( self, termFreqs, termDocFreqs, termCoFreqs, termCoFreqOptions ):
-		self.logger.info( 'Writing data to disk: %s', self.app_data_path )
-		filename = '{}/term-freqs.json'.format( self.app_data_path )
+		print 'Writing data to disk: {}'.format( self.data_path )
+		filename = '{}/term-freqs.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termFreqs, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-doc-freqs.json'.format( self.app_data_path )
+		filename = '{}/term-doc-freqs.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termDocFreqs, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-co-freqs.json'.format( self.app_data_path )
+		filename = '{}/term-co-freqs.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termCoFreqs, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-co-freq-options.json'.format( self.app_data_path )
+		filename = '{}/term-co-freq-options.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termCoFreqOptions, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 

@@ -1,66 +1,26 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import sys
 import argparse
-import logging
-import math
 import json
+import math
+from import_abstr import ImportAbstraction
 
-APPS_ROOT = 'apps'
-WEB2PY_ROOT = 'tools/web2py'
 TOPIC_WORD_WEIGHTS = 'topic-word-weights.txt'
 DOC_TOPIC_MIXTURES = 'doc-topic-mixtures.txt'
-SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules', 'databases' ]
 
-class ImportMallet( object ):
+class ImportMallet( ImportAbstraction ):
 	
-	def __init__( self, app_name, app_model = 'lda', logging_level = 20 ):
-		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
-		self.app_data_path = '{}/{}/data/{}'.format( APPS_ROOT, app_name, app_model )
-		self.web2py_app_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
-		self.logger = logging.getLogger( 'ImportMallet' )
-		self.logger.setLevel( logging_level )
-		handler = logging.StreamHandler( sys.stderr )
-		handler.setLevel( logging_level )
-		self.logger.addHandler( handler )
-		self.logger.info( '--------------------------------------------------------------------------------' )
-		self.logger.info( 'Import a MALLET topic model as a web2py application...'                           )
-		self.logger.info( '         app = %s', app_name                                                      )
-		self.logger.info( '       model = %s', app_model                                                     )
-		self.logger.info( '        path = %s', self.app_path                                                 )
-		self.logger.info( '      web2py = %s', self.web2py_app_path                                          )
-		self.logger.info( '--------------------------------------------------------------------------------' )
-		if not os.path.exists( self.app_path ):
-			self.logger.info( 'Creating app folder: %s', self.app_path )
-			os.makedirs( self.app_path )
-		if not os.path.exists( self.app_data_path ):
-			self.logger.info( 'Creating app subfolder: %s', self.app_data_path )
-			os.makedirs( self.app_data_path )
-		for subfolder in SUBFOLDERS:
-			app_subpath = '{}/{}'.format( self.app_path, subfolder )
-			if not os.path.exists( app_subpath ):
-				self.logger.info( 'Linking app subfolder: %s', app_subpath )
-				os.system( 'ln -s ../../server_src/{} {}/{}'.format( subfolder, self.app_path, subfolder ) )
-		filename = '{}/__init__.py'.format( self.app_path )
-		if not os.path.exists( filename ):
-			self.logger.info( 'Setting up __init__.py' )
-			os.system( 'touch {}'.format( filename ) )
+	def __init__( self, app_name, app_model = 'lda', app_desc = 'LDA Topic Model' ):
+		ImportAbstraction.__init__( self, app_name, app_model, app_desc )
 
-	def AddToWeb2py( self ):
-		if not os.path.exists( self.web2py_app_path ):
-			self.logger.info( 'Adding app to web2py server: %s', self.web2py_app_path )
-			os.system( 'ln -s ../../../{} {}'.format( self.app_path, self.web2py_app_path ) )
-		self.logger.info( '--------------------------------------------------------------------------------' )
-
-	def ExtractLDA( self, model_path, filenameTopicWordWeights, filenameDocTopicMixtures ):
+	def ImportLDA( self, model_path, filenameTopicWordWeights, filenameDocTopicMixtures ):
 		termSet, topicSet, termFreqs, topicFreqs, termsAndTopics = self.ExtractTopicWordWeights( model_path, filenameTopicWordWeights )
 		docSet, _, docsAndTopics = self.ExtractDocTopicMixtures( model_path, filenameDocTopicMixtures )
 		self.SaveToDisk( termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics )
 	
 	def ExtractTopicWordWeights( self, model_path, filename ):
-		self.logger.info( 'Reading topic-term matrix: %s/%s', model_path, filename )
+		print 'Reading topic-term matrix: {}/{}'.format( model_path, filename )
 		termSet = set()
 		topicSet = set()
 		termFreqs = {}
@@ -86,7 +46,7 @@ class ImportMallet( object ):
 		return termSet, topicSet, termFreqs, topicFreqs, termsAndTopics
 	
 	def ExtractDocTopicMixtures( self, model_path, filename ):
-		self.logger.info( 'Reading doc-topic matrix: %s/%s', model_path, filename )
+		print 'Reading doc-topic matrix: {}/{}'.format( model_path, filename )
 		docSet = set()
 		topicSet = set()
 		docsAndTopics = {}
@@ -114,7 +74,7 @@ class ImportMallet( object ):
 		return docSet, topicSet, docsAndTopics
 	
 	def SaveToDisk( self, termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics ):
-		self.logger.info( 'Writing data to disk: %s', self.app_data_path )
+		print 'Writing data to disk: {}'.format( self.data_path )
 		docs = sorted( docSet )
 		terms = sorted( termSet, key = lambda x : -termFreqs[x] )
 		topics = sorted( topicSet, key = lambda x : int(x) )
@@ -136,19 +96,19 @@ class ImportMallet( object ):
 				'freq' : topicFreqs[ topic ]
 			}
 		
-		filename = '{}/doc-index.json'.format( self.app_data_path )
+		filename = '{}/doc-index.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-index.json'.format( self.app_data_path )
+		filename = '{}/term-index.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/topic-index.json'.format( self.app_data_path )
+		filename = '{}/topic-index.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( topicIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-topic-matrix.txt'.format( self.app_data_path )
+		filename = '{}/term-topic-matrix.txt'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/doc-topic-matrix.txt'.format( self.app_data_path )
+		filename = '{}/doc-topic-matrix.txt'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( docsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		
@@ -158,8 +118,8 @@ class ImportMallet( object ):
 		self.termsAndTopics = termsAndTopics
 		self.docsAndTopics = docsAndTopics
 
-	def ComputeTopicCooccurrence( self ):
-		self.logger.info( 'Computing topic co-occurrence...' )
+	def ImportTopicCooccurrence( self ):
+		print 'Computing topic co-occurrence...'
 		topics = self.topics
 		matrix = [ [0.0]*len(topics) for i in range(len(topics)) ]
 		for docID, topicMixture in self.docsAndTopics.iteritems():
@@ -167,7 +127,7 @@ class ImportMallet( object ):
 				for j, secondTopic in enumerate(topics):
 					if firstTopic in topicMixture and secondTopic in topicMixture:
 						matrix[i][j] += topicMixture[firstTopic] * topicMixture[secondTopic]
-		filename = '{}/topic-cooccurrence.json'.format( self.app_data_path )
+		filename = '{}/topic-cooccurrence.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( matrix, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
@@ -181,9 +141,9 @@ def main():
 	args = parser.parse_args()
 	
 	importer = ImportMallet( app_name = args.app_name )
-	importer.ExtractLDA( args.model_path, args.topic_words, args.doc_topics )
+	importer.ImportLDA( args.model_path, args.topic_words, args.doc_topics )
 	if args.topic_cooccurrence:
-		importer.ComputeTopicCooccurrence()
+		importer.ImportTopicCooccurrence()
 	importer.AddToWeb2py()
 
 if __name__ == '__main__':
