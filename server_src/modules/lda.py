@@ -102,3 +102,16 @@ class LDA:
 					if topic in topicSet:
 						submatrix[docID][topic] = content[docID][topic]
 		return submatrix
+	
+	def GetTopicCooccurrence( self, params = None ):
+		if params is None:
+			params = self.params
+		topicLimit = params['topicLimit']
+		topicOffset = params['topicOffset']
+		filename = os.path.join( self.request.folder, 'data/lda', 'topic-cooccurrence.json' )
+		with open( filename ) as f:
+			allTopicCoFreqs = json.load( f, encoding = 'utf-8' )
+		topicCoFreqs = allTopicCoFreqs[topicOffset:topicOffset+topicLimit]
+		for i, topicFreqs in enumerate(topicCoFreqs):
+			topicCoFreqs[i] = topicFreqs[topicOffset:topicOffset+topicLimit]
+		return topicCoFreqs

@@ -29,21 +29,23 @@ class Corpus:
 			'searchLimit' : GetNonNegativeInteger( 'searchLimit', 100 ),
 			'searchOffset' : GetNonNegativeInteger( 'searchOffset', 0 ),
 			'searchText' : GetString( 'searchText', '' ),
-			'searchOrdering' : GetString( 'searchOrdering', '' )
+			'searchOrdering' : GetString( 'searchOrdering', '' ),
+			'termLimit' : GetNonNegativeInteger( 'termLimit', 100 ),
+			'termOffset' : GetNonNegativeInteger( 'termOffset', 0 )
 		}
 		return params
 	
-	def GetDocMeta( self ):
+	def GetDocMeta( self, params = None ):
+		if params is None:
+			params = self.params
+		searchText = params["searchText"]
+		searchLimit = params["searchLimit"]
+		searchOffset = params["searchOffset"]
+
 		filename = os.path.join( self.request.folder, 'data/corpus', 'doc-meta.json' )
 		with open( filename ) as f:
 			content = json.load( f, encoding = 'utf-8' )
-			
-			# get self.params, setup results
 			results = {}
-			searchText = self.params["searchText"]
-			searchLimit = self.params["searchLimit"]
-			searchOffset = self.params["searchOffset"]
-			
 			matchCount = 0
 			keys = sorted(content.keys())
 			for index in range(len(keys)):
@@ -53,21 +55,42 @@ class Corpus:
 			        matchCount += 1
 			        if len(results) < searchLimit and index >= searchOffset:
 			           results[obj["DocID"]] = obj
-		results = {
+		return {
 			"Documents" : results,
 			"docCount" : len(results),
 			"docMaxCount" : matchCount
 		}
-		return results
 
-	def GetTermFreqs( self ):
+	def GetTermFreqs( self, params = None ):
+		if params is None:
+			params = self.params
+		termLimit = params['termLimit']
+		termOffset = params['termOffset']
+
 		filename = os.path.join( self.request.folder, 'data/corpus', 'term-freqs.json' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )
-		return content
+			allTermFreqs = json.load( f, encoding = 'utf-8' )
+		allTerms = sorted( allTermFreqs.keys(), key = lambda x : -allTermFreqs[x] )
+		terms = allTerms[termOffset:termOffset+termLimit]
+		termFreqs = { term : allTermFreqs[term] for term in terms if term in allTermFreqs }
+		return termFreqs
 
-	def GetTermCoFreqs( self ):
+	def GetTermCoFreqs( self, params = None ):
+		if params is None:
+			params = self.params
+		termLimit = params['termLimit']
+		termOffset = params['termOffset']
+
+		filename = os.path.join( self.request.folder, 'data/corpus', 'term-freqs.json' )
+		with open( filename ) as f:
+			allTermFreqs = json.load( f, encoding = 'utf-8' )
+		allTerms = sorted( allTermFreqs.keys(), key = lambda x : -allTermFreqs[x] )
+		terms = allTerms[termOffset:termOffset+termLimit]
+		
 		filename = os.path.join( self.request.folder, 'data/corpus', 'term-co-freqs.json' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )
-		return content
+			allTermCoFreqs = json.load( f, encoding = 'utf-8' )
+		termCoFreqs = { term : allTermCoFreqs[term] for term in terms if term in allTermCoFreqs }
+		for term, termFreqs in termCoFreqs.iteritems():
+			termCoFreqs[ term ] = { t : termFreqs[t] for t in terms if t in termFreqs }
+		return termCoFreqs

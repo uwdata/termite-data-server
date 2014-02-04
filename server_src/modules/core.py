@@ -59,7 +59,8 @@ class TermiteCore:
 					'TermIndex',
 					'TopicIndex',
 					'TermTopicMatrix',
-					'DocTopicMatrix'
+					'DocTopicMatrix',
+					'TopicCooccurrence'
 				]
 			elif model == 'corpus':
 				return [
