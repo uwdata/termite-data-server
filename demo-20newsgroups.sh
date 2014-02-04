@@ -37,35 +37,35 @@ function __train_mallet__ {
 function __import_mallet__ {
 	echo "# Importing a MALLET LDA topic model..."
 	echo
-	echo "bin/ImportMallet.py $MALLET_APP $MALLET_PATH"
+	echo "bin/import_mallet.py $MALLET_APP $MALLET_PATH"
 	echo
-	bin/ImportMallet.py $MALLET_APP $MALLET_PATH
+	bin/import_mallet.py $MALLET_APP $MALLET_PATH
 	echo
-	echo "bin/ImportCorpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet"
+	echo "bin/import_corpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet"
 	echo
-	bin/ImportCorpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet
+	bin/import_corpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet
 	echo
 }
 
 function __train_treetm__ {
 	echo "# Training a TreeTM model..."
 	echo
-	echo "bin/TrainTreeTM.py $CORPUS_PATH $TREETM_PATH --iters 1000"
+	echo "bin/train_treetm.py $CORPUS_PATH $TREETM_PATH --iters 1000"
 	echo
-	bin/TrainTreeTM.py $CORPUS_PATH $TREETM_PATH --iters 1000
+	bin/train_treetm.py $CORPUS_PATH $TREETM_PATH --iters 1000
 	echo
 }
 
 function __import_treetm__ {
 	echo "# Importing a TreeTM model..."
 	echo
-	echo "bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP"
+	echo "bin/import_treetm.py $TREETM_PATH $TREETM_APP"
 	echo
-	bin/ImportTreeTM.py $TREETM_PATH $TREETM_APP
+	bin/import_treetm.py $TREETM_PATH $TREETM_APP
 	echo
-	echo "bin/ImportCorpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet"
+	echo "bin/import_corpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet"
 	echo
-	bin/ImportCorpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet
+	bin/import_corpus.py $MALLET_APP --terms $MALLET_PATH/corpus.mallet
 	echo
 }
 
@@ -112,7 +112,8 @@ else
 fi
 if [ "$MODEL" == "mallet" ] || [ "$MODEL" == "all" ]
 then
-	bin/setup.sh
+	bin/setup_web2py.sh
+	bin/setup_mallet.sh
 	__fetch_data__
 	__train_mallet__
 	__import_mallet__
@@ -138,4 +139,4 @@ then
 	__train_gensim__
 	__import_gensim__
 fi
-bin/start_server.sh
+./start_server.sh

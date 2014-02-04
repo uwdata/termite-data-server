@@ -76,10 +76,10 @@ class ImportCorpus( ImportAbstraction ):
 				data.append( [ d[f] for f in header ] )
 			conn.executemany( sql, data )
 			
-		print 'Writing data to database: {}'.format( self.data_path )
+		print 'Writing data to database: {}'.format( self.database_path )
 		if meta is not None and header is not None:
 			table = 'DocMeta'
-			filename = '{}/doc-meta.sqlite'.format( self.data_path )
+			filename = '{}/doc-meta.sqlite'.format( self.database_path )
 			
 			conn = sqlite3.connect( filename )
 			CreateTable()

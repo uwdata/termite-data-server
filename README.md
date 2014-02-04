@@ -27,13 +27,13 @@ Set up this web server
 Run the following setup script to download all required libraries. This step only needs to be performed once when Termite Web Server is first downloaded onto a new machine.
 
 ```
-bin/setup.sh
+./setup.sh
 ```
 
 To launch the web server, execute the following command. A dialogue will appear. Click on "start server" to proceed.
 
 ```
-bin/start_server.sh
+./start_server.sh
 ```
 
 Build a topic model

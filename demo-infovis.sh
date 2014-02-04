@@ -116,7 +116,8 @@ else
 fi
 if [ "$MODEL" == "mallet" ] || [ "$MODEL" == "all" ]
 then
-	bin/setup.sh
+	bin/setup_web2py.sh
+	bin/setup_mallet.sh
 	__fetch_data__
 	__train_mallet__
 	__import_mallet__
@@ -142,4 +143,4 @@ then
 	__train_gensim__
 	__import_gensim__
 fi
-bin/start_server.sh
+./start_server.sh
