@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# -gt 0 ]
+if [ $# -ge 1 ]
 then
 	DEMO_PATH=$1
 else
