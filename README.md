@@ -30,7 +30,7 @@ Run the following setup script to download all required libraries. This step onl
 ./setup.sh
 ```
 
-To launch the web server, execute the following command. A dialogue will appear. Click on "start server" to proceed.
+To launch the web server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
 
 ```
 ./start_server.sh
