@@ -60,8 +60,8 @@ class ImportMallet( ImportAbstraction ):
 				else:
 					fields = line.split( '\t' )
 					docID = fields[1]
-					topicKeys = [ int(field) for n, field in enumerate(fields[2:]) if n == 0 ]
-					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n == 1 ]
+					topicKeys = [ int(key) for n, key in enumerate(fields[2:]) if n % 2 == 0 and key != '' ]
+					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n % 2 == 1 and value != '' ]
 					for n in range(len(topicKeys)):
 						topic = topicKeys[n]
 						value = topicValues[n]
