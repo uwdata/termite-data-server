@@ -21,11 +21,9 @@ class LDA:
 		
 		params = {
 			'docLimit' : GetNonNegativeInteger( 'docLimit', 100 ),
-			'termLimit' : GetNonNegativeInteger( 'termLimit', 100 ),
-			'topicLimit' : GetNonNegativeInteger( 'topicLimit', 50 ),
 			'docOffset' : GetNonNegativeInteger( 'docOffset', 0 ),
-			'termOffset' : GetNonNegativeInteger( 'termOffset', 0 ),
-			'topicOffset' : GetNonNegativeInteger( 'topicOffset', 0 )
+			'termLimit' : GetNonNegativeInteger( 'termLimit', 100 ),
+			'termOffset' : GetNonNegativeInteger( 'termOffset', 0 )
 		}
 		return params
 	
@@ -36,10 +34,10 @@ class LDA:
 		docOffset = params['docOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'doc-index.json' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )
-		maxCount = len(content)
-		content = content[docOffset:docOffset+docLimit]
-		return content, maxCount
+			allDocs = json.load( f, encoding = 'utf-8' )
+		docCount = len(allDocs)
+		subDocs = allDocs[docOffset:docOffset+docLimit]
+		return subDocs, docCount
 	
 	def GetTermIndex( self,	params = None ):
 		if params is None:
@@ -48,22 +46,19 @@ class LDA:
 		termOffset = params['termOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'term-index.json' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )
-		maxCount = len(content)
-		content = content[termOffset:termOffset+termLimit]
-		return content, maxCount
+			allTerms = json.load( f, encoding = 'utf-8' )
+		termCount = len(allTerms)
+		subTerms = allTerms[termOffset:termOffset+termLimit]
+		return subTerms, termCount
 	
 	def GetTopicIndex( self, params = None ):
 		if params is None:
 			params = self.params
-		topicLimit = params['topicLimit']
-		topicOffset = params['topicOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'topic-index.json' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )
-		maxCount = len(content)
-		content = content[topicOffset:topicOffset+topicLimit]
-		return content, maxCount
+			allTopics = json.load( f, encoding = 'utf-8' )
+		topicCount = len(allTopics)
+		return allTopics, topicCount
 	
 	def GetTermTopicMatrix( self, params = None ):
 		if params is None:
@@ -74,14 +69,8 @@ class LDA:
 		topicSet = frozenset( d['index'] for d in topicIndex )
 		filename = os.path.join( self.request.folder, 'data/lda', 'term-topic-matrix.txt' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )
-		submatrix = {}
-		for term in content:
-			if term in termSet:
-				submatrix[term] = {}
-				for topic in content[term]:
-					if topic in topicSet:
-						submatrix[term][topic] = content[term][topic]
+			matrix = json.load( f, encoding = 'utf-8' )
+		submatrix = { term : matrix[term] for term in termSet }
 		return submatrix
 	
 	def GetDocTopicMatrix( self, params = None ):
@@ -93,25 +82,14 @@ class LDA:
 		topicSet = frozenset( d['index'] for d in topicIndex )
 		filename = os.path.join( self.request.folder, 'data/lda', 'doc-topic-matrix.txt' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )
-		submatrix = {}
-		for docID in content:
-			if docID in docSet:
-				submatrix[docID] = {}
-				for topic in content[docID]:
-					if topic in topicSet:
-						submatrix[docID][topic] = content[docID][topic]
+			matrix = json.load( f, encoding = 'utf-8' )
+		submatrix = { doc : matrix[doc] for doc in docSet }
 		return submatrix
 	
 	def GetTopicCooccurrence( self, params = None ):
 		if params is None:
 			params = self.params
-		topicLimit = params['topicLimit']
-		topicOffset = params['topicOffset']
 		filename = os.path.join( self.request.folder, 'data/lda', 'topic-cooccurrence.json' )
 		with open( filename ) as f:
 			allTopicCoFreqs = json.load( f, encoding = 'utf-8' )
-		topicCoFreqs = allTopicCoFreqs[topicOffset:topicOffset+topicLimit]
-		for i, topicFreqs in enumerate(topicCoFreqs):
-			topicCoFreqs[i] = topicFreqs[topicOffset:topicOffset+topicLimit]
-		return topicCoFreqs
+		return allTopicCoFreqs

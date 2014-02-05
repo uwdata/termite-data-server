@@ -1,11 +1,6 @@
 #!/bin/bash
 
-if [ $# -ge 1 ]
-then
-	DEMO_PATH=$1
-else
-	DEMO_PATH=demo-infovis
-fi
+DEMO_PATH=$1
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
 

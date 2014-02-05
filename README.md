@@ -25,7 +25,7 @@ Run the setup script to fetch all required libraries. This script only needs to 
 bin/setup.sh
 ```
 
-To launch the web server, execute the following command. A dialogue will appear. Click on "start server" to proceed.
+To launch the web server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
 
 ```
 bin/start_server.sh
@@ -36,13 +36,13 @@ Two demo scripts are included in this repository.
 Executing the following command will download the 20newsgroups dataset (18828 documents), build a LDA topic model with 20 latent topics, and launch the web server.
 
 ```
-./demo-20newsgroups.sh
+./demo.sh 20newsgroups
 ```
 
 Executing the following command will download the InfoVis dataset (449 documents with metadata), build both an LDA topic model and a TreeTM topic model, and launch the web server.
 
 ```
-./demo-infovis.sh
+./demo.sh infovis
 ```
 
 The resulting topic model(s) will be available at:
