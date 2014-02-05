@@ -44,13 +44,13 @@ Two demo scripts are included in this repository.
 Executing the following command will download the 20newsgroups dataset (18828 documents), build a LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
-./demo-20newsgroups.sh
+./demo.sh 20newsgroups
 ```
 
 Executing the following command will download the InfoVis dataset (449 documents with metadata), build a LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
-./demo-infovis.sh
+./demo.sh infovis
 ```
 
 The resulting topic model(s) will be available at:

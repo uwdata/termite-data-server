@@ -16,7 +16,7 @@ class ImportMallet( ImportAbstraction ):
 
 	def ImportLDA( self, model_path, filenameTopicWordWeights, filenameDocTopicMixtures ):
 		termSet, topicSet, termFreqs, topicFreqs, termsAndTopics = self.ExtractTopicWordWeights( model_path, filenameTopicWordWeights )
-		docSet, _, docsAndTopics = self.ExtractDocTopicMixtures( model_path, filenameDocTopicMixtures )
+		docSet, _, docsAndTopics = self.ExtractDocTopicMixtures( model_path, filenameDocTopicMixtures, len(topicSet) )
 		self.SaveToDisk( termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics )
 	
 	def ExtractTopicWordWeights( self, model_path, filename ):
@@ -24,28 +24,28 @@ class ImportMallet( ImportAbstraction ):
 		termSet = set()
 		topicSet = set()
 		termFreqs = {}
-		topicFreqs = {}
+		topicFreqs = []
 		termsAndTopics = {}
 		filename = '{}/{}'.format( model_path, filename )
 		with open( filename, 'r' ) as f:
 			lines = f.read().decode( 'utf-8' ).splitlines()
 			for line in lines:
 				topic, term, value = line.split( '\t' )
-				topic = topic.strip()
+				topic = int( topic )
 				value = float( value )
 				if topic not in topicSet:
 					topicSet.add( topic )
-					topicFreqs[ topic ] = 0.0
+					topicFreqs.append( 0.0 )
 				if term not in termSet:
 					termSet.add( term )
 					termFreqs[ term ] = 0.0
-					termsAndTopics[ term ] = {}
-				termsAndTopics[ term ][ topic ] = value
+					termsAndTopics[ term ] = []
+				termsAndTopics[ term ].append( value )
 				topicFreqs[ topic ] += value
 				termFreqs[ term ] += value
 		return termSet, topicSet, termFreqs, topicFreqs, termsAndTopics
 	
-	def ExtractDocTopicMixtures( self, model_path, filename ):
+	def ExtractDocTopicMixtures( self, model_path, filename, topicCount ):
 		print 'Reading doc-topic matrix: {}/{}'.format( model_path, filename )
 		docSet = set()
 		topicSet = set()
@@ -60,14 +60,14 @@ class ImportMallet( ImportAbstraction ):
 				else:
 					fields = line.split( '\t' )
 					docID = fields[1]
-					topicKeys = [ field.strip() for n, field in enumerate(fields[2:]) if n == 0 ]
+					topicKeys = [ int(field) for n, field in enumerate(fields[2:]) if n == 0 ]
 					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n == 1 ]
 					for n in range(len(topicKeys)):
 						topic = topicKeys[n]
 						value = topicValues[n]
 						if docID not in docSet:
 							docSet.add( docID )
-							docsAndTopics[ docID ] = {}
+							docsAndTopics[ docID ] = [ 0.0 ] * topicCount
 						if topic not in topicSet:
 							topicSet.add( topic )
 						docsAndTopics[ docID ][ topic ] = value
@@ -77,7 +77,7 @@ class ImportMallet( ImportAbstraction ):
 		print 'Writing data to disk: {}'.format( self.data_path )
 		docs = sorted( docSet )
 		terms = sorted( termSet, key = lambda x : -termFreqs[x] )
-		topics = sorted( topicSet, key = lambda x : int(x) )
+		topics = sorted( topicSet )
 		docIndex = [ None ] * len( docs )
 		termIndex = [ None ] * len( terms )
 		topicIndex = [ None ] * len( topics )
@@ -123,10 +123,9 @@ class ImportMallet( ImportAbstraction ):
 		topics = self.topics
 		matrix = [ [0.0]*len(topics) for i in range(len(topics)) ]
 		for docID, topicMixture in self.docsAndTopics.iteritems():
-			for i, firstTopic in enumerate(topics):
-				for j, secondTopic in enumerate(topics):
-					if firstTopic in topicMixture and secondTopic in topicMixture:
-						matrix[i][j] += topicMixture[firstTopic] * topicMixture[secondTopic]
+			for i in topics:
+				for j in topics:
+					matrix[i][j] += topicMixture[i] * topicMixture[j]
 		filename = '{}/topic-cooccurrence.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( matrix, f, encoding = 'utf-8', indent = 2, sort_keys = True )

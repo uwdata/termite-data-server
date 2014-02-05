@@ -182,9 +182,9 @@ class ImportCorpus( ImportAbstraction ):
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
-	parser.add_argument( 'app_name'  , type = str,                 help = 'Web2py application identifier'                                     )
-	parser.add_argument( '--meta'    , type = str, default = None, help = 'Import document metadata from a tab-delimited file'                )
-	parser.add_argument( '--terms'   , type = str, default = None, help = 'Calculate term freqs and co-occurrences from a corpus.mallet file' )
+	parser.add_argument( 'app_name', type = str,                 help = 'Web2py application identifier'                                     )
+	parser.add_argument( '--meta'  , type = str, default = None, help = 'Import document metadata from a tab-delimited file'                )
+	parser.add_argument( '--terms' , type = str, default = None, help = 'Calculate term freqs and co-occurrences from a corpus.mallet file' )
 	args = parser.parse_args()
 	
 	importer = ImportCorpus( app_name = args.app_name )

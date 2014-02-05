@@ -2,25 +2,6 @@
 {{include 'attribute.html'}}
 
 <div class="body">
-	<div class="heading">Request Parameters</div>
-	<div class="params">
-		<div class="param">topicLimit = 
-			<select onchange="onSelectParam(this)">
-				{{for n in [5,10,20,50]:}}
-					<option value="{{response.write(QueryString({'topicLimit':n}),escape=False)}}" {{if params['topicLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
-		</div>
-		<div class="param">topicOffset = 
-			<select onchange="onSelectParam(this)">
-				{{for n in range(0,50,5):}}
-					<option value="{{response.write(QueryString({'topicOffset':n}),escape=False)}}" {{if params['topicOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
-		</div>
-		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
-	</div>
-	
 	<div class="heading">Server Response
 		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']+request.env['PATH_INFO']+QueryString({'format':'json'})}}">Display as a JSON object</a>)</span>
 	</div>

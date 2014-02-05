@@ -12,67 +12,63 @@ class ImportGensim( ImportAbstraction ):
 		ImportAbstraction.__init__( self, app_name, app_model, app_desc )
 
 	def ImportLDA( self, dictionary_filename, model_filename ):
-		self.ExtractGensimModel( dictionary_filename, model_filename )
-		self.SaveToDisk()
+		dictionary, model = self.ExtractGensimModel( dictionary_filename, model_filename )
+		self.SaveToDisk( dictionary, model )
 	
 	def ExtractGensimModel( self, dictionary_filename, model_filename ):
 		print 'Reading from {}, {}'.format( dictionary_filename, model_filename )
-		termTexts = {}
-		termLookup = {}
 		dictionary = corpora.Dictionary.load( dictionary_filename )
 		model = models.LdaModel.load( model_filename )
+		return dictionary, model
+	
+	def SaveToDisk( self, dictionary, model ):
+		termTexts = {}
 		for i in dictionary:
 			termTexts[i] = dictionary[i]
-			termLookup[dictionary[i]] = i
 		topics = model.show_topics( topics = -1, topn = len(termTexts), formatted = False )
 
-		self.docIndex = []
-		self.termIndex = [ None ] * len( termTexts )
-		self.topicIndex = [ None ] * len( topics )
-		self.termTopicMatrix = [ None ] * len( termTexts )
-		self.docTopicMatrix = []
+		docIndex = []
+		termIndex = [ None ] * len( termTexts )
+		topicIndex = [ None ] * len( topics )
+		termsAndTopics = {}
+		docsAndTopics = {}
 
 		for termID, termText in termTexts.iteritems():
-			self.termIndex[termID] = {
+			termIndex[termID] = {
 				'index' : termID,
 				'text' : termText,
 				'docFreq' : dictionary.dfs[termID]
 			}
-			self.termTopicMatrix[termID] = [ 0.0 ] * len( topics )
+			termsAndTopics[ termText ] = [ 0.0 ] * len( topics )
 		for n, topic in enumerate( topics ):
-			self.topicIndex[n] = {
+			topicIndex[n] = {
 				'index' : n
 			}
 			for freq, termText in topic:
-				termID = termLookup[ termText ]
-				self.termTopicMatrix[ termID ][ n ] = freq
+				termsAndTopics[ termText ][ n ] = freq
 
-	def SaveToDisk( self ):
 		print 'Writing data to disk: {}'.format( self.data_path )
 		filename = '{}/doc-index.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
-			json.dump( self.docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+			json.dump( docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		filename = '{}/term-index.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
-			json.dump( self.termIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+			json.dump( termIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		filename = '{}/topic-index.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
-			json.dump( self.topicIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+			json.dump( topicIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		filename = '{}/term-topic-matrix.txt'.format( self.data_path )
 		with open( filename, 'w' ) as f:
-			for row in self.termTopicMatrix:
-				f.write( u'{}\n'.format( '\t'.join( [ str( value ) for value in row ] ) ) )
+			json.dump( termsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		filename = '{}/doc-topic-matrix.txt'.format( self.data_path )
 		with open( filename, 'w' ) as f:
-			for row in self.docTopicMatrix:
-				f.write( u'{}\n'.format( '\t'.join( [ str( value ) for value in row ] ) ) )
+			json.dump( docsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
-	parser.add_argument( 'app_name'   , type = str,               help = 'Web2py application identifier'              )
-	parser.add_argument( 'dictionary' , type = str,               help = 'File containing a gensim dictionary'        )
-	parser.add_argument( 'model'      , type = str,               help = 'File containing a gensim LDA model'         )
-	parser.add_argument( '--logging'  , type = int, default = 20, help = 'Override default logging level.'            )
+	parser.add_argument( 'app_name'  , type = str, help = 'Web2py application identifier'                  )
+	parser.add_argument( 'dictionary', type = str, help = 'File containing a gensim dictionary'            )
+	parser.add_argument( 'model'     , type = str, help = 'File containing a gensim LDA model'             )
 	args = parser.parse_args()
 	
 	importer = ImportGensim( args.app_name )
