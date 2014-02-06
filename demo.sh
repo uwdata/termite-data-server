@@ -186,6 +186,7 @@ echo "              | http://qwone.com/~jason/20Newsgroups"
 echo
 echo "Available models:"
 echo "       mallet | MAchine Learning for LanguagE Toolkit (MALLET)"
+echo "              | Default topic model if none is specified"
 echo "              | http://mallet.cs.umass.edu"
 echo
 echo "       treetm | Efficient Tree-based Topic Modeling"
@@ -195,8 +196,10 @@ echo "         stmt | Stanford Topic Modeling Toolbox"
 echo "              | http://nlp.stanford.edu/downloads/tmt"
 echo
 echo "          stm | Structural Topic Models"
+echo "              | Requires R"
 echo "              | http://scholar.harvard.edu/mroberts"
 echo
 echo "       gensim | Gensim"
+echo "              | Requires numpy and scipy"
 echo "              | http://radimrehurek.com/gensim/"
 echo
