@@ -38,6 +38,11 @@ function __setup_gensim__ {
 		__create_folder__ $EXTERNALS_SUBPATH "    "
 		echo "    Downloading source code..."
 		curl --insecure --location http://pypi.python.org/packages/source/g/gensim/gensim-0.8.9.tar.gz > $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz
+
+		echo "    Extracting gensim README..."
+		tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9/README.rst &&\
+			mv gensim-0.8.9/README.rst $EXTERNALS_SUBPATH &&\
+			rmdir gensim-0.8.9
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz"
 	fi
@@ -50,12 +55,9 @@ function __setup_gensim__ {
 		echo "    Uncompressing..."
 		tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9 &&\
 			mv gensim-0.8.9/* $TOOLS_SUBPATH &&\
-			ln -s $SYMLINK $SYMLINK_SUBPATH &&\
-			rmdir gensim-0.8.9
+			rmdir gensim-0.8.9 &&\
+			ln -s $SYMLINK $SYMLINK_SUBPATH
 
-		echo "    Extracting license..."
-		cp $TOOLS_SUBPATH/README.rst $EXTERNALS_SUBPATH/README
-		
 		echo "    Running self tests..."
 		echo "python $TOOLS_SUBPATH/setup.py test"
 		python $TOOLS_SUBPATH/setup.py test

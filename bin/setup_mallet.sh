@@ -33,6 +33,11 @@ function __setup_mallet__ {
 	then
 		__create_folder__ $EXTERNALS_SUBPATH "    "
 		curl --insecure --location http://mallet.cs.umass.edu/dist/mallet-2.0.7.tar.gz > $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz
+
+		echo "    Extracting MALLET License..."
+		tar -zxf $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz mallet-2.0.7/LICENSE &&\
+			mv mallet-2.0.7/LICENSE $EXTERNALS_SUBPATH &&\
+			rmdir mallet-2.0.7
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
 	fi
@@ -47,9 +52,6 @@ function __setup_mallet__ {
 			mv mallet-2.0.7/* $TOOLS_SUBPATH &&\
 			ln -s $SYMLINK $SYMLINK_SUBPATH &&\
 			rmdir mallet-2.0.7
-
-		echo "    Extracting MALLET License..."
-		cp $TOOLS_SUBPATH/LICENSE $EXTERNALS_SUBPATH/LICENSE
 	else
 		echo "    Already available: $TOOLS_SUBPATH"
 	fi
