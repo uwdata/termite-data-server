@@ -163,6 +163,7 @@ then
 			MODEL_PATH=$DATASET_PATH/model-$MODEL
 			APP_IDENTIFIER=${DATASET}_${MODEL}
 			
+			bin/setup_web2py.sh
 			__create_folder__ data
 			__create_folder__ data/demo
 			$FETCH_DATASET
