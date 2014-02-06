@@ -36,7 +36,7 @@ function __setup_mallet__ {
 
 		echo "    Extracting MALLET License..."
 		tar -zxf $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz mallet-2.0.7/LICENSE &&\
-			mv mallet-2.0.7/LICENSE . &&\
+			mv mallet-2.0.7/LICENSE $EXTERNALS_SUBPATH &&\
 			rmdir mallet-2.0.7
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
