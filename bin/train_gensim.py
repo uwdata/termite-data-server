@@ -42,7 +42,7 @@ class TrainGensim( object ):
 			for filename in filenames:
 				if not os.path.isdir( filename ):
 					with open( filename ) as f:
-						tokens = WHITESPACES.split( LINEBREAKS.sub( ' ', f.read().decode( 'utf-8', 'ignore' ) ) )
+						tokens = WHITESPACES.split( LINEBREAKS.sub( ' ', f.read().decode( 'utf-8', 'ignore' ) ).strip() )
 						documents.append( tokens )
 		else:
 			with open( corpus_path ) as f:
