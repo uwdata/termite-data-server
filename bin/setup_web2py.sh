@@ -32,6 +32,11 @@ function __setup_web2py__ {
 	then
 		__create_folder__ $EXTERNALS_SUBPATH "    "
 		curl --insecure --location http://www.web2py.com/examples/static/web2py_src.zip > $EXTERNALS_SUBPATH/web2py_src.zip
+
+		echo "    Extracting web2py License..."
+		unzip -q $EXTERNALS_SUBPATH/web2py_src.zip web2py/LICENSE -d $EXTERNALS_SUBPATH &&\
+		mv $EXTERNALS_SUBPATH/web2py/LICENSE $EXTERNALS_SUBPATH/ &&\
+		rmdir $EXTERNALS_SUBPATH/web2py
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/web2py_src.zip"
 	fi
@@ -46,11 +51,6 @@ function __setup_web2py__ {
 		mv $TOOLS_SUBPATH/web2py/* $TOOLS_SUBPATH/ &&\
 		rmdir $TOOLS_SUBPATH/web2py
 		
-		echo "    Extracting web2py License..."
-		unzip -q $EXTERNALS_SUBPATH/web2py_src.zip web2py/LICENSE -d $EXTERNALS_SUBPATH &&\
-		mv $EXTERNALS_SUBPATH/web2py/LICENSE $EXTERNALS_SUBPATH/ &&\
-		rmdir $EXTERNALS_SUBPATH/web2py
-
 		echo "    Removing 'no password, no web admin interface' dialogue box..."
 		sed -i bkp "s/self.error('no password, no web admin interface')/pass #self.error('no password, no web admin interface')/g" $TOOLS_SUBPATH/gluon/widget.py
 		
