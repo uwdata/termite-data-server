@@ -1,18 +1,18 @@
-Termite Web Server for Topic Models
-===================================
+Termite Data Server for Topic Models
+====================================
 
 Termite is a visualization tool for inspecting the output of statistical topic models.
 
 The tool contains two components:
-  * A web server for processing the output of a topic model and distributing the content over the internet.
+  * A data server for processing the output of a topic model and distributing the content over the internet.
   * A client interface for visualizing the topic model in a web browser.
 
-This repository contains the server component for processing topic models and hosting the content on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca) and Ashley Jin, and distributed under the BSD-3 license.
+This repository contains the server component for processing topic models and for hosting the model data on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca) and Ashley Jin, and distributed under the BSD-3 license.
 
 Topic modeling
 --------------
 
-Currently, this tool comes with scripts for training topic models in, and importing from:
+Currently, this tool comes with scripts for training topic models in, and importing models from:
   * [MALLET](http://mallet.cs.umass.edu)
   * [Gensim](http://radimrehurek.com/gensim/)
 
@@ -21,16 +21,16 @@ We are in the process of adding support for:
   * [Structural Topic Models](http://github.com/uwdata/termite-stm)
   * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4/)
 
-Set up this web server
-----------------------
+Launch this data server
+-----------------------
 
-Run the following setup script to download all required libraries. This step only needs to be performed once when Termite Web Server is first downloaded onto a new machine.
+Run the setup script to download the required libraries. This step only needs to be performed once when Termite Web Server is first downloaded onto a new machine.
 
 ```
 ./setup.sh
 ```
 
-To launch the web server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
+To launch this data server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
 
 ```
 ./start_server.sh
@@ -39,18 +39,36 @@ To launch the web server, execute the following command. A dialogue box will app
 Build a topic model
 -------------------
 
-Two demo scripts are included in this repository.
+Several demos are included in this repository.
 
-Executing the following command will download the 20newsgroups dataset (18828 documents), build a LDA topic model with 20 latent topics using MALLET, and launch the web server.
+Executing the following command will download the 20newsgroups dataset (18828 documents), build an LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
 ./demo.sh 20newsgroups
 ```
 
-Executing the following command will download the InfoVis dataset (449 documents with metadata), build a LDA topic model with 20 latent topics using MALLET, and launch the web server.
+Executing the following command will download the InfoVis dataset (449 documents with metadata), build an LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
 ./demo.sh infovis
+```
+
+To build an example topic model on the InfoVis dataset using Gensim:
+
+```
+./demo.sh infovis gensim
+```
+
+More generally, to build a topic model on `dataset` using `tool`:
+
+```
+./demo.sh [dataset] [tool]
+```
+
+To see more demo options:
+
+```
+./demo.sh --help
 ```
 
 The resulting topic model(s) will be available at:
@@ -88,6 +106,7 @@ Termite requires the use of the following software. We thank their respective au
 License
 -------
 
+Copyright (c) 2013, Leland Stanford Junior University
 Copyright (c) 2014, University of Washington
 All rights reserved.
 
