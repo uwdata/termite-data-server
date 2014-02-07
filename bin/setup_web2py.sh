@@ -33,7 +33,7 @@ function __setup_web2py__ {
 		__create_folder__ $EXTERNALS_SUBPATH "    "
 		curl --insecure --location http://www.web2py.com/examples/static/web2py_src.zip > $EXTERNALS_SUBPATH/web2py_src.zip
 
-		echo "    Extracting web2py License..."
+		echo "    Extracting license..."
 		unzip -q $EXTERNALS_SUBPATH/web2py_src.zip web2py/LICENSE -d $EXTERNALS_SUBPATH &&\
 			mv $EXTERNALS_SUBPATH/web2py/LICENSE $EXTERNALS_SUBPATH/ &&\
 			rmdir $EXTERNALS_SUBPATH/web2py
@@ -46,7 +46,7 @@ function __setup_web2py__ {
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
 		__create_folder__ $TOOLS_SUBPATH "    "
-		echo "    Uncompressing web2py..."
+		echo "    Uncompressing..."
 		unzip -q $EXTERNALS_SUBPATH/web2py_src.zip web2py/* -d $TOOLS_SUBPATH &&\
 			mv $TOOLS_SUBPATH/web2py/* $TOOLS_SUBPATH/ &&\
 			rmdir $TOOLS_SUBPATH/web2py

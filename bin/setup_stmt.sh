@@ -37,7 +37,7 @@ function __setup_stmt__ {
 		echo "    Downloading source code..."
 		curl --insecure --location http://nlp.stanford.edu/software/tmt/tmt-0.4/tmt-0.4.0-src.zip > $EXTERNALS_SUBPATH/tmt-0.4.0-src.zip
 
-		echo "    Extracting STMT License..."
+		echo "    Extracting license..."
 		unzip $EXTERNALS_SUBPATH/tmt-0.4.0-src.zip LICENSE -d $EXTERNALS_SUBPATH
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
