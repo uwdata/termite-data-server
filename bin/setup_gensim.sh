@@ -33,16 +33,16 @@ function __setup_gensim__ {
 	SYMLINK=gensim-0.8.9
 	
 	echo "# Downloading gensim..."
-	if [ ! -f "$EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz" ]
+	if [ ! -d "$EXTERNALS_SUBPATH" ]
 	then
 		__create_folder__ $EXTERNALS_SUBPATH "    "
 		echo "    Downloading..."
 		curl --insecure --location http://pypi.python.org/packages/source/g/gensim/gensim-0.8.9.tar.gz > $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz
-
 		echo "    Extracting README..."
 		tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9/README.rst &&\
 			mv gensim-0.8.9/README.rst $EXTERNALS_SUBPATH &&\
 			rmdir gensim-0.8.9
+		echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz"
 	fi
