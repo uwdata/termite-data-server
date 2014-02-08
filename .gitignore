@@ -8,3 +8,6 @@ externals/
 tools/
 apps/
 data/
+
+/web2py/httpserver.log
+/web2py/parameters_8075.py
