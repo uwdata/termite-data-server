@@ -4,10 +4,11 @@
 *.pyc
 *.sh~
 *.class
-externals/
-tools/
-apps/
-data/
-
+/externals/
+/tools/
+/apps/
+/data/
 /web2py/httpserver.log
+/web2py/httpserver.pid
 /web2py/parameters_8075.py
+/web2py/applications/init/errors
