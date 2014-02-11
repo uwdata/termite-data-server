@@ -12,12 +12,6 @@ This repository contains the server component for processing topic models and fo
 Importing a STM Model (.RDATA)
 ------------------
 
-Run the setup script to download the required libraries. This step only needs to be performed once when Termite Data Server is first downloaded onto a new machine.
-
-```
-./setup.sh
-```
-
 Run the following script to import an example STM Model into the data server.
 
 ```
