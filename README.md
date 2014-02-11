@@ -9,13 +9,19 @@ The tool contains two components:
 
 This repository contains the server component for processing topic models and for hosting the model data on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca) and Ashley Jin, and distributed under the BSD-3 license.
 
-Using the software
+Importing a STM Model (.RDATA)
 ------------------
 
 Run the setup script to download the required libraries. This step only needs to be performed once when Termite Data Server is first downloaded onto a new machine.
 
 ```
 ./setup.sh
+```
+
+Run the following script to import an example STM Model into the data server.
+
+```
+bin/import_stm.py poliblog poliblogrun.RData
 ```
 
 To launch this data server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
