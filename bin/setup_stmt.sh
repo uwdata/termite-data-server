@@ -31,14 +31,14 @@ function __setup_stmt__ {
 	SYMLINK=stmt-0.4.0
 
 	echo "# Downloading STMT (Stanford Topic Modeling Toolkit)..."
-	if [ ! -f "$EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz" ]
+	if [ ! -d "$EXTERNALS_SUBPATH" ]
 	then
 		__create_folder__ $EXTERNALS_SUBPATH "    "
 		echo "    Downloading source code..."
 		curl --insecure --location http://nlp.stanford.edu/software/tmt/tmt-0.4/tmt-0.4.0-src.zip > $EXTERNALS_SUBPATH/tmt-0.4.0-src.zip
-
-		echo "    Extracting STMT License..."
+		echo "    Extracting license..."
 		unzip $EXTERNALS_SUBPATH/tmt-0.4.0-src.zip LICENSE -d $EXTERNALS_SUBPATH
+		echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
 	else
 		echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
 	fi

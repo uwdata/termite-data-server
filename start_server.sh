@@ -1,4 +1,4 @@
 #!/bin/bash
 
-echo "python tools/web2py/web2py.py -p 8075"
-python tools/web2py/web2py.py -p 8075
+echo "python web2py/web2py.py -p 8075"
+python web2py/web2py.py -p 8075
