@@ -82,7 +82,7 @@ http://127.0.0.1:8075/
 Active Research Project
 =======================
 
-This is an active research project. While we would like to make the system available to as many users as possible, we are constrained by our resources. Below are the system requirements, known issues as well as the API format, for developing additional visualizations and incorporating additional models to the data server.
+This is an active research project. While we would like to support as many users as possible, we are constrained by available resources. Below are the system requirements, known issues as well as the API format, for developing additional visualizations and incorporating additional models to the data server.
 
 System requirements
 -------------------
