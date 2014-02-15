@@ -1,18 +1,26 @@
-Termite Data Server for Topic Models
-====================================
+Data Server for Topic Models
+============================
 
-Termite is a visualization tool for inspecting the output of statistical topic models.
+Termite is a visual analysis tool for inspecting the output of statistical topic models.
 
 The tool contains two components:
-  * A data server for processing the output of a topic model and distributing the content over the internet.
-  * A client interface for visualizing the topic model in a web browser.
+  * **Termite Data Server** for processing the output of topic models and providing the content as a web service
+  * **[Termite Visualizations](http://github.com/uwdata/termite-visualizations)** for visualizing topic model outputs in a web browser
 
-This repository contains the server component for processing topic models and for hosting the model data on a web2py server. This middleware is developed by [Jason Chuang](http://jason.chuang.ca) and Ashley Jin, and distributed under the BSD-3 license.
+This repository contains the data server component, which includes:
+  * a web server
+  * a copy of the MALLET topic model toolkit
+  * helper scripts to import topic model outputs into the server
+  * helper scripts to download various datasets
+  * helper scripts to download and setup various topic modeling tools
+  * demonstration scripts to build a basic topic model
+
+This software is developed by [Jason Chuang](http://jason.chuang.ca) and Ashley Jin, and distributed under the BSD-3 license.
 
 Topic modeling
 --------------
 
-Currently, this tool comes with scripts for training topic models in, and importing models from:
+Currently, this data server can import topic models from:
   * [MALLET](http://mallet.cs.umass.edu)
   * [Gensim](http://radimrehurek.com/gensim/)
 
@@ -71,10 +79,28 @@ The resulting topic model(s) will be available at:
 http://127.0.0.1:8075/
 ```
 
-API Format
+Active Research Project
+=======================
+
+This is an active research project. While we would like to make the system available to as many users as possible, we are constrained by our resources. Below are the system requirements, known issues as well as the API format, for developing additional visualizations and incorporating additional models to the data server.
+
+System requirements
+-------------------
+
+  * **Python 2.7** for the web2py framework, setup scripts, training scripts, and import scripts
+  * **Java** for MALLET
+  * [Optional] NumPy 1.3, SciPy 0.7 for Gensim
+  * [Optional] R for Structural Topic Models
+
+Known issues
+------------
+
+The web server is based on the web2py framework. While web2py is designed to work on Windows, Mac, and most Unix platforms, we have only tested the system on OSX. The framework will not work under Cygwin on Windows.
+
+API format
 ----------
 
-A goal of developing this server is to provide a common API (application programming interface), so that multiple topic model visualizations can interact with each other and with any number of topic modeling software.
+A goal of developing this server is to provide a common API (application programming interface), so that multiple topic model visualizations can interact with any number of topic modeling software, and with other visualizations.
 
 All API calls to this web server are in following format.
 
@@ -85,7 +111,7 @@ http:// [server] / [dataset] / [model] / [attribute]
 The string `[server]` is the base portion of the URL, such as `http://localhost:8080` when running a local machine.  As multiple projects can be hosted on the same server, `[dataset]` is a string `[A-Za-z0-9_]+` that uniquely identifies a project. A web-based visualization can access the content of a topic model by specifying the remaining URL `[model]/[attribute]`, such as `lda/TermTopicMatrix` and `treetm/TermTopicConstraints` to retrieve the term-topic matrix and send user-defined constraints to the server, respectively.
 
 Credits
--------
+=======
 
 Termite requires the use of the following software. We thank their respective authors for developing and distributing these tools.
 
