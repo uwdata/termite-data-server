@@ -7,7 +7,6 @@ The tool contains two components:
   * **[Termite Data Server](http://github.com/uwdata/termite-data-server)** for processing the output of topic models and providing the content as a web service
   * **[Termite Visualizations](http://github.com/uwdata/termite-visualizations)** for visualizing topic model outputs in a web browser
 
-
 This repository contains the data server component, which includes:
   * a web server
   * a copy of the MALLET topic model toolkit
