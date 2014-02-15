@@ -87,7 +87,7 @@ This is an active research project. While we would like to make the system avail
 System requirements
 -------------------
 
-  * **Python 2.7** for the web2py framework, setup scripts, training scripts, and import scripts
+  * **Python 2.7** for web2py, server scripts, and other helper scripts
   * **Java** for MALLET
   * [Optional] NumPy 1.3, SciPy 0.7 for Gensim
   * [Optional] R for Structural Topic Models
