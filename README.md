@@ -24,12 +24,6 @@ We are in the process of adding support for:
 Launch this data server
 -----------------------
 
-Run the setup script to download the required libraries. This step only needs to be performed once when Termite Web Server is first downloaded onto a new machine.
-
-```
-./setup.sh
-```
-
 To launch this data server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
 
 ```
