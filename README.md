@@ -100,7 +100,7 @@ The web server is based on the web2py framework. While web2py is designed to wor
 API format
 ----------
 
-A goal of developing this server is to provide a common API (application programming interface), so that multiple topic model visualizations can interact with any number of topic modeling software, and with other visualizations.
+A primary goal of developing this data server is to provide a common API (application programming interface), so that multiple topic model visualizations can interact with any number of topic modeling software, and with other visualizations.
 
 All API calls to this web server are in following format.
 
