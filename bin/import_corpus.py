@@ -17,7 +17,7 @@ class ImportCorpus( ImportAbstraction ):
 	def ImportMeta( self, filename ):
 		print 'Importing metadata...' 
 		header, meta = self.ExtractDocMeta( filename )
-		self.SaveMetaToDisk( meta )
+		self.SaveMetaToDisk( meta, header )
 		self.SaveMetaToDB( meta, header )
 
 	def ExtractDocMeta( self, filename ):
@@ -44,12 +44,13 @@ class ImportCorpus( ImportAbstraction ):
 		except:
 			return None, None
 	
-	def SaveMetaToDisk( self, meta ):
+	def SaveMetaToDisk( self, meta, header ):
 		print 'Writing data to disk: {}'.format( self.data_path )
-		if meta is not None:
+		if meta is not None and header is not None:
 			filename = '{}/doc-meta.json'.format( self.data_path )
 			with open( filename, 'w' ) as f:
-				json.dump( meta, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+				data = { "header" : { h : ( "string" if h != 'Year' else 'integer' ) for h in header }, "data" : meta }
+				json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
 	def SaveMetaToDB( self, meta, header ):
 		def CreateTable():

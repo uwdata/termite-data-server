@@ -44,7 +44,7 @@ class Corpus:
 
 		filename = os.path.join( self.request.folder, 'data/corpus', 'doc-meta.json' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )
+			content = json.load( f, encoding = 'utf-8' )['data']
 			results = {}
 			matchCount = 0
 			keys = sorted(content.keys())

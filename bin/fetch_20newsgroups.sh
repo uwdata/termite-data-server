@@ -22,15 +22,15 @@ function __create_folder__ {
 echo "# Setting up the 20newsgroups dataset..."
 __create_folder__ $DEMO_PATH "    "
 
-if [ ! -e "$DEMO_PATH/README" ]
+if [ ! -e "$DEMO_PATH/questionable-to-delete.txt" ]
 then
-	echo "After a model is imported into a Termite server, you can technically delete all content in this folder without affecting the server. However you may wish to retain your model for other analysis purposes." > $DEMO_PATH/README
+	echo "After a model is imported into a Termite server, you can technically delete all content in this folder without affecting the server. However you may wish to retain these files to track provenance and for other analysis purposes." > $DEMO_PATH/questionable-to-delete.txt
 fi
 
 if [ ! -d "$DOWNLOAD_PATH" ]
 then
 	__create_folder__ $DOWNLOAD_PATH "    "
-	echo "    Downloading the 20newsgroups dataset..."
+	echo "    Downloading..."
 	curl --insecure --location http://qwone.com/~jason/20Newsgroups/20news-18828.tar.gz > $DOWNLOAD_PATH/20news-18828.tar.gz
 	echo "    Setting up 20newsgroups information page..."
 	echo "<html><head><meta http-equiv='refresh' content='0;url=http://qwone.com/~jason/20Newsgroups/'></head></html>" > $DOWNLOAD_PATH/index.html
@@ -41,7 +41,7 @@ fi
 if [ ! -d "$CORPUS_PATH" ]
 then
 	__create_folder__ $CORPUS_PATH "    "
-	echo "    Uncompressing the 20newsgroups dataset..."
+	echo "    Uncompressing..."
 	tar -zxf $DOWNLOAD_PATH/20news-18828.tar.gz 20news-18828 &&\
 		mv 20news-18828/* $CORPUS_PATH &&\
 		rmdir 20news-18828

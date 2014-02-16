@@ -28,7 +28,7 @@ div.head div {
 	display: inline-block;
 }
 div.head div.title {
-	margin: 0 2em 0 0;
+	margin: 0 2em 0 0.5em;
 	font-size: 12pt;
 	color: #000;
 	font-weight: bold;

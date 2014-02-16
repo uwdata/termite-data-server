@@ -4,7 +4,7 @@
 import os
 
 APPS_ROOT = 'apps'
-WEB2PY_ROOT = 'tools/web2py'
+WEB2PY_ROOT = 'web2py'
 SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules' ]
 
 class ImportAbstraction( object ):
@@ -52,5 +52,5 @@ class ImportAbstraction( object ):
 	def AddToWeb2py( self ):
 		if not os.path.exists( self.web2py_path ):
 			print 'Adding app to web2py server: {}'.format( self.web2py_path )
-			os.system( 'ln -s ../../../{} {}'.format( self.app_path, self.web2py_path ) )
+			os.system( 'ln -s ../../{} {}'.format( self.app_path, self.web2py_path ) )
 		print '--------------------------------------------------------------------------------'
