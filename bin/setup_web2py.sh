@@ -70,7 +70,7 @@ function __setup_web2py__ {
 		
 		echo "    Copying FastCGI setup..."
 		cp web2py_src/* $WEB2PY_PATH/
-		cp web2py_src/.* $WEB2PY_PATH/
+		cp web2py_src/.htaccess $WEB2PY_PATH/
 	else
 		echo "    Already available: $WEB2PY_PATH"
 	fi

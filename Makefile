@@ -22,4 +22,7 @@ apps/infovis_mallet: web2py tools/mallet
 	./demo.sh infovis mallet
 
 clean:
-	rm -r externals web2py tools/mallet* data/demo/infovis apps/infovis_mallet
+	rm -rf externals
+	rm -rf web2py
+	rm -rf tools/mallet*
+	rm -rf data/demo/infovis apps/infovis_mallet
