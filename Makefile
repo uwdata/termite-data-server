@@ -1,4 +1,4 @@
-all: web2py mallet apps/infovis_mallet
+all: web2py tools/mallet apps/infovis_mallet
 
 web2py:
 	bin/setup_web2py.sh
