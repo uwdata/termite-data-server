@@ -1,4 +1,4 @@
-all: web2py tools/mallet web2py/applications/infovis_mallet
+all: web2py tools/mallet apps/infovis_mallet
 
 web2py:
 	bin/setup_web2py.sh
@@ -18,7 +18,7 @@ treetm tools/treetm:
 stmt tools/stmt:
 	bin/setup_stmt.sh
 
-web2py/applications/infovis_mallet: web2py tools/mallet
+apps/infovis_mallet: web2py tools/mallet
 	./demo.sh infovis mallet
 
 clean:
