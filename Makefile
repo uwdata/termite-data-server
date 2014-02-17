@@ -1,6 +1,6 @@
 DEMO_PATH = data/itm
 
-all: web2py tools/mallet $(DEMO_PATH)/10newsgroups $(DEMO_PATH)/15newsgroups $(DEMO_PATH)/20newsgroups
+all: web2py tools/mallet apps/infovis_mallet tools/treetm $(DEMO_PATH)/10newsgroups $(DEMO_PATH)/15newsgroups $(DEMO_PATH)/20newsgroups
 
 web2py:
 	bin/setup_web2py.sh
@@ -19,6 +19,9 @@ treetm tools/treetm:
 
 stmt tools/stmt:
 	bin/setup_stmt.sh
+
+apps/infovis_mallet: web2py tools/mallet
+	./demo.sh infovis mallet
 
 $(DEMO_PATH)/corpus: web2py tools/mallet
 	mkdir -p data
@@ -41,5 +44,9 @@ $(DEMO_PATH)/20newsgroups: $(DEMO_PATH)/corpus
 	cp -r apps/10newsgroups/data/corpus apps/20newsgroups/data/corpus
 
 clean:
-	rm -r $(DEMO_PATH)
-	rm -r externals web2py tools/mallet* data/demo/infovis apps/infovis_mallet
+	rm -rf externals
+	rm -rf web2py
+	rm -rf tools/mallet*
+	rm -rf tools/treetm*
+	rm -rf data/demo/infovis apps/infovis_mallet
+	rm -rf $(DEMO_PATH)

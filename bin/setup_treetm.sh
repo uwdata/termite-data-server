@@ -23,8 +23,8 @@ function __create_folder__ {
 }
 
 function __setup_treetm__ {
-	EXTERNALS_SUBPATH=$EXTERNALS_PATH/tree-tm
-	TOOLS_SUBPATH=$TOOLS_PATH/tree-tm
+	EXTERNALS_SUBPATH=$EXTERNALS_PATH/treetm
+	TOOLS_SUBPATH=$TOOLS_PATH/treetm
 
 	echo "# Downloading TreeTM..."
 	if [ ! -f "$EXTERNALS_SUBPATH/tree-tm.zip" ]
