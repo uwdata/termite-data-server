@@ -4,7 +4,7 @@ if [ $# -ge 1 ]
 then
 	DEMO_PATH=$1
 else
-	DEMO_PATH=demo-infovis
+	DEMO_PATH=demo-nsf127992
 fi
 DOWNLOAD_PATH=$DEMO_PATH/download
 CORPUS_PATH=$DEMO_PATH/corpus
@@ -18,7 +18,7 @@ function __create_folder__ {
 	fi
 }
 
-echo "# Setting up the infovis dataset..."
+echo "# Setting up the NSF dataset..."
 __create_folder__ $DEMO_PATH
 
 if [ ! -e "$DEMO_PATH/questionable-to-delete.txt" ]
@@ -30,7 +30,7 @@ if [ ! -d "$DOWNLOAD_PATH" ]
 then
 	__create_folder__ $DOWNLOAD_PATH
 	echo "    Downloading..."
-	curl --insecure --location http://homes.cs.washington.edu/~jcchuang/misc/files/infovis-papers.zip > $DOWNLOAD_PATH/infovis-papers.zip
+	curl --insecure --location http://homes.cs.washington.edu/~jcchuang/misc/files/nsf127992.txt.zip > $DOWNLOAD_PATH/nsf127992.txt.zip
 else
 	echo "    Already downloaded: $DOWNLOAD_PATH"
 fi
@@ -39,9 +39,8 @@ if [ ! -d "$CORPUS_PATH" ]
 then
 	__create_folder__ $CORPUS_PATH
 	echo "    Uncompressing..."
-	unzip $DOWNLOAD_PATH/infovis-papers.zip -d $CORPUS_PATH &&\
-	    mv $CORPUS_PATH/infovis-papers/* $CORPUS_PATH &&\
-	    rmdir $CORPUS_PATH/infovis-papers
+	unzip $DOWNLOAD_PATH/nsf127992.txt.zip -d $CORPUS_PATH &&
+		rm -rf $CORPUS_PATH/__MACOSX
 else
 	echo "    Already available: $CORPUS_PATH"
 fi
