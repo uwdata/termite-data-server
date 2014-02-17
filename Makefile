@@ -9,6 +9,12 @@ mallet tools/mallet:
 gensim tools/gensim:
 	bin/setup_gensim.sh
 
+stm tools/stm:
+	bin/setup_stm.sh
+
+treetm tools/treetm:
+	bin/setup_treetm.sh
+
 stmt tools/stmt:
 	bin/setup_stmt.sh
 
@@ -16,7 +22,4 @@ apps/infovis_mallet: web2py tools/mallet
 	./demo.sh infovis mallet
 
 clean:
-	rm -r externals/
-	rm -r tools/
-	rm -r web2py/
-	rm -r data/demo/infovis apps/infovis_mallet
+	rm -r externals web2py tools/mallet* data/demo/infovis apps/infovis_mallet

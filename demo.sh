@@ -169,7 +169,6 @@ then
 			$FETCH_DATASET
 			$TRAIN_MODEL
 			$IMPORT_MODEL
-			./start_server.sh
 			exit 0
 		fi
 	fi
