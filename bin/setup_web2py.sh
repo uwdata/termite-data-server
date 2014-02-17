@@ -67,6 +67,10 @@ function __setup_web2py__ {
 		ln -s ../../../landing_src/controllers $WEB2PY_PATH/applications/init/controllers
 		ln -s ../../../landing_src/modules $WEB2PY_PATH/applications/init/modules
 		ln -s ../../../landing_src/static $WEB2PY_PATH/applications/init/static
+		
+		echo "    Copying FastCGI setup..."
+		cp web2py_src/* $WEB2PY_PATH/
+		cp web2py_src/.* $WEB2PY_PATH/
 	else
 		echo "    Already available: $WEB2PY_PATH"
 	fi
