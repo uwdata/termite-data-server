@@ -56,3 +56,7 @@ clean:
 	rm -rf tools/treetm*
 	rm -rf data/demo/infovis apps/infovis_mallet
 	rm -rf $(DEMO_PATH)
+	rm -rf apps/10newsgroups
+	rm -rf apps/15newsgroups
+	rm -rf apps/20newsgroups
+
