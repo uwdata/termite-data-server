@@ -22,6 +22,24 @@ function __fetch_20newsgroups__ {
 	CORPUS_PATH=$CORPUS_PATH
 }
 
+function __fetch_nsf127992__ {
+	bin/fetch_nsf127992.sh $DATASET_PATH
+	META_PATH=
+	CORPUS_PATH=$CORPUS_PATH
+}
+
+function __fetch_nsf10k__ {
+	bin/fetch_nsf10k.py $DATASET_PATH
+	META_PATH=
+	CORPUS_PATH=$CORPUS_PATH
+}
+
+function __fetch_nsf1k__ {
+	bin/fetch_nsf1k.py $DATASET_PATH
+	META_PATH=
+	CORPUS_PATH=$CORPUS_PATH
+}
+
 function __train_mallet__ {
 	bin/setup_mallet.sh
 	echo "# Training a MALLET LDA topic model..."
@@ -144,7 +162,7 @@ function __import_gensim__ {
 if [ $# -ge 1 ] && [ "$1" != "-h" ] && [ "$1" != "--help" ]
 then
 	DATASET=$1
-	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ]
+	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ]
 	then
 		FETCH_DATASET=__fetch_${DATASET}__
 		DATASET_PATH=data/demo/$DATASET
@@ -183,6 +201,9 @@ echo
 echo " 20newsgroups | User postings in 20 newsgroups"
 echo "              | 18,828 postings with duplicates removed"
 echo "              | http://qwone.com/~jason/20Newsgroups"
+echo
+echo "    nsf127992 | NSF grants"
+echo "              | 127,992 abstracts"
 echo
 echo "Available models:"
 echo "       mallet | MAchine Learning for LanguagE Toolkit (MALLET)"
