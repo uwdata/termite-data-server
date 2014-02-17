@@ -18,10 +18,9 @@ fi
 
 function __create_folder__ {
 	FOLDER=$1
-	TAB=$2
 	if [ ! -d $FOLDER ]
 	then
-		echo "${TAB}Creating folder: $FOLDER"
+		echo "    Creating folder: $FOLDER"
 		mkdir $FOLDER
 	fi
 }
@@ -31,27 +30,28 @@ function __setup_gensim__ {
 	TOOLS_SUBPATH=$TOOLS_PATH/gensim-0.8.9
 	SYMLINK_SUBPATH=$TOOLS_PATH/gensim
 	SYMLINK=gensim-0.8.9
-	
-	echo "# Downloading gensim..."
-	if [ ! -d "$EXTERNALS_SUBPATH" ]
-	then
-		__create_folder__ $EXTERNALS_SUBPATH "    "
-		echo "    Downloading..."
-		curl --insecure --location http://pypi.python.org/packages/source/g/gensim/gensim-0.8.9.tar.gz > $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz
-		echo "    Extracting README..."
-		tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9/README.rst &&\
-			mv gensim-0.8.9/README.rst $EXTERNALS_SUBPATH &&\
-			rmdir gensim-0.8.9
-		echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
-	else
-		echo "    Already downloaded: $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz"
-	fi
-	echo
-	
+
 	echo "# Setting up gensim..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
-		__create_folder__ $TOOLS_SUBPATH "    "
+
+		if [ ! -d "$EXTERNALS_SUBPATH" ]
+		then
+			__create_folder__ $EXTERNALS_PATH
+			__create_folder__ $EXTERNALS_SUBPATH
+			echo "    Downloading..."
+			curl --insecure --location http://pypi.python.org/packages/source/g/gensim/gensim-0.8.9.tar.gz > $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz
+			echo "    Extracting readme..."
+			tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9/README.rst &&\
+				mv gensim-0.8.9/README.rst $EXTERNALS_SUBPATH &&\
+				rmdir gensim-0.8.9
+			echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
+		else
+			echo "    Already downloaded: $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz"
+		fi
+		
+		__create_folder__ $TOOLS_PATH
+		__create_folder__ $TOOLS_SUBPATH
 		echo "    Uncompressing..."
 		tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9 &&\
 			mv gensim-0.8.9/* $TOOLS_SUBPATH &&\
@@ -79,6 +79,4 @@ function __setup_gensim__ {
 	echo
 }
 
-__create_folder__ $EXTERNALS_PATH
-__create_folder__ $TOOLS_PATH
 __setup_gensim__
