@@ -3,7 +3,6 @@
 from core import TermiteCore
 from lda import LDA
 from corpus import Corpus
-from group_box import GroupBox
 
 def index():
 	core = TermiteCore( request, response )
