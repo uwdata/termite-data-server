@@ -1,6 +1,6 @@
 DEMO_PATH = data/itm
 
-all: web2py tools/mallet tools/treetm web2py/applications/infovis_mallet web2py/applications/10newsgroups web2py/applications/15newsgroups web2py/applications/20newsgroups
+all: web2py tools/mallet tools/treetm apps/infovis_mallet apps/10newsgroups apps/15newsgroups apps/20newsgroups
 
 web2py:
 	bin/setup_web2py.sh
@@ -28,24 +28,18 @@ data/itm/corpus:
 	mkdir -p data/itm
 	bin/fetch_20newsgroups.sh data/itm
 
-data/itm/10newsgroups: data/itm/corpus tools/mallet
+apps/10newsgroups: data/itm/corpus tools/mallet web2py
 	bin/train_mallet.sh data/itm/corpus data/itm/10newsgroups 10
-
-web2py/applications/10newsgroups: data/itm/10newsgroups web2py
 	bin/import_mallet.py 10newsgroups data/itm/10newsgroups
 	bin/import_corpus.py 10newsgroups --terms data/itm/10newsgroups/corpus.mallet
 
-data/itm/15newsgroups: data/itm/corpus tools/mallet
+apps/15newsgroups: data/itm/corpus tools/mallet web2py
 	bin/train_mallet.sh data/itm/corpus data/itm/15newsgroups 15
-
-web2py/applications/15newsgroups: data/itm/15newsgroups web2py
 	bin/import_mallet.py 15newsgroups data/itm/15newsgroups
 	cp -r apps/10newsgroups/data/corpus apps/15newsgroups/data/corpus
 
-data/itm/20newsgroups: data/itm/corpus tools/mallet
+apps/20newsgroups: data/itm/corpus tools/mallet web2py
 	bin/train_mallet.sh data/itm/corpus data/itm/20newsgroups 20
-
-web2py/applications/20newsgroups: data/itm/20newsgroups web2py
 	bin/import_mallet.py 20newsgroups data/itm/20newsgroups
 	cp -r apps/10newsgroups/data/corpus apps/20newsgroups/data/corpus
 
