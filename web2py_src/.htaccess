@@ -1,0 +1,13 @@
+Options +SymLinksIfOwnerMatch -Indexes -Includes
+AddHandler fcgid-script .fcgi
+
+RewriteEngine On
+RewriteBase /
+
+RewriteCond %{REQUEST_URI} ^/admin(/.*)?
+RewriteRule .* - [F]
+
+RewriteCond %{REQUEST_URI} !(web2py.fcgi)
+RewriteCond %{REQUEST_URI} !(robots.txt)
+RewriteRule ^(.*)$ web2py.fcgi/$1 [L]
+

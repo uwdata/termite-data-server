@@ -6,12 +6,15 @@
 *.class
 /externals/
 /tools/gensim*
+/tools/stm*
+/tools/treetm*
+/tools/stmt*
 /apps/
 /data/
 /web2py/httpserver.log
 /web2py/httpserver.pid
-/web2py/parameters_8075.py
-/web2py/applications/init/errors
+/web2py/parameters_*.py
+/web2py/applications/*/errors
 /web2py/welcome.w2p
 /web2py/NEWINSTALL
 

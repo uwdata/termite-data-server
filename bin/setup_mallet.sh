@@ -14,10 +14,9 @@ fi
 
 function __create_folder__ {
 	FOLDER=$1
-	TAB=$2
 	if [ ! -d $FOLDER ]
 	then
-		echo "${TAB}Creating folder: $FOLDER"
+		echo "    Creating folder: $FOLDER"
 		mkdir $FOLDER
 	fi
 }
@@ -28,25 +27,27 @@ function __setup_mallet__ {
 	SYMLINK_SUBPATH=$TOOLS_PATH/mallet
 	SYMLINK=mallet-2.0.7
 
-	echo "# Downloading MALLET (MAchine Learning for LanguagE Toolkit)..."
-	if [ ! -d "$EXTERNALS_SUBPATH" ]
-	then
-		__create_folder__ $EXTERNALS_SUBPATH "    "
-		curl --insecure --location http://mallet.cs.umass.edu/dist/mallet-2.0.7.tar.gz > $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz
-		echo "    Extracting license..."
-		tar -zxf $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz mallet-2.0.7/LICENSE &&\
-			mv mallet-2.0.7/LICENSE $EXTERNALS_SUBPATH &&\
-			rmdir mallet-2.0.7
-		echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
-	else
-		echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
-	fi
-	echo
-
-	echo "# Setting up MALLET..."
+	echo "# Setting up MALLET (MAchine Learning for LanguagE Toolkit)..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
-		__create_folder__ $TOOLS_SUBPATH "    "
+
+		if [ ! -d "$EXTERNALS_SUBPATH" ]
+		then
+			__create_folder__ $EXTERNALS_PATH
+			__create_folder__ $EXTERNALS_SUBPATH
+			echo "    Downloading..."
+			curl --insecure --location http://mallet.cs.umass.edu/dist/mallet-2.0.7.tar.gz > $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz
+			echo "    Extracting license..."
+			tar -zxf $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz mallet-2.0.7/LICENSE &&\
+				mv mallet-2.0.7/LICENSE $EXTERNALS_SUBPATH &&\
+				rmdir mallet-2.0.7
+			echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
+		else
+			echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
+		fi
+
+		__create_folder__ $TOOLS_PATH
+		__create_folder__ $TOOLS_SUBPATH
 		echo "    Uncompressing..."
 		tar -zxf $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz mallet-2.0.7 &&\
 			mv mallet-2.0.7/* $TOOLS_SUBPATH &&\
@@ -58,6 +59,4 @@ function __setup_mallet__ {
 	echo
 }
 
-__create_folder__ $EXTERNALS_PATH
-__create_folder__ $TOOLS_PATH
 __setup_mallet__
