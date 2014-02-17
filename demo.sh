@@ -25,19 +25,19 @@ function __fetch_20newsgroups__ {
 function __fetch_nsf127992__ {
 	bin/fetch_nsf127992.sh $DATASET_PATH
 	META_PATH=
-	CORPUS_PATH=$CORPUS_PATH
+	CORPUS_PATH=$CORPUS_PATH/nsf127992.txt
 }
 
 function __fetch_nsf10k__ {
 	bin/fetch_nsf10k.py $DATASET_PATH
 	META_PATH=
-	CORPUS_PATH=$CORPUS_PATH
+	CORPUS_PATH=$CORPUS_PATH/nsf10k.txt
 }
 
 function __fetch_nsf1k__ {
 	bin/fetch_nsf1k.py $DATASET_PATH
 	META_PATH=
-	CORPUS_PATH=$CORPUS_PATH
+	CORPUS_PATH=$CORPUS_PATH/nsf1k.txt
 }
 
 function __train_mallet__ {
