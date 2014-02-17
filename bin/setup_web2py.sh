@@ -57,6 +57,7 @@ function __setup_web2py__ {
 		rm -rf $WEB2PY_PATH/applications/welcome
 		rm -rf $WEB2PY_PATH/applications/examples
 		rm -rf $WEB2PY_PATH/examples
+		rm -rf $WEB2PY_PATH/handlers
 		
 		__create_folder__ $WEB2PY_PATH/applications/init
 		echo "    Creating the default app..."
