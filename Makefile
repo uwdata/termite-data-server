@@ -25,4 +25,4 @@ clean:
 	rm -rf externals
 	rm -rf web2py
 	rm -rf tools/mallet*
-	rm -rf data/demo/infovis apps/infovis_mallet
+	rm -rf data/demo/infovis apps/infovis_mallet web2py/applications/infovis_mallet
