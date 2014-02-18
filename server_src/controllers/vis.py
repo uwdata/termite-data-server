@@ -3,6 +3,7 @@
 from core import TermiteCore
 from lda import LDA
 from corpus import Corpus
+from GroupInABox import GroupInABox as GroupInABoxModel
 
 def index():
 	core = TermiteCore( request, response )
@@ -11,6 +12,7 @@ def index():
 def GroupInABox():
 	core = TermiteCore( request, response )
 	lda = LDA( request )
+	giab = GroupInABoxModel( request )
 	corpus = Corpus( request )
 	params = lda.params
 	params.update( corpus.params )
@@ -19,6 +21,7 @@ def GroupInABox():
 	termTopicMatrix = lda.GetTermTopicMatrix( params )
 	termCoFreqs = corpus.GetTermCoFreqs( params )
 	topicCooccurrence = lda.GetTopicCooccurrence( params )
+	topTermsPerTopic = giab.GetTopTermsPerTopic( params )
 	return core.GenerateResponse( params, {
 		'termCount' : len(termIndex),
 		'termMaxCount' : termMaxCount,
@@ -27,6 +30,7 @@ def GroupInABox():
 		'TermIndex' : termIndex,
 		'TopicIndex' : topicIndex,
 		'TermTopicMatrix' : termTopicMatrix,
+		'TopTermsPerTopic' : topTermsPerTopic,
 		'TermCoFreqs' : termCoFreqs,
 		'TopicCooccurrence' : topicCooccurrence
 	})
