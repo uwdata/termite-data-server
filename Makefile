@@ -1,6 +1,6 @@
 DEMO_PATH = data/itm
 
-all: web2py tools/mallet tools/treetm apps/infovis_mallet apps/10newsgroups apps/15newsgroups apps/nsf10k_mallet apps/nsf1k_mallet apps/20newsgroups
+all: web2py tools/mallet tools/treetm apps/infovis_mallet apps/10newsgroups apps/15newsgroups apps/nsf10k_mallet apps/nsf25k_mallet apps/nsf1k_mallet apps/20newsgroups
 
 web2py:
 	bin/setup_web2py.sh
@@ -23,11 +23,14 @@ stmt tools/stmt:
 apps/infovis_mallet: web2py tools/mallet
 	./demo.sh infovis mallet
 
+apps/nsf1k_mallet: web2py tools/mallet data/demo/nsf127992
+	./demo.sh nsf1k mallet
+
 apps/nsf10k_mallet: web2py tools/mallet data/demo/nsf127992
 	./demo.sh nsf10k mallet
 
-apps/nsf1k_mallet: web2py tools/mallet data/demo/nsf127992
-	./demo.sh nsf1k mallet
+apps/nsf25k_mallet: web2py tools/mallet data/demo/nsf127992
+	./demo.sh nsf25k mallet
 
 data/demo/nsf127992:
 	mkdir -p data
