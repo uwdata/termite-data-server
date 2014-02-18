@@ -15,9 +15,9 @@ class ImportMallet( ImportAbstraction ):
 		ImportAbstraction.__init__( self, app_name, app_model, app_desc )
 
 	def ImportLDA( self, model_path, filenameTopicWordWeights, filenameDocTopicMixtures ):
-		termSet, topicSet, termFreqs, topicFreqs, termsAndTopics = self.ExtractTopicWordWeights( model_path, filenameTopicWordWeights )
-		docSet, _, docsAndTopics = self.ExtractDocTopicMixtures( model_path, filenameDocTopicMixtures, len(topicSet) )
-		self.SaveToDisk( termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics )
+		termSet, topicSet, termFreqs, topicFreqs, termsAndTopics, topicsAndTerms = self.ExtractTopicWordWeights( model_path, filenameTopicWordWeights )
+		docSet, _, docsAndTopics, topicsAndDocs = self.ExtractDocTopicMixtures( model_path, filenameDocTopicMixtures, len(topicSet) )
+		self.SaveToDisk( termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics, topicsAndTerms, topicsAndDocs )
 	
 	def ExtractTopicWordWeights( self, model_path, filename ):
 		print 'Reading topic-term matrix: {}/{}'.format( model_path, filename )
@@ -26,6 +26,7 @@ class ImportMallet( ImportAbstraction ):
 		termFreqs = {}
 		topicFreqs = []
 		termsAndTopics = {}
+		topicsAndTerms = []
 		filename = '{}/{}'.format( model_path, filename )
 		with open( filename, 'r' ) as f:
 			lines = f.read().decode( 'utf-8' ).splitlines()
@@ -36,20 +37,23 @@ class ImportMallet( ImportAbstraction ):
 				if topic not in topicSet:
 					topicSet.add( topic )
 					topicFreqs.append( 0.0 )
+					topicsAndTerms.append( {} )
 				if term not in termSet:
 					termSet.add( term )
 					termFreqs[ term ] = 0.0
 					termsAndTopics[ term ] = []
 				termsAndTopics[ term ].append( value )
+				topicsAndTerms[ topic ][ term ] = value
 				topicFreqs[ topic ] += value
 				termFreqs[ term ] += value
-		return termSet, topicSet, termFreqs, topicFreqs, termsAndTopics
+		return termSet, topicSet, termFreqs, topicFreqs, termsAndTopics, topicsAndTerms
 	
 	def ExtractDocTopicMixtures( self, model_path, filename, topicCount ):
 		print 'Reading doc-topic matrix: {}/{}'.format( model_path, filename )
 		docSet = set()
 		topicSet = set()
 		docsAndTopics = {}
+		topicsAndDocs = [ {} ] * topicCount
 		filename = '{}/{}'.format( model_path, filename )
 		header = None
 		with open( filename, 'r' ) as f:
@@ -65,15 +69,16 @@ class ImportMallet( ImportAbstraction ):
 					for n in range(len(topicKeys)):
 						topic = topicKeys[n]
 						value = topicValues[n]
+						if topic not in topicSet:
+							topicSet.add( topic )
 						if docID not in docSet:
 							docSet.add( docID )
 							docsAndTopics[ docID ] = [ 0.0 ] * topicCount
-						if topic not in topicSet:
-							topicSet.add( topic )
 						docsAndTopics[ docID ][ topic ] = value
-		return docSet, topicSet, docsAndTopics
+						topicsAndDocs[ topic ][ docID ] = value
+		return docSet, topicSet, docsAndTopics, topicsAndDocs
 	
-	def SaveToDisk( self, termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics ):
+	def SaveToDisk( self, termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics, topicsAndTerms, topicsAndDocs ):
 		print 'Writing data to disk: {}'.format( self.data_path )
 		docs = sorted( docSet )
 		terms = sorted( termSet, key = lambda x : -termFreqs[x] )
@@ -111,12 +116,20 @@ class ImportMallet( ImportAbstraction ):
 		filename = '{}/doc-topic-matrix.txt'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( docsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+		filename = '{}/topic-term-matrix.txt'.format( self.data_path )
+		with open( filename, 'w' ) as f:
+			json.dump( topicsAndTerms, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+		filename = '{}/topic-doc-matrix.txt'.format( self.data_path )
+		with open( filename, 'w' ) as f:
+			json.dump( topicsAndDocs, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		
 		self.docs = docs
 		self.terms = terms
 		self.topics = topics
 		self.termsAndTopics = termsAndTopics
 		self.docsAndTopics = docsAndTopics
+		self.topicsAndTerms = topicsAndTerms
+		self.topicsAndDocs = topicsAndDocs
 
 	def ImportTopicCooccurrence( self ):
 		print 'Computing topic co-occurrence...'
