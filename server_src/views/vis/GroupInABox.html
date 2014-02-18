@@ -11,13 +11,6 @@
 				{{pass}}
 			</select>
 		</div>
-		<div class="param">termOffset = 
-			<select onchange="onSelectParam(this)">
-				{{for n in range(0,100,5):}}
-					<option value="{{response.write(QueryString({'termOffset':n}),escape=False)}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
-		</div>
 		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
 	</div>
 
