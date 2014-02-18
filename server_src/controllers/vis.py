@@ -16,9 +16,8 @@ def GroupInABox():
 	corpus = Corpus( request )
 	params = lda.params
 	params.update( corpus.params )
-	termIndex, termMaxCount = lda.GetTermIndex( params )
-	topicIndex, topicMaxCount = lda.GetTopicIndex( params )
-#	termTopicMatrix = lda.GetTermTopicMatrix( params )
+#	termIndex, termMaxCount = lda.GetTermIndex( params )
+#	topicIndex, topicMaxCount = lda.GetTopicIndex( params )
 	termCoFreqs = corpus.GetTermCoFreqs( params )
 	topicCooccurrence = lda.GetTopicCooccurrence( params )
 	topTermsPerTopic = giab.GetTopTermsPerTopic( params )
@@ -27,9 +26,8 @@ def GroupInABox():
 #		'termMaxCount' : termMaxCount,
 #		'topicCount' : len(topicIndex),
 #		'topicMaxCount' : topicMaxCount,
-		'TermIndex' : termIndex,
-		'TopicIndex' : topicIndex,
-#		'TermTopicMatrix' : termTopicMatrix,
+#		'TermIndex' : termIndex,
+#		'TopicIndex' : topicIndex,
 		'TopTermsPerTopic' : topTermsPerTopic,
 		'TermCoFreqs' : termCoFreqs,
 		'TopicCooccurrence' : topicCooccurrence
