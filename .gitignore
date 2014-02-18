@@ -14,6 +14,7 @@
 /web2py/httpserver.log
 /web2py/httpserver.pid
 /web2py/parameters_*.py
-/web2py/applications/*/errors
 /web2py/welcome.w2p
 /web2py/NEWINSTALL
+/web2py/applications/*/errors
+/web2py/applications/*/sessions
