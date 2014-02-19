@@ -147,7 +147,7 @@ class TermiteCore:
 		dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 		
 		# Workaround while we build up the server-client architecture
-		acceptedIPs = [ 'http://' + self.request.env['REMOTE_ADDR'] + ':8080', '127.0.0.1:8000' ]
+		acceptedIPs = [ 'http://' + self.request.env['REMOTE_ADDR'] + ':8080', 'http://127.0.0.1:8000' ]
 		self.response.headers['Access-Control-Allow-Origin'] = ', '.join(acceptedIPs)
 		if self.IsJsonFormat():
 			return dataStr
