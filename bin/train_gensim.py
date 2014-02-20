@@ -5,7 +5,9 @@ import os
 import glob
 import argparse
 import re
+import logging
 from gensim import corpora, models, utils
+from gensim.parsing.preprocessing import STOPWORDS
 
 DICTIONARY_FILENAME = 'corpus.dict'
 MODEL_FILENAME = 'output.model'
@@ -14,27 +16,33 @@ WHITESPACES = re.compile( r'\W+' )
 LINEBREAKS = re.compile( r'[\t\n\x0B\f\r]+' )
 
 
+def preprocess(tokens):
+	"""Lowercase, remove stopwords etc. from a list of unicode strings."""
+	result = [token.lower().encode('utf8') for token in tokens if len(token) > 2 and token.isalpha()]
+	return [token for token in result if token not in STOPWORDS]
+
+
 class TermiteCorpus(corpora.TextCorpus):
 	def get_texts(self):
 		total_docs = 0
 		if os.path.isdir( self.input ):
 			# Read two levels of files
-			filenames = []
-			filenames += glob.glob( '{}/*'.format( self.input ) )
+			filenames = glob.glob( '{}/*'.format( self.input ) )
 			for filename in filenames:
 				if os.path.isdir( filename ):
 					filenames += glob.glob( '{}/*'.format( filename ) )
+
 			for filename in filenames:
 				if not os.path.isdir( filename ):
 					with utils.smart_open( filename ) as f:
 						tokens = WHITESPACES.split( LINEBREAKS.sub( ' ', f.read().decode( 'utf-8', 'ignore' ) ).strip() )
-						yield tokens
+						yield preprocess(tokens)
 						total_docs += 1
 		else:
 			with utils.smart_open( self.input ) as f:
 				for line in f:
 					tokens = WHITESPACES.split( line[:-1].decode( 'utf-8', 'ignore' ) )
-					yield tokens
+					yield preprocess(tokens)
 					total_docs += 1
 
 		self.length = total_docs
@@ -59,8 +67,9 @@ class TrainGensim( object ):
 			os.makedirs( model_path )
 
 		# Generate gensim objects
+		logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 		corpus = TermiteCorpus( corpus_path )
-		corpus.dictionary.filter_extremes()  # remove words that are too frequent/too infrequent, stopwords
+		corpus.dictionary.filter_extremes(no_above=0.2)  # remove words that are too frequent/too infrequent
 		model = models.LdaModel( corpus, id2word = corpus.dictionary, num_topics = num_topics, passes = num_passes )
 
 		filename = '{}/{}'.format( model_path, DICTIONARY_FILENAME )

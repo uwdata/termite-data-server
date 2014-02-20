@@ -136,7 +136,7 @@ function __train_gensim__ {
 	echo
 	echo "bin/train_gensim.py $CORPUS_PATH $MODEL_PATH"
 	echo
-	bin/train_gensim.py $CORPUS_PATH $MODEL_PATH
+	bin/train_gensim.py $CORPUS_PATH $MODEL_PATH --passes 10
 	echo
 }
 
@@ -180,7 +180,7 @@ then
 			IMPORT_MODEL=__import_${MODEL}__
 			MODEL_PATH=$DATASET_PATH/model-$MODEL
 			APP_IDENTIFIER=${DATASET}_${MODEL}
-			
+
 			bin/setup_web2py.sh
 			__create_folder__ data
 			__create_folder__ data/demo
