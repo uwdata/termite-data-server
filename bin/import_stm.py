@@ -61,7 +61,7 @@ data.TopicIndexJSON <- toJSON( as.data.frame( temp.TopicIndexValues ), pretty = 
 write( data.TopicIndexJSON, file = app.path.TopicIndex )
 
 # Doc-Topic Matrix
-# Tab-seperated with no headers. Theta (D by K)
+# Tab-separated with no headers. Theta (D by K)
 rownames( data.DocTopicMatrix ) <- temp.DocIDs
 colnames( data.DocTopicMatrix ) <- temp.TopicIndex
 data.DocTopicMatrixJSON <- toJSON( data.DocTopicMatrix, pretty = TRUE )
