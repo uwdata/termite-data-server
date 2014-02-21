@@ -28,6 +28,12 @@ function __fetch_nsf127992__ {
 	CORPUS_PATH=$CORPUS_PATH/nsf127992.txt
 }
 
+function __fetch_nsf25k__ {
+	bin/fetch_nsf25k.py $DATASET_PATH
+	META_PATH=
+	CORPUS_PATH=$CORPUS_PATH/nsf25k.txt
+}
+
 function __fetch_nsf10k__ {
 	bin/fetch_nsf10k.py $DATASET_PATH
 	META_PATH=
@@ -162,7 +168,7 @@ function __import_gensim__ {
 if [ $# -ge 1 ] && [ "$1" != "-h" ] && [ "$1" != "--help" ]
 then
 	DATASET=$1
-	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ]
+	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf25k" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ]
 	then
 		FETCH_DATASET=__fetch_${DATASET}__
 		DATASET_PATH=data/demo/$DATASET

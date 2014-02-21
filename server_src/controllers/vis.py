@@ -1,25 +1,20 @@
 #!/usr/bin/env python
 
 from core import TermiteCore
-from lda import LDA
+from GroupInABox import GroupInABox as GroupInABoxModel
 
 def index():
 	core = TermiteCore( request, response )
 	return core.GenerateResponse()
 
-def TermTopicMatrix():
+def GroupInABox():
 	core = TermiteCore( request, response )
-	lda = LDA( request )
-	termIndex, termMaxCount = lda.GetTermIndex()
-	topicIndex, topicMaxCount = lda.GetTopicIndex()
-	termTopicMatrix = lda.GetTermTopicMatrix()
-	return core.GenerateResponse( lda.params, {
-		'termCount' : len(termIndex),
-		'termMaxCount' : termMaxCount,
-		'topicCount' : len(topicIndex),
-		'topicMaxCount' : topicMaxCount,
-		'TermTopicMatrix' : termTopicMatrix,
-		'TermIndex' : termIndex,
-		'TopicIndex' : topicIndex
+	giab = GroupInABoxModel( request )
+	topicCooccurrence = giab.GetTopicCooccurrence()
+	topTermsPerTopic, termSet = giab.GetTopTermsPerTopic()
+	termCoFreqs = giab.GetTermCoFreqs( termSet = termSet )
+	return core.GenerateResponse( giab.params, {
+		'TopTermsPerTopic' : topTermsPerTopic,
+		'TermCoFreqs' : termCoFreqs,
+		'TopicCooccurrence' : topicCooccurrence
 	})
-

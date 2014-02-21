@@ -39,7 +39,7 @@ class TermiteCore:
 				return None
 			
 			app_data_path = '{}/data'.format( self.request.folder )
-			folders = []
+			folders = [ 'vis' ]
 			for folder in os.listdir( app_data_path ):
 				app_data_subpath = '{}/{}'.format( app_data_path, folder )
 				if os.path.isdir( app_data_subpath ):
@@ -67,6 +67,10 @@ class TermiteCore:
 					'DocMeta',
 					'TermFreqs',
 					'TermCoFreqs'
+				]
+			elif model == 'vis':
+				return [
+					'GroupInABox'
 				]
 			else:
 				return []
@@ -143,7 +147,8 @@ class TermiteCore:
 		dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 		
 		# Workaround while we build up the server-client architecture
-		self.response.headers['Access-Control-Allow-Origin'] = 'http://' + self.request.env['REMOTE_ADDR'] + ':8080'
+		acceptedIPs = [ 'http://' + self.request.env['REMOTE_ADDR'] + ':8080', 'http://127.0.0.1:8000' ]
+		self.response.headers['Access-Control-Allow-Origin'] = ', '.join(acceptedIPs)
 		if self.IsJsonFormat():
 			return dataStr
 		else:
