@@ -36,7 +36,7 @@ temp.DocIndex <- 1:temp.DocCount
 temp.DocIndexValues <- cbind( temp.DocIndex, temp.DocIDs )
 temp.DocIndexHeader <- c( "index", "docID" )
 colnames( temp.DocIndexValues ) <- temp.DocIndexHeader
-data.DocIndexJSON <- toJSON( as.data.frame( temp.DocIndexValues ), pretty = TRUE )
+data.DocIndexJSON <- toJSON( as.data.frame( temp.DocIndexValues ), pretty = TRUE, digits = 10 )
 write( data.DocIndexJSON, file = app.path.DocIndex )
 
 # Term Index
@@ -47,7 +47,7 @@ temp.TermIndex <- 1:temp.TermCount
 temp.TermIndexValues = cbind( temp.TermIndex, temp.TermFreq, temp.TermText )
 temp.TermIndexHeader = c( "index", "freq", "text" )
 colnames( temp.TermIndexValues ) <- temp.TermIndexHeader
-data.TermIndexJSON <- toJSON( as.data.frame( temp.TermIndexValues ), pretty = TRUE )
+data.TermIndexJSON <- toJSON( as.data.frame( temp.TermIndexValues ), pretty = TRUE, digits = 10 )
 write( data.TermIndexJSON, file = app.path.TermIndex )
 
 # Topic Index
@@ -57,21 +57,21 @@ temp.TopicIndex <- 1:temp.TopicCount
 temp.TopicIndexValues = cbind( temp.TopicIndex, temp.TopicFreq )
 temp.TopicIndexHeader = c( "index", "freq" )
 colnames( temp.TopicIndexValues ) <- temp.TopicIndexHeader
-data.TopicIndexJSON <- toJSON( as.data.frame( temp.TopicIndexValues ), pretty = TRUE )
+data.TopicIndexJSON <- toJSON( as.data.frame( temp.TopicIndexValues ), pretty = TRUE, digits = 10 )
 write( data.TopicIndexJSON, file = app.path.TopicIndex )
 
 # Doc-Topic Matrix
 # Tab-separated with no headers. Theta (D by K)
 rownames( data.DocTopicMatrix ) <- temp.DocIDs
 colnames( data.DocTopicMatrix ) <- temp.TopicIndex
-data.DocTopicMatrixJSON <- toJSON( data.DocTopicMatrix, pretty = TRUE )
+data.DocTopicMatrixJSON <- toJSON( data.DocTopicMatrix, pretty = TRUE, digits = 10 )
 write( data.DocTopicMatrixJSON, file = app.path.DocTopicMatrix )
 
 # Term-Topic Matrix
 # Tab-separated with no headers. Beta (V by K)
 rownames( data.TermTopicMatrix ) <- temp.TermText
 colnames( data.TermTopicMatrix ) <- temp.TopicIndex
-data.TermTopicMatrixJSON <- toJSON( data.TermTopicMatrix, pretty = TRUE )
+data.TermTopicMatrixJSON <- toJSON( data.TermTopicMatrix, pretty = TRUE, digits = 10 )
 write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 
 """
