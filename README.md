@@ -4,7 +4,7 @@ Data Server for Topic Models
 Termite is a visual analysis tool for inspecting the output of statistical topic models.
 
 The tool contains two components:
-  * **[Termite Data Server](http://github.com/uwdata/termite-data-server)** for processing the output of topic models and providing the content as a web service
+  * **[Termite Data Server](http://github.com/uwdata/termite-data-server)** for processing the output of topic models and distributing the content as a web service
   * **[Termite Visualizations](http://github.com/uwdata/termite-visualizations)** for visualizing topic model outputs in a web browser
 
 This repository contains the data server component, which includes:
