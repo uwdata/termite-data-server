@@ -68,6 +68,7 @@ class CovariateChart:
 	def GetTopTerms( self, params = None ):
 		if params is None:
 			params = self.params
+		termLimit = params['termLimit']
 		termIndex, _ = self.GetTermIndex( params )
 		termSet = frozenset( d['text'] for d in termIndex )
 		topicIndex = params['topicIndex']
@@ -79,6 +80,6 @@ class CovariateChart:
 		else:
 			submatrix = { term : matrix[term][topicIndex] for term in termSet }
 		subterms = sorted( submatrix.iteritems(), key = operator.itemgetter(1) )
-		subterms = subterms[-5:]
+		subterms = subterms[-termLimit:]
 		subterms.reverse()
 		return subterms
