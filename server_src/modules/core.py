@@ -70,7 +70,8 @@ class TermiteCore:
 				]
 			elif model == 'vis':
 				return [
-					'GroupInABox'
+					'GroupInABox',
+					'CovariateChart'
 				]
 			else:
 				return []
