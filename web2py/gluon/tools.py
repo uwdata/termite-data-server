@@ -23,6 +23,7 @@ import urllib2
 import Cookie
 import cStringIO
 import ConfigParser
+import email.utils
 from email import MIMEBase, MIMEMultipart, MIMEText, Encoders, Header, message_from_string, Charset
 
 from gluon.contenttype import contenttype
@@ -277,7 +278,8 @@ class Mail(object):
         sender=None,
         encoding='utf-8',
         raw=False,
-        headers={}
+        headers={},
+        from_address=None
     ):
         """
         Sends an email using data specified in constructor
@@ -307,8 +309,9 @@ class Mail(object):
             encoding: encoding of all strings passed to this method (including
                       message bodies)
             headers: dictionary of headers to refine the headers just before
-                     sending mail, e.g. {'Return-Path' : 'bounces@example.org'}
-
+                     sending mail, e.g. {'X-Mailer' : 'web2py mailer'}
+            from_address: address to appear in the 'From:' header, this is not the
+                          envelope sender. If not specified the sender will be used
         Examples:
 
             #Send plain text message to single address:
@@ -654,7 +657,10 @@ class Mail(object):
             # no cryptography process as usual
             payload = payload_in
 
-        payload['From'] = encoded_or_raw(sender.decode(encoding))
+        if from_address:
+            payload['From'] = encoded_or_raw(from_address.decode(encoding))
+        else:
+            payload['From'] = encoded_or_raw(sender.decode(encoding))
         origTo = to[:]
         if to:
             payload['To'] = encoded_or_raw(', '.join(to).decode(encoding))
@@ -666,8 +672,7 @@ class Mail(object):
         if bcc:
             to.extend(bcc)
         payload['Subject'] = encoded_or_raw(subject.decode(encoding))
-        payload['Date'] = time.strftime("%a, %d %b %Y %H:%M:%S +0000",
-                                        time.gmtime())
+        payload['Date'] = email.utils.formatdate()
         for k, v in headers.iteritems():
             payload[k] = encoded_or_raw(v.decode(encoding))
         result = {}
@@ -752,7 +757,8 @@ class Recaptcha(DIV):
         error_message='invalid',
         label='Verify:',
         options='',
-        comment = ''
+        comment = '',
+        ajax=False
     ):
         self.request_vars = request and request.vars or current.request.vars
         self.remote_addr = request.env.remote_addr
@@ -767,6 +773,7 @@ class Recaptcha(DIV):
         self.label = label
         self.options = options
         self.comment = comment
+        self.ajax = ajax
 
     def _validate(self):
 
@@ -820,18 +827,43 @@ class Recaptcha(DIV):
             server = self.API_SSL_SERVER
         else:
             server = self.API_SERVER
-        captcha = DIV(
-            SCRIPT("var RecaptchaOptions = {%s};" % self.options),
-            SCRIPT(_type="text/javascript",
-                   _src="%s/challenge?k=%s%s" % (server, public_key, error_param)),
-            TAG.noscript(
-                IFRAME(
-                    _src="%s/noscript?k=%s%s" % (
-                        server, public_key, error_param),
-                    _height="300", _width="500", _frameborder="0"), BR(),
-                INPUT(
-                    _type='hidden', _name='recaptcha_response_field',
-                    _value='manual_challenge')), _id='recaptcha')
+        if not self.ajax:
+            captcha = DIV(
+                SCRIPT("var RecaptchaOptions = {%s};" % self.options),
+                SCRIPT(_type="text/javascript",
+                       _src="%s/challenge?k=%s%s" % (server, public_key, error_param)),
+                TAG.noscript(
+                    IFRAME(
+                        _src="%s/noscript?k=%s%s" % (
+                            server, public_key, error_param),
+                        _height="300", _width="500", _frameborder="0"), BR(),
+                    INPUT(
+                        _type='hidden', _name='recaptcha_response_field',
+                        _value='manual_challenge')), _id='recaptcha')
+
+        else: #use Google's ajax interface, needed for LOADed components
+
+            url_recaptcha_js = "%s/js/recaptcha_ajax.js" % server
+            RecaptchaOptions = "var RecaptchaOptions = {%s}" % self.options
+            script = """%(options)s;
+            jQuery.getScript('%(url)s',function() {
+                Recaptcha.create('%(public_key)s',
+                    'recaptcha',jQuery.extend(RecaptchaOptions,{'callback':Recaptcha.focus_response_field}))
+                }) """ % ({'options':RecaptchaOptions,'url':url_recaptcha_js,'public_key':public_key})
+            captcha = DIV(
+                SCRIPT(
+                    script,
+                    _type="text/javascript",
+                ),
+                TAG.noscript(
+                    IFRAME(
+                        _src="%s/noscript?k=%s%s" % (
+                            server, public_key, error_param),
+                        _height="300", _width="500", _frameborder="0"), BR(),
+                    INPUT(
+                        _type='hidden', _name='recaptcha_response_field',
+                        _value='manual_challenge')), _id='recaptcha')
+
         if not self.errors.captcha:
             return XML(captcha).xml()
         else:
@@ -1125,12 +1157,12 @@ class Auth(object):
                    f=f, args=args, vars=vars, scheme=scheme)
 
     def here(self):
-        return URL(args=current.request.args,vars=current.request.vars)
+        return URL(args=current.request.args,vars=current.request.get_vars)
 
     def __init__(self, environment=None, db=None, mailer=True,
                  hmac_key=None, controller='default', function='user',
                  cas_provider=None, signature=True, secure=False,
-                 csrf_prevention=True):
+                 csrf_prevention=True, propagate_extension=None):
         """
         auth=Auth(db)
 
@@ -1153,20 +1185,32 @@ class Auth(object):
         self.user_groups = auth and auth.user_groups or {}
         if secure:
             request.requires_https()
-        if auth and auth.last_visit and auth.last_visit + \
-                datetime.timedelta(days=0, seconds=auth.expiration) > request.now:
-            self.user = auth.user
-            # this is a trick to speed up sessions
-            if (request.now - auth.last_visit).seconds > (auth.expiration / 10):
-                auth.last_visit = request.now
+        now = request.now        
+        # if we have auth info
+        #    if not expired it, used it
+        #    if expired, clear the session
+        # else, only clear auth info in the session
+        if auth:
+            delta = datetime.timedelta(days=0, seconds=auth.expiration)
+            if auth.last_visit and auth.last_visit + delta > now:
+                self.user = auth.user
+                # this is a trick to speed up sessions to avoid many writes
+                if (now - auth.last_visit).seconds > (auth.expiration / 10):
+                    auth.last_visit = request.now
+            else:
+                self.user = None
+                if session.auth:
+                    del session.auth
+                session.renew(clear_session=True)                
         else:
             self.user = None
             if session.auth:
-                del session.auth
+                del session.auth            
         # ## what happens after login?
 
         url_index = URL(controller, 'index')
-        url_login = URL(controller, function, args='login')
+        url_login = URL(controller, function, args='login',
+                        extension = propagate_extension)
         # ## what happens after registration?
 
         settings = self.settings = Settings()
@@ -1398,24 +1442,27 @@ class Auth(object):
             for item in items:
                 self.bar[0][3].append((item['name'], False, item['href']))
 
-        def bootstrap():  # Default web2py scaffolding
-            self.bar = UL(LI(Anr(I(_class=items[0]['icon']),
+        def bootstrap3():  # Default web2py scaffolding
+            def rename(icon): return icon+' '+icon.replace('icon','glyphicon')
+            self.bar = UL(LI(Anr(I(_class=rename('icon '+items[0]['icon'])),
                                  ' ' + items[0]['name'],
-                                 _href=items[0]['href'])),
-                          _class='dropdown-menu')
+                                 _href=items[0]['href'])),_class='dropdown-menu')
             del items[0]
             for item in items:
-                self.bar.insert(-1, LI(Anr(I(_class=item['icon']),
+                self.bar.insert(-1, LI(Anr(I(_class=rename('icon '+item['icon'])),
                                            ' ' + item['name'],
                                            _href=item['href'])))
             self.bar.insert(-1, LI('', _class='divider'))
             if self.user_id:
                 self.bar = LI(Anr(prefix, user_identifier, _href='#'),
-                              self.bar,
-                              _class='dropdown')
+                              self.bar,_class='dropdown')
             else:
-                self.bar = LI(Anr(T('Login'), _href='#'), self.bar,
+                self.bar = LI(Anr(T('Login'),
+                                  _href='#',_class="dropdown-toggle",
+                                  data={'toggle':'dropdown'}), self.bar,
                               _class='dropdown')
+                
+
 
         def bare():
             """ In order to do advanced customization we only need the
@@ -1498,7 +1545,7 @@ class Auth(object):
             self.bar = bare
 
         options = {'asmenu': menu,
-                   'dropdown': bootstrap,
+                   'dropdown': bootstrap3,
                    'bare': bare
                    }  # Define custom modes.
 
@@ -2015,8 +2062,9 @@ class Auth(object):
         if user and user.get(settings.passfield, False):
             password = settings.table_user[
                 settings.passfield].validate(password)[0]
-            if not user.registration_key and password == \
-                user[settings.passfield]:
+            if ((user.registration_key is None or 
+                 not user.registration_key.strip()) and 
+                password == user[settings.passfield]):
                 self.login_user(user)
                 return user
         else:
@@ -2112,7 +2160,7 @@ class Auth(object):
         success = False
         if row:
             userfield = self.settings.login_userfield or 'username' \
-                if 'username' in table_user.fields else 'email'
+                if 'username' in table.fields else 'email'
             # If ticket is a service Ticket and RENEW flag respected
             if ticket[0:3] == 'ST-' and \
                     not ((row.renew and renew) ^ renew):
@@ -2302,8 +2350,8 @@ class Auth(object):
                     elif temp_user.registration_key in ('disabled', 'blocked'):
                         response.flash = self.messages.login_disabled
                         return form
-                    elif not temp_user.registration_key is None and \
-                            temp_user.registration_key.strip():
+                    elif (not temp_user.registration_key is None 
+                          and temp_user.registration_key.strip()):
                         response.flash = \
                             self.messages.registration_verifying
                         return form
@@ -2915,7 +2963,7 @@ class Auth(object):
                         formname='reset_password', dbio=False,
                         onvalidation=onvalidation,
                         hideerror=self.settings.hideerror):
-            user = table_user(**{userfield:form.vars.email})
+            user = table_user(**{userfield:form.vars.get(userfield)})
             if not user:
                 session.flash = self.messages['invalid_%s' % userfield]
                 redirect(self.url(args=request.args),
@@ -3196,7 +3244,7 @@ class Auth(object):
         """
         if current.request.ajax:
             raise HTTP(403, 'ACCESS DENIED')
-        return 'ACCESS DENIED'
+        return self.messages.access_denied
 
     def requires(self, condition, requires_login=True, otherwise=None):
         """
@@ -3659,9 +3707,8 @@ class Auth(object):
         # resolve=False allows initial setup without wiki redirection
         wiki = None
         if resolve:
-            action = str(current.request.args(0)).startswith("_")
-            if slug and not action:
-                wiki = self._wiki.read(slug,force_render)
+            if slug:
+                wiki = self._wiki.read(slug, force_render)
                 if isinstance(wiki, dict) and wiki.has_key('content'):
                     # We don't want to return a dict object, just the wiki
                     wiki = wiki['content']
@@ -4830,9 +4877,15 @@ class Service(object):
         for method, (function, returns, args, doc) in procedures.iteritems():
             dispatcher.register_function(method, function, returns, args, doc)
         if request.env.request_method == 'POST':
+            fault = {}
             # Process normal Soap Operation
             response.headers['Content-Type'] = 'text/xml'
-            return dispatcher.dispatch(request.body.read())
+            xml = dispatcher.dispatch(request.body.read(), fault=fault)
+            if fault:
+                # May want to consider populating a ticket here...
+                response.status = 500
+            # return the soap response
+            return xml
         elif 'WSDL' in request.vars:
             # Return Web Service Description
             response.headers['Content-Type'] = 'text/xml'
@@ -5395,7 +5448,7 @@ class Wiki(object):
         if (auth.user and
             check_credentials(current.request, gae_login=False) and
             not 'wiki_editor' in auth.user_groups.values() and
-            self.settings.groups is None):
+            self.settings.groups == auth.user_groups.values()):
             group = db.auth_group(role='wiki_editor')
             gid = group.id if group else db.auth_group.insert(
                 role='wiki_editor')
@@ -5514,16 +5567,14 @@ class Wiki(object):
         elif slug in '_search':
             return self.search()
         page = self.auth.db.wiki_page(slug=slug)
-        if not page:
-            redirect(URL(args=('_create', slug)))
-        if not self.can_read(page):
+        if page and (not self.can_read(page)):
             return self.not_authorized(page)
         if current.request.extension == 'html':
             if not page:
-                url = URL(args=('_edit', slug))
+                url = URL(args=('_create', slug))
                 return dict(content=A('Create page "%s"' % slug, _href=url, _class="btn"))
             else:
-                html = page.html if not force_render else self.get_renderer(page)
+                html = page.html if not force_render else self.get_renderer()(page)
                 content = XML(self.fix_hostname(html))
                 return dict(title=page.title,
                             slug=page.slug,
@@ -5893,7 +5944,7 @@ class Wiki(object):
 class Config(object):
     def __init__(
         self,
-                filename,
+        filename,
         section,
         default_values={}
     ):

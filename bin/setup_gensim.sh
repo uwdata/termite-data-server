@@ -12,18 +12,10 @@ then
 	echo "    Gensim is not downloaded by default."
 	echo "    This script assumes that easy_install is available,"
 	echo "    and that SciPy and NumPy are already installed."
+	echo "    Running this script requires root access."
 	echo
 	exit -1
 fi
-
-function __create_folder__ {
-	FOLDER=$1
-	if [ ! -d $FOLDER ]
-	then
-		echo "    Creating folder: $FOLDER"
-		mkdir $FOLDER
-	fi
-}
 
 function __setup_gensim__ {
 	EXTERNALS_SUBPATH=$EXTERNALS_PATH/gensim-0.8.9
@@ -37,11 +29,12 @@ function __setup_gensim__ {
 
 		if [ ! -d "$EXTERNALS_SUBPATH" ]
 		then
-			__create_folder__ $EXTERNALS_PATH
-			__create_folder__ $EXTERNALS_SUBPATH
+			echo "    Creating folders '$EXTERNALS_SUBPATH'..."
+			mkdir -p $EXTERNALS_PATH
+			mkdir -p $EXTERNALS_SUBPATH
 			echo "    Downloading..."
 			curl --insecure --location http://pypi.python.org/packages/source/g/gensim/gensim-0.8.9.tar.gz > $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz
-			echo "    Extracting readme..."
+			echo "    Extracting README.rst..."
 			tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9/README.rst &&\
 				mv gensim-0.8.9/README.rst $EXTERNALS_SUBPATH &&\
 				rmdir gensim-0.8.9
@@ -50,8 +43,9 @@ function __setup_gensim__ {
 			echo "    Already downloaded: $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz"
 		fi
 		
-		__create_folder__ $TOOLS_PATH
-		__create_folder__ $TOOLS_SUBPATH
+		echo "    Creating folders '$TOOLS_SUBPATH'..."
+		mkdir -p $TOOLS_PATH
+		mkdir -p $TOOLS_SUBPATH
 		echo "    Uncompressing..."
 		tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9 &&\
 			mv gensim-0.8.9/* $TOOLS_SUBPATH &&\
