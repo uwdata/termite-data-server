@@ -201,6 +201,8 @@ echo
 echo "    nsf127992 | NSF grants"
 echo "              | 127,992 abstracts"
 echo
+echo "    poliblogs | Poliblogs"
+echo
 echo "Available models:"
 echo "       mallet | MAchine Learning for LanguagE Toolkit (MALLET)"
 echo "              | Default topic model if none is specified"

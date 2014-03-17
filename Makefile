@@ -40,15 +40,17 @@ tools/stmt:
 ################################################################################
 # Datasets
 
+data/demo/20newsgroups:
+	bin/fetch_20newsgroups.sh
+
 data/demo/infovis:
-	mkdir -p data
-	mkdir -p data/demo
-	bin/fetch_infovis.sh data/demo/infovis
+	bin/fetch_infovis.sh
 
 data/demo/poliblogs:
-	mkdir -p data
-	mkdir -p data/demo
-	bin/fetch_poliblogs.sh data/demo/poliblogs
+	bin/fetch_poliblogs.sh
+
+data/demo/nsf127992:
+	bin/fetch_nsf127992.sh
 
 ################################################################################
 # Demos

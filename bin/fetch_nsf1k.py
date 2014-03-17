@@ -44,7 +44,7 @@ def WriteAll( docIDs ):
 
 corpus, docIDs = ReadAll( [ "visualization", "visualizations", "user", "users", "evaluation", "evaluations", "hci", "cognitive", "cognition", "psychology", "design", "designs", "human", "humans", "information", "data", "retrieve", "retrieval", "classify", "classification", "categorize", "category", "categories" ] )
 
-print json.dumps( { key : len(docs) for key, docs in corpus.iteritems() }, indent = 2, sort_keys = True )
-print len(docIDs)
+# print json.dumps( { key : len(docs) for key, docs in corpus.iteritems() }, indent = 2, sort_keys = True )
+# print len(docIDs)
 
 WriteAll( docIDs )
