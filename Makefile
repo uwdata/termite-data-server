@@ -22,19 +22,19 @@ web2py:
 # Topic modeling tools
 #   mallet, treetm, stm, gensim, stmt
 
-tools/mallet mallet:
+tools/mallet:
 	bin/setup_mallet.sh
 
-tools/gensim gensim:
-	bin/setup_gensim.sh
-
-tools/stm stm:
-	bin/setup_stm.sh
-
-tools/treetm treetm:
+tools/treetm:
 	bin/setup_treetm.sh
 
-tools/stmt stmt:
+tools/stm:
+	bin/setup_stm.sh
+
+tools/gensim:
+	bin/setup_gensim.sh
+
+tools/stmt:
 	bin/setup_stmt.sh
 
 ################################################################################
@@ -55,6 +55,8 @@ data/demo/poliblogs:
 #   Download and build an LDA model using the InfoVis dataset
 
 demo: apps/infovis_mallet
+
+stm: apps/poliblogs_stm
 
 apps/infovis_mallet: web2py tools/mallet data/demo/infovis
 	./demo.sh infovis mallet
