@@ -8,9 +8,10 @@
 # Default configuration
 #   Install web2py framework
 #   Install MALLET toolkit
+#   Build all utilities
 #   Build all demos
 
-all: web2py tools/mallet demo
+all: web2py tools/mallet utils demo
 
 ################################################################################
 # Web framework
@@ -66,6 +67,14 @@ apps/infovis_mallet: web2py tools/mallet data/demo/infovis
 apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
 	bin/import_stm.py poliblogs_stm data/demo/poliblogs/corpus/poliblogs2008.RData
 	bin/import_corpus.py poliblogs_stm --csv data/demo/poliblogs/corpus/poliblogs2008.csv
+
+################################################################################
+# Other utilities
+
+utils: utils/mallet/CorpusWriter.jar
+
+utils/mallet/CorpusWriter.jar:
+	$(MAKE) -C utils/mallet
 
 ################################################################################
 
