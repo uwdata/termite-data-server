@@ -65,7 +65,7 @@ class ImportGensim( ImportAbstraction ):
 			json.dump( docsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
 def main():
-	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
+	parser = argparse.ArgumentParser( description = 'Import a Gensim topic model as a web2py application.' )
 	parser.add_argument( 'app_name'  , type = str, help = 'Web2py application identifier'                  )
 	parser.add_argument( 'dictionary', type = str, help = 'File containing a gensim dictionary'            )
 	parser.add_argument( 'model'     , type = str, help = 'File containing a gensim LDA model'             )

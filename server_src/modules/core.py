@@ -70,7 +70,8 @@ class TermiteCore:
 				]
 			elif model == 'vis':
 				return [
-					'GroupInABox'
+					'GroupInABox',
+					'CovariateChart'
 				]
 			else:
 				return []
@@ -149,7 +150,7 @@ class TermiteCore:
 		# Workaround while we build up the server-client architecture
 #		acceptedIPs = [ 'http://' + self.request.env['REMOTE_ADDR'] + ':8080', 'http://127.0.0.1:8000' ]
 #		self.response.headers['Access-Control-Allow-Origin'] = ', '.join(acceptedIPs)
-		self.response.headers['Access-Control-Allow-Origin'] = 'http://127.0.0.1:8000'
+		self.response.headers['Access-Control-Allow-Origin'] = 'http://localhost:8888'
 		if self.IsJsonFormat():
 			return dataStr
 		else:

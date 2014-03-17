@@ -2,6 +2,7 @@
 
 from core import TermiteCore
 from GroupInABox import GroupInABox as GroupInABoxModel
+from CovariateChart import CovariateChart as CovariateChartModel
 
 def index():
 	core = TermiteCore( request, response )
@@ -17,4 +18,14 @@ def GroupInABox():
 		'TopTermsPerTopic' : topTermsPerTopic,
 		'TermCoFreqs' : termCoFreqs,
 		'TopicCooccurrence' : topicCooccurrence
+	})
+
+def CovariateChart():
+	core = TermiteCore( request, response )
+	chart = CovariateChartModel( request )
+	topTerms = chart.GetTopTerms()
+	docTopics = chart.GetDocTopics()
+	return core.GenerateResponse( chart.params, {
+		'TopTerms' : topTerms,
+		'DocTopics' : docTopics
 	})

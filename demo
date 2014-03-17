@@ -1,15 +1,5 @@
 #!/bin/bash
 
-function __create_folder__ {
-	FOLDER=$1
-	TAB=$2
-	if [ ! -d $FOLDER ]
-	then
-		echo "${TAB}Creating folder: $FOLDER"
-		mkdir $FOLDER
-	fi
-}
-
 function __fetch_infovis__ {
 	bin/fetch_infovis.sh $DATASET_PATH
 	META_PATH=$CORPUS_PATH/infovis-papers-meta.txt
@@ -18,31 +8,31 @@ function __fetch_infovis__ {
 
 function __fetch_20newsgroups__ {
 	bin/fetch_20newsgroups.sh $DATASET_PATH
-	META_PATH=
+	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH
 }
 
 function __fetch_nsf127992__ {
 	bin/fetch_nsf127992.sh $DATASET_PATH
-	META_PATH=
+	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH/nsf127992.txt
 }
 
 function __fetch_nsf25k__ {
 	bin/fetch_nsf25k.py $DATASET_PATH
-	META_PATH=
+	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH/nsf25k.txt
 }
 
 function __fetch_nsf10k__ {
 	bin/fetch_nsf10k.py $DATASET_PATH
-	META_PATH=
+	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH/nsf10k.txt
 }
 
 function __fetch_nsf1k__ {
 	bin/fetch_nsf1k.py $DATASET_PATH
-	META_PATH=
+	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH/nsf1k.txt
 }
 
@@ -63,7 +53,7 @@ function __import_mallet__ {
 	echo
 	bin/import_mallet.py $APP_IDENTIFIER $MODEL_PATH
 	echo
-	if [ "$META_PATH" == "" ]
+	if [ "$META_PATH" == "NONE" ]
 	then
 		echo "bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet"
 		echo
@@ -93,7 +83,7 @@ function __import_treetm__ {
 	echo
 	bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH
 	echo
-	if [ "$META_PATH" == "" ]
+	if [ "$META_PATH" == "NONE" ]
 	then
 		echo "bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet"
 		echo
@@ -123,7 +113,7 @@ function __import_stmt__ {
 	echo
 	bin/import_stmt.py $APP_IDENTIFIER $MODEL_PATH
 	echo
-	if [ "$META_PATH" == "" ]
+	if [ "$META_PATH" == "NONE" ]
 	then
 		echo "bin/import_corpus.py $APP_IDENTIFIER"
 		echo
@@ -142,7 +132,7 @@ function __train_gensim__ {
 	echo
 	echo "bin/train_gensim.py $CORPUS_PATH $MODEL_PATH"
 	echo
-	bin/train_gensim.py $CORPUS_PATH $MODEL_PATH
+	bin/train_gensim.py $CORPUS_PATH $MODEL_PATH --passes 10
 	echo
 }
 
@@ -153,7 +143,7 @@ function __import_gensim__ {
 	echo
 	bin/import_gensim.py $APP_IDENTIFIER $MODEL_PATH/corpus.dict $MODEL_PATH/output.model
 	echo
-	if [ "$META_PATH" == "" ]
+	if [ "$META_PATH" == "NONE" ]
 	then
 		echo "bin/import_corpus.py $APP_IDENTIFIER"
 		echo
@@ -173,7 +163,7 @@ then
 		FETCH_DATASET=__fetch_${DATASET}__
 		DATASET_PATH=data/demo/$DATASET
 		CORPUS_PATH=$DATASET_PATH/corpus
-		META_PATH=
+		META_PATH="NONE"
 		if [ $# -ge 2 ]
 		then
 			MODEL=$2
@@ -186,10 +176,10 @@ then
 			IMPORT_MODEL=__import_${MODEL}__
 			MODEL_PATH=$DATASET_PATH/model-$MODEL
 			APP_IDENTIFIER=${DATASET}_${MODEL}
-			
+
 			bin/setup_web2py.sh
-			__create_folder__ data
-			__create_folder__ data/demo
+			mkdir -p data
+			mkdir -p data/demo
 			$FETCH_DATASET
 			$TRAIN_MODEL
 			$IMPORT_MODEL
@@ -224,7 +214,7 @@ echo "              | http://nlp.stanford.edu/downloads/tmt"
 echo
 echo "          stm | Structural Topic Models"
 echo "              | Requires R"
-echo "              | http://scholar.harvard.edu/mroberts"
+echo "              | http://structuraltopicmodel.com"
 echo
 echo "       gensim | Gensim"
 echo "              | Requires numpy and scipy"

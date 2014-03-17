@@ -1222,9 +1222,12 @@ end tell
     url = get_url(ip, proto=proto, port=port)
 
     if not options.nobanner:
-        print 'please visit:'
-        print '\t', url
-        print 'use "kill -SIGTERM %i" to shutdown the web2py server' % os.getpid()
+        message = '\nplease visit:\n\t%s\n' % url
+        if sys.platform.startswith('win'):
+            message += 'use "taskkill /f /pid %i" to shutdown the web2py server\n\n' % os.getpid()
+        else:
+            message += 'use "kill -SIGTERM %i" to shutdown the web2py server\n\n' % os.getpid()
+        print message
 
     # enhance linecache.getline (used by debugger) to look at the source file
     # if the line was not found (under py2exe & when file was modified)

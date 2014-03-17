@@ -507,6 +507,8 @@ class Scheduler(MetaScheduler):
                   requires=IS_INT_IN_RANGE(-1, None)),
             Field('period', 'integer', default=60, comment='seconds',
                   requires=IS_INT_IN_RANGE(0, None)),
+            Field('prevent_drift', 'boolean', default=False,
+                  comment='Cron-like start_times between runs'),
             Field('timeout', 'integer', default=60, comment='seconds',
                   requires=IS_INT_IN_RANGE(0, None)),
             Field('sync_output', 'integer', default=0,
@@ -635,9 +637,15 @@ class Scheduler(MetaScheduler):
             else:
                 logger.info('nothing to do')
             return None
-        next_run_time = task.last_run_time + datetime.timedelta(
-            seconds=task.period)
         times_run = task.times_run + 1
+        if not task.prevent_drift:
+            next_run_time = task.last_run_time + datetime.timedelta(
+                seconds=task.period
+                )
+        else:
+            next_run_time = task.start_time + datetime.timedelta(
+                seconds=task.period * times_run
+            )
         if times_run < task.repeats or task.repeats == 0:
             #need to run (repeating task)
             run_again = True
@@ -912,10 +920,10 @@ class Scheduler(MetaScheduler):
                     )
                     if not task.task_name:
                         d['task_name'] = task.function_name
-                    task.update_record(**d)
+                    db((st.id==task.id) & (st.status.belongs((QUEUED, ASSIGNED)))).update(**d)
+                    db.commit()
                     wkgroups[gname]['workers'][myw]['c'] += 1
 
-        db.commit()
         #I didn't report tasks but I'm working nonetheless!!!!
         if x > 0:
             self.empty_runs = 0

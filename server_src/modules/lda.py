@@ -70,7 +70,10 @@ class LDA:
 		filename = os.path.join( self.request.folder, 'data/lda', 'term-topic-matrix.txt' )
 		with open( filename ) as f:
 			matrix = json.load( f, encoding = 'utf-8' )
-		submatrix = { term : matrix[term] for term in termSet }
+		if type(matrix) == list:
+			submatrix = { d['text'] : matrix[int(d['index'])] for d in termIndex }
+		else:
+			submatrix = { term : matrix[term] for term in termSet }
 		return submatrix
 	
 	def GetDocTopicMatrix( self, params = None ):
@@ -83,7 +86,10 @@ class LDA:
 		filename = os.path.join( self.request.folder, 'data/lda', 'doc-topic-matrix.txt' )
 		with open( filename ) as f:
 			matrix = json.load( f, encoding = 'utf-8' )
-		submatrix = { doc : matrix[doc] for doc in docSet }
+		if type(matrix) == list:
+			submatrix = { d['docID'] : matrix[int(d['index'])] for d in docIndex }
+		else:
+			submatrix = { doc : matrix[doc] for doc in docSet }
 		return submatrix
 	
 	def GetTopicCooccurrence( self, params = None ):

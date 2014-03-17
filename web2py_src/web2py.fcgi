@@ -4,7 +4,7 @@ import cgitb
 cgitb.enable()
 
 import os
-WEB2PY_PATH = os.path.dirname( os.path.abspath( __file__ ) )
+WEB2PY_PATH = os.path.dirname( os.path.abspath( __file__ ) )  # /u/jcchuang/.../TermiteDataServer/web2py
 ENVIRON = { 'web2py_path' : WEB2PY_PATH }
 
 import gluon.main

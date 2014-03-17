@@ -2,18 +2,13 @@
 {{include 'server.html'}}
 
 <div class="info">
-	<div class="heading">Server for Topic Model Visualization</div>
-	<div class="content">This server reads the output of <a href="http://www.cs.umd.edu/~ynhu/">tree topic models</a> and distributes the content over the internet. For more information, see the <a href="http://github.com/uwdata/termite-treetm">termite-treetm</a> github repository.</div>
+	<div class="heading">Data Server for Topic Models</div>
+	<div class="content">Termite is a visualization tool for inspecting the output of statistical topic models. The tool contains two components: data servers and web-based visualizations.</div>
+	<div class="content">This is a data server for processing the output of topic models (e.g., built using <a href="http://mallet.cs.umass.edu/">MALLET</a>, <a href="http://www.cs.umd.edu/~ynhu/">ITM</a>, <a href="http://structuraltopicmodel.com">STM</a>, etc.) and distributing the content as a web service. For more information, see the <a href="http://github.com/uwdata/termite-data-server">Termite Data Server GitHub repository</a>.</div>
 
-	<div class="heading">Setting up the 20-newsgroup dataset</div>
-	<div class="content">Run the following command to build three LDA models with 10, 15, and 20 latent topics. On a MacBook Pro, training takes about 15-20 minutes. Currently done in MALLET, but will switch over to TreeTM once we start exploring interactive updates.</div>
-	<div class="code">make</div>
-
-	<div class="heading">Accessing the 20-newsgroup topic models</div>
-	<div class="content">Once the web server is launched, data needed by group-in-a-box visualization can be access via:</div>
-	<div class="code"><a href="http://{{=request.env['HTTP_HOST']}}/10newsgroups/vis/GroupInABox">http://{{=request.env['HTTP_HOST']}}/10newsgroups/vis/GroupInABox</a>
-<a href="http://{{=request.env['HTTP_HOST']}}/15newsgroups/vis/GroupInABox">http://{{=request.env['HTTP_HOST']}}/15newsgroups/vis/GroupInABox</a>
-<a href="http://{{=request.env['HTTP_HOST']}}/20newsgroups/vis/GroupInABox">http://{{=request.env['HTTP_HOST']}}/20newsgroups/vis/GroupInABox</a></div>
+	<div class="heading">API Format</div>
+	<div class="code">http:// [server] / [dataset] / [model] / [attribute]</div>
+	<div class="content">By default, this server generates a human-readable HTML document (like this page!). To request a machine-readable response in JSON format, append <span class="code"><a href="http://{{=request.env['HTTP_HOST']+request.env['PATH_INFO']}}?format=json">?format=json</a></span> to any GET or POST actions.</div>
 </div>
 
 <div class="body">

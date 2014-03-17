@@ -1,70 +1,75 @@
-DEMO_PATH = data/itm
+# Makefile for Termite Data Server
+#
+# This file is intended for development use only.
+# All tools and folder structures should be ready for use, as they're stored in the git repo.
+#
 
-all: web2py tools/mallet tools/treetm apps/infovis_mallet apps/10newsgroups apps/15newsgroups apps/nsf10k_mallet apps/nsf25k_mallet apps/nsf1k_mallet apps/20newsgroups
+################################################################################
+# Default configuration
+#   Install web2py framework
+#   Install MALLET toolkit
+#   Build all demos
+
+all: web2py tools/mallet demo
+
+################################################################################
+# Web framework
 
 web2py:
 	bin/setup_web2py.sh
 
-mallet tools/mallet:
+################################################################################
+# Topic modeling tools
+#   mallet, treetm, stm, gensim, stmt
+
+tools/mallet:
 	bin/setup_mallet.sh
 
-gensim tools/gensim:
-	bin/setup_gensim.sh
-
-stm tools/stm:
-	bin/setup_stm.sh
-
-treetm tools/treetm:
+tools/treetm:
 	bin/setup_treetm.sh
 
-stmt tools/stmt:
+tools/stm:
+	bin/setup_stm.sh
+
+tools/gensim:
+	bin/setup_gensim.sh
+
+tools/stmt:
 	bin/setup_stmt.sh
 
-apps/infovis_mallet: web2py tools/mallet
-	./demo.sh infovis mallet
+################################################################################
+# Datasets
 
-apps/nsf1k_mallet: web2py tools/mallet data/demo/nsf127992
-	./demo.sh nsf1k mallet
-
-apps/nsf10k_mallet: web2py tools/mallet data/demo/nsf127992
-	./demo.sh nsf10k mallet
-
-apps/nsf25k_mallet: web2py tools/mallet data/demo/nsf127992
-	./demo.sh nsf25k mallet
-
-data/demo/nsf127992:
+data/demo/infovis:
 	mkdir -p data
 	mkdir -p data/demo
-	mkdir -p data/demo/nsf127992
-	bin/fetch_nsf127992.sh data/demo/nsf127992
-	
-data/itm/corpus:
+	bin/fetch_infovis.sh data/demo/infovis
+
+data/demo/poliblogs:
 	mkdir -p data
-	mkdir -p data/itm
-	bin/fetch_20newsgroups.sh data/itm
+	mkdir -p data/demo
+	bin/fetch_poliblogs.sh data/demo/poliblogs
 
-apps/10newsgroups: data/itm/corpus tools/mallet web2py
-	bin/train_mallet.sh data/itm/corpus data/itm/10newsgroups 10
-	bin/import_mallet.py 10newsgroups data/itm/10newsgroups
-	bin/import_corpus.py 10newsgroups --terms data/itm/10newsgroups/corpus.mallet
+################################################################################
+# Demos
+#   Download and build an LDA model using the InfoVis dataset
 
-apps/15newsgroups: data/itm/corpus tools/mallet web2py
-	bin/train_mallet.sh data/itm/corpus data/itm/15newsgroups 15
-	bin/import_mallet.py 15newsgroups data/itm/15newsgroups
-	cp -r apps/10newsgroups/data/corpus apps/15newsgroups/data/corpus
+demo: apps/infovis_mallet
 
-apps/20newsgroups: data/itm/corpus tools/mallet web2py
-	bin/train_mallet.sh data/itm/corpus data/itm/20newsgroups 20
-	bin/import_mallet.py 20newsgroups data/itm/20newsgroups
-	cp -r apps/10newsgroups/data/corpus apps/20newsgroups/data/corpus
+stm: apps/poliblogs_stm
+
+apps/infovis_mallet: web2py tools/mallet data/demo/infovis
+	./demo infovis mallet
+
+apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
+	bin/import_stm.py poliblogs_stm data/demo/poliblogs/corpus/poliblogs2008.RData
+	bin/import_corpus.py poliblogs_stm --csv data/demo/poliblogs/corpus/poliblogs2008.csv
+
+################################################################################
 
 clean:
 	rm -rf externals
-	rm -rf web2py
 	rm -rf tools/mallet*
-	rm -rf tools/treetm*
+	rm -rf tools/stm*
 	rm -rf data/demo/infovis apps/infovis_mallet web2py/applications/infovis_mallet
-	rm -rf data/itm
-	rm -rf apps/10newsgroups web2py/applications/10newsgroups
-	rm -rf apps/15newsgroups web2py/applications/15newsgroups
-	rm -rf apps/20newsgroups web2py/applications/20newsgroups
+	rm -rf data/demo/poliblogs apps/poliblogs_stm web2py/applications/poliblogs_stm
