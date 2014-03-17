@@ -59,7 +59,7 @@ demo: apps/infovis_mallet
 stm: apps/poliblogs_stm
 
 apps/infovis_mallet: web2py tools/mallet data/demo/infovis
-	./demo.sh infovis mallet
+	./demo infovis mallet
 
 apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
 	bin/import_stm.py poliblogs_stm data/demo/poliblogs/corpus/poliblogs2008.RData
@@ -69,7 +69,7 @@ apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
 
 clean:
 	rm -rf externals
-	rm -rf web2py
 	rm -rf tools/mallet*
+	rm -rf tools/stm*
 	rm -rf data/demo/infovis apps/infovis_mallet web2py/applications/infovis_mallet
 	rm -rf data/demo/poliblogs apps/poliblogs_stm web2py/applications/poliblogs_stm

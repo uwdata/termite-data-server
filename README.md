@@ -46,31 +46,31 @@ Several demos are included in this repository.
 Executing the following command will download the 20newsgroups dataset (18828 documents), build an LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
-./demo.sh 20newsgroups
+./demo 20newsgroups
 ```
 
 Executing the following command will download the InfoVis dataset (449 documents with metadata), build an LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
-./demo.sh infovis
+./demo infovis
 ```
 
 To build an example topic model on the InfoVis dataset using Gensim:
 
 ```
-./demo.sh infovis gensim
+./demo infovis gensim
 ```
 
 More generally, to build a topic model on `dataset` using `tool`:
 
 ```
-./demo.sh [dataset] [tool]
+./demo [dataset] [tool]
 ```
 
 To see more demo options:
 
 ```
-./demo.sh --help
+./demo --help
 ```
 
 The resulting topic model(s) will be available at:
