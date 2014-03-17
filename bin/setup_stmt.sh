@@ -14,15 +14,6 @@ then
 	exit -1
 fi
 
-function __create_folder__ {
-	FOLDER=$1
-	if [ ! -d $FOLDER ]
-	then
-		echo "    Creating folder: $FOLDER"
-		mkdir $FOLDER
-	fi
-}
-
 function __setup_stmt__ {
 	EXTERNALS_SUBPATH=$EXTERNALS_PATH/stmt-0.4.0
 	TOOLS_SUBPATH=$TOOLS_PATH/stmt-0.4.0
@@ -35,8 +26,9 @@ function __setup_stmt__ {
 
 		if [ ! -d "$EXTERNALS_SUBPATH" ]
 		then
-			__create_folder__ $EXTERNALS_PATH
-			__create_folder__ $EXTERNALS_SUBPATH
+			echo "    Creating folder '$EXTERNALS_SUBPATH'..."
+			mkdir -p $EXTERNALS_PATH
+			mkdir -p $EXTERNALS_SUBPATH
 			echo "    Downloading source code..."
 			curl --insecure --location http://nlp.stanford.edu/software/tmt/tmt-0.4/tmt-0.4.0-src.zip > $EXTERNALS_SUBPATH/tmt-0.4.0-src.zip
 			echo "    Extracting license..."
@@ -45,10 +37,10 @@ function __setup_stmt__ {
 		else
 			echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
 		fi
-		echo
 
-		__create_folder__ $TOOLS_PATH
-		__create_folder__ $TOOLS_SUBPATH
+		echo "    Creating folder '$TOOLS_SUBPATH'..."
+		mkdir -p $TOOLS_PATH
+		mkdir -p $TOOLS_SUBPATH
 		echo "    Downloading compiled binary..."
 		curl --insecure --location http://nlp.stanford.edu/software/tmt/tmt-0.4/tmt-0.4.0.jar > $TOOLS_SUBPATH/tmt-0.4.0.jar
 		ln -s $SYMLINK $SYMLINK_SUBPATH
