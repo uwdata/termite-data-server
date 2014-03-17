@@ -38,11 +38,30 @@ tools/stmt stmt:
 	bin/setup_stmt.sh
 
 ################################################################################
+# Datasets
+
+data/demo/infovis:
+	mkdir -p data
+	mkdir -p data/demo
+	bin/fetch_infovis.sh data/demo/infovis
+
+data/demo/poliblogs:
+	mkdir -p data
+	mkdir -p data/demo
+	bin/fetch_poliblogs.sh data/demo/poliblogs
+
+################################################################################
 # Demos
 #   Download and build an LDA model using the InfoVis dataset
 
-demo: web2py tools/mallet
+demo: apps/infovis_mallet
+
+apps/infovis_mallet: web2py tools/mallet data/demo/infovis
 	./demo.sh infovis mallet
+
+apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
+	bin/import_stm.py poliblogs_stm data/demo/poliblogs/corpus/poliblogs2008.RData
+	bin/import_corpus.py poliblogs_stm --csv data/demo/poliblogs/corpus/poliblogs2008.csv
 
 ################################################################################
 
@@ -51,3 +70,4 @@ clean:
 	rm -rf web2py
 	rm -rf tools/mallet*
 	rm -rf data/demo/infovis apps/infovis_mallet web2py/applications/infovis_mallet
+	rm -rf data/demo/poliblogs apps/poliblogs_stm web2py/applications/poliblogs_stm
