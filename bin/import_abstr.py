@@ -11,6 +11,9 @@ SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules' ]
 class ImportAbstraction( object ):
 	
 	def __init__( self, app_name, app_model, app_desc ):
+		self.app_desc = app_desc
+		self.app_name = app_name
+		self.app_model = app_model
 		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
 		self.data_path = '{}/{}/data/{}'.format( APPS_ROOT, app_name, app_model )
 		self.web2py_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
@@ -21,9 +24,9 @@ class ImportAbstraction( object ):
 			return False
 		
 		print '--------------------------------------------------------------------------------'
-		print 'Import "{}" as a web2py application...'.format( app_desc )
-		print '          app = {}'.format( app_name )
-		print '        model = {}'.format( app_model )
+		print 'Import "{}" as a web2py application...'.format( self.app_desc )
+		print '          app = {}'.format( self.app_name )
+		print '        model = {}'.format( self.app_model )
 		print '     app_path = {}'.format( self.app_path )
 		print '    data_path = {}'.format( self.data_path )
 		print 'database_path = {}'.format( self.database_path )

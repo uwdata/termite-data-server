@@ -35,6 +35,14 @@ function __fetch_poliblogs__ {
 	bin/fetch_poliblogs.sh $DATASET_PATH
 	CORPUS_PATH=$DATASET_PATH/corpus/poliblogs2008.txt
 	META_PATH=$DATASET_PATH/corpus/poliblogs2008-meta.txt
+	MODEL_FILENAME=$DATASET_PATH/corpus/poliblogs2008.RData
+}
+
+function __fetch_fomc__ {
+#	bin/fetch_fomc.sh $DATASET_PATH
+	CORPUS_PATH=$DATASET_PATH/corpus/FOMC2.txt
+	META_PATH=$DATASET_PATH/corpus/FOMC2-meta.txt
+	MODEL_FILENAME=$DATASET_PATH/corpus/fomc.Rdata
 }
 
 function __train_mallet__ {
@@ -106,8 +114,7 @@ function __import_stm__ {
 	echo "# Importing a Structural Topic Model..."
 	echo "bin/import_stm.py $APP_IDENTIFIER $MODEL_PATH"
 	echo
-#	bin/import_stm.py $APP_IDENTIFIER $MODEL_PATH
-	bin/import_stm.py $APP_IDENTIFIER $DATASET_PATH/corpus/poliblogs2008.RData
+	bin/import_stm.py $APP_IDENTIFIER $MODEL_FILENAME
 
 	echo
 	if [ "$META_PATH" == "NONE" ]
@@ -182,7 +189,7 @@ function __import_gensim__ {
 if [ $# -ge 1 ] && [ "$1" != "-h" ] && [ "$1" != "--help" ]
 then
 	DATASET=$1
-	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf25k" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ] || [ "$DATASET" == "poliblogs" ]
+	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf25k" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ] || [ "$DATASET" == "poliblogs" ] || [ "$DATASET" == "fomc" ]
 	then
 		FETCH_DATASET_FUNCTION=__fetch_${DATASET}__
 		DATASET_PATH=data/demo/$DATASET
@@ -199,6 +206,7 @@ then
 			TRAIN_MODEL_FUNCTION=__train_${MODEL}__
 			IMPORT_MODEL_FUNCTION=__import_${MODEL}__
 			MODEL_PATH=$DATASET_PATH/model-$MODEL
+			MODEL_FILENAME="NONE"
 			APP_IDENTIFIER=${DATASET}_${MODEL}
 
 			bin/setup_web2py.sh
@@ -223,8 +231,10 @@ echo
 echo "    nsf127992 | NSF grants"
 echo "              | 127,992 abstracts"
 echo
-echo "    poliblogs | Poliblogs"
+echo "    poliblogs | Poliblogs (2008)"
 echo "              | 13,246 political blogs with date, rating, political affiliation"
+echo
+echo "         fomc | Federal Open Market Committee (2005-2008)"
 echo
 echo "Available models:"
 echo "       mallet | MAchine Learning for LanguagE Toolkit (MALLET)"
