@@ -59,8 +59,8 @@ then
 		--word-topic-counts-file $MODEL_FOLDER/word-topic-counts.txt \
 		--num-topics $NUM_TOPICS \
 		--num-iterations $NUM_ITERS
+
+	echo
 else
 	echo "    Already exists: $MODEL_FOLDER"
 fi
-
-echo

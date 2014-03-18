@@ -57,10 +57,10 @@ class ImportGensim( ImportAbstraction ):
 		filename = '{}/topic-index.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( topicIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-topic-matrix.txt'.format( self.data_path )
+		filename = '{}/term-topic-matrix.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( termsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/doc-topic-matrix.txt'.format( self.data_path )
+		filename = '{}/doc-topic-matrix.json'.format( self.data_path )
 		with open( filename, 'w' ) as f:
 			json.dump( docsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
@@ -73,6 +73,7 @@ def main():
 	
 	importer = ImportGensim( args.app_name )
 	importer.ImportLDA( args.dictionary, args.model )
+	importer.TransposeMatrices()
 	importer.AddToWeb2py()
 
 if __name__ == '__main__':

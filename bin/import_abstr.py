@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import json
 
 APPS_ROOT = 'apps'
 WEB2PY_ROOT = 'web2py'
@@ -49,6 +50,36 @@ class ImportAbstraction( object ):
 			print 'Setting up __init__.py'
 			os.system( 'touch {}'.format( filename ) )
 	
+	def ResolveMatrices( self ):
+		original_filename = '{}/term-topic-matrix.txt'.format( self.data_path )
+		resolved_filename = '{}/term-topic-matrix.json'.format( self.data_path )
+		with open( original_filename, 'r' ) as f:
+	
+	def TransposeMatrices( self ):
+		original_filename = '{}/term-topic-matrix.json'.format( self.data_path )
+		transposed_filename = '{}/topic-term-matrix.json'.format( self.data_path )
+		with open( original_filename, 'r' ) as f:
+			termsAndTopics = json.load( f, encoding = 'utf-8' )
+		topicsAndTerms = self.TransposeMatrix( termsAndTopics )
+		with open( transposed_filename, 'w' ) as f:
+			json.dump( topicsAndTerms, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+		original_filename = '{}/doc-topic-matrix.json'.format( self.data_path )
+		transposed_filename = '{}/topic-doc-matrix.json'.format( self.data_path )
+		with open( original_filename, 'r' ) as f:
+			docsAndTopics = json.load( f, encoding = 'utf-8' )
+		topicsAndDocs = self.TransposeMatrix( docsAndTopics )
+		with open( transposed_filename, 'w' ) as f:
+			json.dump( topicsAndDocs, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+	
+	def TransposeMatrix( self, matrix ):
+		transposed = []
+		for key, values in matrix.iteritems():
+			for index, value in enumerate( values ):
+				while len( transposed ) <= index:
+					transposed.append( {} )
+				transposed[ index ][ key ] = value
+		return transposed
+		
 	def AddToWeb2py( self ):
 		if not os.path.exists( self.web2py_path ):
 			print 'Adding app to web2py server: {}'.format( self.web2py_path )
