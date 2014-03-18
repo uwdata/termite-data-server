@@ -40,6 +40,8 @@ then
 	echo "    Uncompressing..."
 	unzip $DOWNLOAD_PATH/poliblogs2008.csv.zip -d $CORPUS_PATH
 	unzip $DOWNLOAD_PATH/poliblogs2008.RData.zip -d $CORPUS_PATH
+	echo "    Converting to tab-delimited format..."
+	bin/derive_poliblogs.py
 	echo "    Corpus is now available at '$CORPUS_PATH'."
 else
 	echo "    Already available: $CORPUS_PATH"
