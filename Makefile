@@ -59,14 +59,17 @@ data/demo/nsf127992:
 
 demo: apps/infovis_mallet
 
-stm: apps/poliblogs_stm
+demos: apps/infovis_mallet apps/infovis_gensim apps/poliblogs_stm
 
 apps/infovis_mallet: web2py tools/mallet data/demo/infovis
 	./demo infovis mallet
 
+apps/infovis_gensim: web2py tools/gensim data/demo/infovis
+	./demo infovis gensim
+
 apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
-	bin/import_stm.py poliblogs_stm data/demo/poliblogs/corpus/poliblogs2008.RData
-	bin/import_corpus.py poliblogs_stm --csv data/demo/poliblogs/corpus/poliblogs2008.csv
+	./demo poliblogs stm
+
 
 ################################################################################
 # Other utilities

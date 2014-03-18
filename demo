@@ -176,6 +176,7 @@ function __import_gensim__ {
 		echo
 		bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH
 	fi
+	echo
 }
 
 if [ $# -ge 1 ] && [ "$1" != "-h" ] && [ "$1" != "--help" ]
