@@ -103,6 +103,8 @@ def main():
 	
 	importer = ImportSTM( args.app_name )
 	importer.ImportLDA( args.model )
+	importer.ResolveMatrices()
+	importer.TransposeMatrices()
 	importer.AddToWeb2py()
 
 if __name__ == '__main__':

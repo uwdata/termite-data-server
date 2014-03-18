@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import csv
 import argparse
 import json
 import sqlite3
@@ -15,12 +14,9 @@ class ImportCorpus( ImportAbstraction ):
 	def __init__( self, app_name, app_model = 'corpus', app_desc = 'Corpus Metadata and Statistics' ):
 		ImportAbstraction.__init__( self, app_name, app_model, app_desc )
 	
-	def ImportMeta( self, filename, isCSV = False ):
+	def ImportMeta( self, filename ):
 		print 'Importing metadata...'
-		if isCSV:
-			header, meta = self.ExtractDocMetaCsv( filename )
-		else:
-			header, meta = self.ExtractDocMeta( filename )
+		header, meta = self.ExtractDocMeta( filename )
 		self.SaveMetaToDisk( meta, header )
 		self.SaveMetaToDB( meta, header )
 		
@@ -48,31 +44,6 @@ class ImportCorpus( ImportAbstraction ):
 		except:
 			return None, None
 	
-	def ExtractDocMetaCsv( self, filename ):
-		print 'Reading document metadata from a CSV file: {}'.format( filename )
-		try:
-			with open( filename, 'rb' ) as f:
-				header = None
-				meta = {}
-				reader = csv.reader( f, delimiter = ',', quotechar = '"' )
-				for index, values in enumerate( reader ):
-					values = [ d.decode('ascii','ignore') for d in values ]
-					if header is None:
-						header = values
-					else:
-						record = {}
-						for n, value in enumerate( values ):
-							if n < len(header):
-								key = header[n]
-							else:
-								key = 'Field{:d}'.format( n+1 )
-							record[ key ] = value
-						key = record['DocID']
-						meta[ key ] = record
-			return sorted(header), meta
-		except:
-			return None, None
-		
 	def SaveMetaToDisk( self, meta, header ):
 		print 'Writing data to disk: {}'.format( self.data_path )
 		if meta is not None and header is not None:
@@ -214,15 +185,12 @@ def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
 	parser.add_argument( 'app_name', type = str,                 help = 'Web2py application identifier'                                     )
 	parser.add_argument( '--meta'  , type = str, default = None, help = 'Import document metadata from a tab-delimited file'                )
-	parser.add_argument( '--csv'   , type = str, default = None, help = 'Import document metadata from a comma-separated file'              )
 	parser.add_argument( '--terms' , type = str, default = None, help = 'Calculate term freqs and co-occurrences from a corpus.mallet file' )
 	args = parser.parse_args()
 	
 	importer = ImportCorpus( app_name = args.app_name )
 	if args.meta is not None:
 		importer.ImportMeta( args.meta )
-	if args.csv is not None:
-		importer.ImportMeta( args.csv, isCSV = True )
 	if args.terms is not None:
 		importer.ImportTerms( args.terms )
 	importer.AddToWeb2py()

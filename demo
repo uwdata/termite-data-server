@@ -8,32 +8,34 @@ function __fetch_infovis__ {
 
 function __fetch_20newsgroups__ {
 	bin/fetch_20newsgroups.sh $DATASET_PATH
-	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH
 }
 
 function __fetch_nsf127992__ {
 	bin/fetch_nsf127992.sh $DATASET_PATH
-	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH/nsf127992.txt
 }
 
 function __fetch_nsf25k__ {
 	bin/fetch_nsf25k.py $DATASET_PATH
-	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH/nsf25k.txt
 }
 
 function __fetch_nsf10k__ {
 	bin/fetch_nsf10k.py $DATASET_PATH
-	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH/nsf10k.txt
 }
 
 function __fetch_nsf1k__ {
 	bin/fetch_nsf1k.py $DATASET_PATH
-	META_PATH="NONE"
 	CORPUS_PATH=$CORPUS_PATH/nsf1k.txt
+}
+
+function __fetch_poliblogs__ {
+	bin/fetch_poliblogs.sh $DATASET_PATH
+	META_PATH=$CORPUS_PATH/poliblogs2008.txt
+	MODEL_PATH=$CORPUS_PATH/poliblogs2008.RData
+	CORPUS_PATH=$CORPUS_PATH/poliblogs2008.txt
 }
 
 function __train_mallet__ {
@@ -88,6 +90,34 @@ function __import_treetm__ {
 		echo "bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet --meta $META_PATH"
 		echo
 		bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet --meta $META_PATH
+	fi
+	echo
+}
+
+function __train_stm__ {
+	bin/setup_stm.sh
+	echo "# Training a Structural Topic Model..."
+	echo "bin/train_stm.py $CORPUS_PATH $MODEL_PATH"
+	echo
+	bin/train_stm.py $CORPUS_PATH $MODEL_PATH
+	echo
+}
+
+function __import_stm__ {
+	echo "# Importing a Structural Topic Model..."
+	echo "bin/import_stm.py $APP_IDENTIFIER $MODEL_PATH"
+	echo
+	bin/import_stm.py $APP_IDENTIFIER $MODEL_PATH
+	echo
+	if [ "$META_PATH" == "NONE" ]
+	then
+		echo "bin/import_corpus.py $APP_IDENTIFIER"
+		echo
+		bin/import_corpus.py $APP_IDENTIFIER
+	else
+		echo "bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH"
+		echo
+		bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH
 	fi
 	echo
 }
@@ -150,7 +180,7 @@ function __import_gensim__ {
 if [ $# -ge 1 ] && [ "$1" != "-h" ] && [ "$1" != "--help" ]
 then
 	DATASET=$1
-	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf25k" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ]
+	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf25k" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ] || [ "$DATASET" == "poliblogs" ]
 	then
 		FETCH_DATASET=__fetch_${DATASET}__
 		DATASET_PATH=data/demo/$DATASET

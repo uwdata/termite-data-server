@@ -51,10 +51,35 @@ class ImportAbstraction( object ):
 			os.system( 'touch {}'.format( filename ) )
 	
 	def ResolveMatrices( self ):
+		index_filename = '{}/term-index.json'.format( self.data_path )
 		original_filename = '{}/term-topic-matrix.txt'.format( self.data_path )
 		resolved_filename = '{}/term-topic-matrix.json'.format( self.data_path )
+		with open( index_filename, 'r' ) as f:
+			index = json.load( f, encoding = 'utf-8' )
 		with open( original_filename, 'r' ) as f:
+			matrix = json.load( f, encoding = 'utf-8' )
+		resolved = self.ResolveMatrix( matrix, [ d['text'] for d in index ] )
+		with open( resolved_filename, 'w' ) as f:
+			json.dump( resolved, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+
+		index_filename = '{}/doc-index.json'.format( self.data_path )
+		original_filename = '{}/doc-topic-matrix.txt'.format( self.data_path )
+		resolved_filename = '{}/doc-topic-matrix.json'.format( self.data_path )
+		with open( index_filename, 'r' ) as f:
+			index = json.load( f, encoding = 'utf-8' )
+		with open( original_filename, 'r' ) as f:
+			matrix = json.load( f, encoding = 'utf-8' )
+		resolved = self.ResolveMatrix( matrix, [ d['docID'] for d in index ] )
+		with open( resolved_filename, 'w' ) as f:
+			json.dump( resolved, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 	
+	def ResolveMatrix( self, matrix, keys ):
+		resolved = {}
+		assert len( matrix ) == len( keys )
+		for i, key in enumerate( keys ):
+			resolved[ key ] = matrix[ i ]
+		return resolved
+			
 	def TransposeMatrices( self ):
 		original_filename = '{}/term-topic-matrix.json'.format( self.data_path )
 		transposed_filename = '{}/topic-term-matrix.json'.format( self.data_path )
