@@ -2,40 +2,39 @@
 
 function __fetch_infovis__ {
 	bin/fetch_infovis.sh $DATASET_PATH
-	META_PATH=$CORPUS_PATH/infovis-papers-meta.txt
-	CORPUS_PATH=$CORPUS_PATH/infovis-papers.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/infovis-papers.txt
+	META_PATH=$DATASET_PATH/corpus/infovis-papers-meta.txt
 }
 
 function __fetch_20newsgroups__ {
 	bin/fetch_20newsgroups.sh $DATASET_PATH
-	CORPUS_PATH=$CORPUS_PATH
+	CORPUS_PATH=$DATASET_PATH/corpus
 }
 
 function __fetch_nsf127992__ {
 	bin/fetch_nsf127992.sh $DATASET_PATH
-	CORPUS_PATH=$CORPUS_PATH/nsf127992.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/nsf127992.txt
 }
 
 function __fetch_nsf25k__ {
 	bin/fetch_nsf25k.py $DATASET_PATH
-	CORPUS_PATH=$CORPUS_PATH/nsf25k.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/nsf25k.txt
 }
 
 function __fetch_nsf10k__ {
 	bin/fetch_nsf10k.py $DATASET_PATH
-	CORPUS_PATH=$CORPUS_PATH/nsf10k.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/nsf10k.txt
 }
 
 function __fetch_nsf1k__ {
 	bin/fetch_nsf1k.py $DATASET_PATH
-	CORPUS_PATH=$CORPUS_PATH/nsf1k.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/nsf1k.txt
 }
 
 function __fetch_poliblogs__ {
 	bin/fetch_poliblogs.sh $DATASET_PATH
-	META_PATH=$CORPUS_PATH/poliblogs2008.txt
-	MODEL_PATH=$CORPUS_PATH/poliblogs2008.RData
-	CORPUS_PATH=$CORPUS_PATH/poliblogs2008.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/poliblogs2008.txt
+	META_PATH=$DATASET_PATH/corpus/poliblogs2008-meta.txt
 }
 
 function __train_mallet__ {
@@ -107,7 +106,9 @@ function __import_stm__ {
 	echo "# Importing a Structural Topic Model..."
 	echo "bin/import_stm.py $APP_IDENTIFIER $MODEL_PATH"
 	echo
-	bin/import_stm.py $APP_IDENTIFIER $MODEL_PATH
+#	bin/import_stm.py $APP_IDENTIFIER $MODEL_PATH
+	bin/import_stm.py $APP_IDENTIFIER $DATASET_PATH/corpus/poliblogs2008.RData
+
 	echo
 	if [ "$META_PATH" == "NONE" ]
 	then
@@ -182,9 +183,9 @@ then
 	DATASET=$1
 	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf25k" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ] || [ "$DATASET" == "poliblogs" ]
 	then
-		FETCH_DATASET=__fetch_${DATASET}__
+		FETCH_DATASET_FUNCTION=__fetch_${DATASET}__
 		DATASET_PATH=data/demo/$DATASET
-		CORPUS_PATH=$DATASET_PATH/corpus
+		CORPUS_PATH="NONE"
 		META_PATH="NONE"
 		if [ $# -ge 2 ]
 		then
@@ -194,15 +195,15 @@ then
 		fi
 		if [ "$MODEL" == "mallet" ] || [ "$MODEL" == "treetm" ] || [ "$MODEL" == "stmt" ] || [ "$MODEL" == "stm" ] || [ "$MODEL" == "gensim" ]
 		then
-			TRAIN_MODEL=__train_${MODEL}__
-			IMPORT_MODEL=__import_${MODEL}__
+			TRAIN_MODEL_FUNCTION=__train_${MODEL}__
+			IMPORT_MODEL_FUNCTION=__import_${MODEL}__
 			MODEL_PATH=$DATASET_PATH/model-$MODEL
 			APP_IDENTIFIER=${DATASET}_${MODEL}
 
 			bin/setup_web2py.sh
-			$FETCH_DATASET
-			$TRAIN_MODEL
-			$IMPORT_MODEL
+			$FETCH_DATASET_FUNCTION
+			$TRAIN_MODEL_FUNCTION
+			$IMPORT_MODEL_FUNCTION
 			exit 0
 		fi
 	fi
@@ -222,6 +223,7 @@ echo "    nsf127992 | NSF grants"
 echo "              | 127,992 abstracts"
 echo
 echo "    poliblogs | Poliblogs"
+echo "              | 13,246 political blogs with date, rating, political affiliation"
 echo
 echo "Available models:"
 echo "       mallet | MAchine Learning for LanguagE Toolkit (MALLET)"
