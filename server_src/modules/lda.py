@@ -67,7 +67,7 @@ class LDA:
 		topicIndex, _ = self.GetTopicIndex( params )
 		termSet = frozenset( d['text'] for d in termIndex )
 		topicSet = frozenset( d['index'] for d in topicIndex )
-		filename = os.path.join( self.request.folder, 'data/lda', 'term-topic-matrix.txt' )
+		filename = os.path.join( self.request.folder, 'data/lda', 'term-topic-matrix.json' )
 		with open( filename ) as f:
 			matrix = json.load( f, encoding = 'utf-8' )
 		if type(matrix) == list:
@@ -83,7 +83,7 @@ class LDA:
 		topicIndex, _ = self.GetTopicIndex( params )
 		docSet = frozenset( d['docID'] for d in docIndex )
 		topicSet = frozenset( d['index'] for d in topicIndex )
-		filename = os.path.join( self.request.folder, 'data/lda', 'doc-topic-matrix.txt' )
+		filename = os.path.join( self.request.folder, 'data/lda', 'doc-topic-matrix.json' )
 		with open( filename ) as f:
 			matrix = json.load( f, encoding = 'utf-8' )
 		if type(matrix) == list:
