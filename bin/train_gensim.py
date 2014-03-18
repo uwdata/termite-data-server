@@ -62,23 +62,30 @@ class TrainGensim( object ):
 		print '  num_passes = {}'.format( num_passes )
 		print '--------------------------------------------------------------------------------'
 
-		if not os.path.exists( model_path ):
-			print 'Creating model folder: {}'.format( model_path )
-			os.makedirs( model_path )
+		dict_filename = '{}/{}'.format( model_path, DICTIONARY_FILENAME )
+		model_filename = '{}/{}'.format( model_path, MODEL_FILENAME )
 
-		# Generate gensim objects
-		logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-		corpus = TermiteCorpus( corpus_path )
-		corpus.dictionary.filter_extremes(no_above=0.2)  # remove words that are too frequent/too infrequent
-		model = models.LdaModel( corpus, id2word = corpus.dictionary, num_topics = num_topics, passes = num_passes )
+		if not os.path.exists( dict_filename ) or not os.path.exists( model_filename ):
+			if not os.path.exists( model_path ):
+				print 'Creating model folder: {}'.format( model_path )
+				os.makedirs( model_path )
 
-		filename = '{}/{}'.format( model_path, DICTIONARY_FILENAME )
-		print 'Saving dictionary to disk: {}'.format( filename )
-		corpus.dictionary.save( filename )
+			# Generate gensim objects
+			logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+			corpus = TermiteCorpus( corpus_path )
+			corpus.dictionary.filter_extremes( no_above = 0.2 )  # remove words that are too frequent/too infrequent
+			model = models.LdaModel( corpus, id2word = corpus.dictionary, num_topics = num_topics, passes = num_passes )
 
-		filename = '{}/{}'.format( model_path, MODEL_FILENAME )
-		print 'Saving model to disk: {}'.format( filename )
-		model.save( filename )
+			print 'Saving dictionary to disk: {}'.format( dict_filename )
+			corpus.dictionary.save( dict_filename )
+
+			print 'Saving model to disk: {}'.format( model_filename )
+			model.save( model_filename )
+		
+		else:
+			print 'Already available: {}'.format( model_path )
+
+		print '--------------------------------------------------------------------------------'
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train a gensim topic model.' )

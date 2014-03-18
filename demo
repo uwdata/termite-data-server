@@ -39,7 +39,6 @@ function __fetch_nsf1k__ {
 function __train_mallet__ {
 	bin/setup_mallet.sh
 	echo "# Training a MALLET LDA topic model..."
-	echo
 	echo "bin/train_mallet.sh $CORPUS_PATH $MODEL_PATH"
 	echo
 	bin/train_mallet.sh $CORPUS_PATH $MODEL_PATH
@@ -48,7 +47,6 @@ function __train_mallet__ {
 
 function __import_mallet__ {
 	echo "# Importing a MALLET LDA topic model..."
-	echo
 	echo "bin/import_mallet.py $APP_IDENTIFIER $MODEL_PATH"
 	echo
 	bin/import_mallet.py $APP_IDENTIFIER $MODEL_PATH
@@ -69,16 +67,14 @@ function __import_mallet__ {
 function __train_treetm__ {
 	bin/setup_treetm.sh
 	echo "# Training a TreeTM model..."
+	echo "bin/train_treetm.py $CORPUS_PATH $MODEL_PATH"
 	echo
-	echo "bin/train_treetm.py $CORPUS_PATH $MODEL_PATH --iters 100"
-	echo
-	bin/train_treetm.py $CORPUS_PATH $MODEL_PATH --iters 100
+	bin/train_treetm.py $CORPUS_PATH $MODEL_PATH
 	echo
 }
 
 function __import_treetm__ {
 	echo "# Importing a TreeTM model..."
-	echo
 	echo "bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH"
 	echo
 	bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH
@@ -99,7 +95,6 @@ function __import_treetm__ {
 function __train_stmt__ {
 	bin/setup_stmt.sh
 	echo "# Training a STMT model..."
-	echo
 	echo "bin/train_stmt.py $CORPUS_PATH $MODEL_PATH"
 	echo
 	bin/train_stmt.py $CORPUS_PATH $MODEL_PATH
@@ -108,7 +103,6 @@ function __train_stmt__ {
 
 function __import_stmt__ {
 	echo "# Importing a STMT model..."
-	echo
 	echo "bin/import_stmt.py $APP_IDENTIFIER $MODEL_PATH"
 	echo
 	bin/import_stmt.py $APP_IDENTIFIER $MODEL_PATH
@@ -129,7 +123,6 @@ function __import_stmt__ {
 function __train_gensim__ {
 	bin/setup_gensim.sh
 	echo "# Training a gensim LDA topic model..."
-	echo
 	echo "bin/train_gensim.py $CORPUS_PATH $MODEL_PATH"
 	echo
 	bin/train_gensim.py $CORPUS_PATH $MODEL_PATH --passes 10
@@ -138,7 +131,6 @@ function __train_gensim__ {
 
 function __import_gensim__ {
 	echo "# Importing a gensim LDA topic model..."
-	echo
 	echo "bin/import_gensim.py $APP_IDENTIFIER $MODEL_PATH/corpus.dict $MODEL_PATH/output.model"
 	echo
 	bin/import_gensim.py $APP_IDENTIFIER $MODEL_PATH/corpus.dict $MODEL_PATH/output.model
@@ -178,8 +170,6 @@ then
 			APP_IDENTIFIER=${DATASET}_${MODEL}
 
 			bin/setup_web2py.sh
-			mkdir -p data
-			mkdir -p data/demo
 			$FETCH_DATASET
 			$TRAIN_MODEL
 			$IMPORT_MODEL
