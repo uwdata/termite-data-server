@@ -189,11 +189,14 @@ def main():
 	args = parser.parse_args()
 	
 	importer = ImportCorpus( app_name = args.app_name )
-	if args.meta is not None:
-		importer.ImportMeta( args.meta )
-	if args.terms is not None:
-		importer.ImportTerms( args.terms )
-	importer.AddToWeb2py()
+	if importer.AddAppFolder():
+		if args.meta is not None:
+			importer.ImportMeta( args.meta )
+		if args.terms is not None:
+			importer.ImportTerms( args.terms )
+		importer.AddToWeb2py()
+	else:
+		print "    Already available: {}".format( importer.app_path )
 
 if __name__ == '__main__':
 	main()

@@ -54,18 +54,18 @@ class TrainGensim( object ):
 		pass
 
 	def Execute( self, corpus_path, model_path, num_topics, num_passes ):
-		print '--------------------------------------------------------------------------------'
-		print 'Training a gensim topic model...'
-		print '      corpus = {}'.format( corpus_path )
-		print '       model = {}'.format( model_path )
-		print '  num_topics = {}'.format( num_topics )
-		print '  num_passes = {}'.format( num_passes )
-		print '--------------------------------------------------------------------------------'
-
 		dict_filename = '{}/{}'.format( model_path, DICTIONARY_FILENAME )
 		model_filename = '{}/{}'.format( model_path, MODEL_FILENAME )
 
 		if not os.path.exists( dict_filename ) or not os.path.exists( model_filename ):
+			print '--------------------------------------------------------------------------------'
+			print 'Training a gensim topic model...'
+			print '      corpus = {}'.format( corpus_path )
+			print '       model = {}'.format( model_path )
+			print '  num_topics = {}'.format( num_topics )
+			print '  num_passes = {}'.format( num_passes )
+			print '--------------------------------------------------------------------------------'
+
 			if not os.path.exists( model_path ):
 				print 'Creating model folder: {}'.format( model_path )
 				os.makedirs( model_path )
@@ -81,11 +81,10 @@ class TrainGensim( object ):
 
 			print 'Saving model to disk: {}'.format( model_filename )
 			model.save( model_filename )
-		
-		else:
-			print 'Already available: {}'.format( model_path )
 
-		print '--------------------------------------------------------------------------------'
+			print '--------------------------------------------------------------------------------'
+		else:
+			print '    Already available: {}'.format( model_path )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train a gensim topic model.' )

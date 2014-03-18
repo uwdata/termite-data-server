@@ -139,10 +139,13 @@ def main():
 	args = parser.parse_args()
 	
 	importer = ImportMallet( app_name = args.app_name )
-	importer.ImportLDA( args.model_path, args.topic_words, args.doc_topics )
-	importer.ImportTopicCooccurrence()
-	importer.TransposeMatrices()
-	importer.AddToWeb2py()
+	if importer.AddAppFolder():
+		importer.ImportLDA( args.model_path, args.topic_words, args.doc_topics )
+		importer.ImportTopicCooccurrence()
+		importer.TransposeMatrices()
+		importer.AddToWeb2py()
+	else:
+		print "    Already available: {}".format( importer.app_path )
 
 if __name__ == '__main__':
 	main()

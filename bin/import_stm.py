@@ -102,10 +102,13 @@ def main():
 	args = parser.parse_args()
 	
 	importer = ImportSTM( args.app_name )
-	importer.ImportLDA( args.model )
-	importer.ResolveMatrices()
-	importer.TransposeMatrices()
-	importer.AddToWeb2py()
+	if importer.AddAppFolder():
+		importer.ImportLDA( args.model )
+		importer.ResolveMatrices()
+		importer.TransposeMatrices()
+		importer.AddToWeb2py()
+	else:
+		print "    Already available: {}".format( importer.app_path )
 
 if __name__ == '__main__':
 	main()
