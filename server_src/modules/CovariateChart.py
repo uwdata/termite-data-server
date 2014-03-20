@@ -80,7 +80,7 @@ class CovariateChart( TermiteCore ):
 			allTerms = sorted( vector.iterkeys(), key = lambda x : -vector[x] )
 			subTerms = allTerms[termOffset:termOffset+termLimit]
 			termSet = frozenset(subTerms)
-			submatrix.append( { term : vector[term] for term in termSet if term in vector } )
+			submatrix.append( [ { term : vector[term] } for term in termSet if term in vector ] )
 		results = {
 			'TopicTopTerms' : submatrix
 		}
