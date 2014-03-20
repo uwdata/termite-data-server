@@ -3,87 +3,96 @@
 import os
 import json
 
-class TermiteCore:
+class TermiteCore( object ):
 	def __init__( self, request, response ):
 		self.request = request
 		self.response = response
-	
-	def GetConfigs( self ):
-		def GetServer():
-			return self.request.env['HTTP_HOST']
-		
-		def GetDataset():
-			return self.request.application
-		
-		def GetModel():
-			return self.request.controller
-		
-		def GetAttribute():
-			return self.request.function
-		
-		def GetDatasets( dataset ):
-			FOLDER_EXCLUSIONS = frozenset( [ 'admin', 'examples', 'welcome', 'init' ] )
-			applications_parent = self.request.env['applications_parent']
-			applications_path = '{}/applications'.format( applications_parent )
-			folders = []
-			for folder in os.listdir( applications_path ):
+		self.configs = self.GetConfigs()
+		self.params = {}
+		self.content = {}
+
+################################################################################		
+# Server, Dataset, Model, and Attribute
+
+	EXCLUDED_FOLDERS = frozenset( [ 'admin', 'examples', 'welcome', 'init' ] )
+
+	def GetServer( self ):
+		return self.request.env['HTTP_HOST']
+
+	def GetDataset( self ):
+		return self.request.application
+
+	def GetModel( self ):
+		return self.request.controller
+
+	def GetAttribute( self ):
+		return self.request.function
+
+	def GetDatasets( self ):
+		folders = []
+		applications_path = '{}/applications'.format( self.request.env['applications_parent'] )
+		for folder in os.listdir( applications_path ):
+			if folder not in TermiteCore.EXCLUDED_FOLDERS:
 				applications_subpath = '{}/{}'.format( applications_path, folder )
 				if os.path.isdir( applications_subpath ):
-					if folder not in FOLDER_EXCLUSIONS:
-						folders.append( folder )
-			folders = sorted( folders )
-			return folders
-		
-		def GetModels( dataset, model ):
-			if dataset == 'init':
-				return None
-			
-			app_data_path = '{}/data'.format( self.request.folder )
-			folders = [ 'vis' ]
-			for folder in os.listdir( app_data_path ):
-				app_data_subpath = '{}/{}'.format( app_data_path, folder )
-				if os.path.isdir( app_data_subpath ):
 					folders.append( folder )
-			folders = sorted( folders )
-			return folders
-		
-		def GetAttributes( dataset, model, attribute ):
-			if dataset == 'init':
-				return None
-			if model == 'default':
-				return None
-			
-			if model == 'lda':
-				return [
-					'DocIndex',
-					'TermIndex',
-					'TopicIndex',
-					'TermTopicMatrix',
-					'DocTopicMatrix',
-					'TopicCooccurrence'
-				]
-			elif model == 'corpus':
-				return [
-					'DocMeta',
-					'TermFreqs',
-					'TermCoFreqs'
-				]
-			elif model == 'vis':
-				return [
-					'GroupInABox',
-					'CovariateChart'
-				]
-			else:
-				return []
-		
-		server = GetServer()
-		dataset = GetDataset()
-		datasets = GetDatasets( dataset )
-		model = GetModel()
-		models = GetModels( dataset, model )
-		attribute = GetAttribute()
-		attributes = GetAttributes( dataset, model, attribute )
-		
+		folders = sorted( folders )
+		return folders
+	
+	def GetModels( self, dataset ):
+		if dataset in TermiteCore.EXCLUDED_FOLDERS:
+			return None
+		folders = [ 'vis' ]
+		app_data_path = '{}/data'.format( self.request.folder )
+		for folder in os.listdir( app_data_path ):
+			app_data_subpath = '{}/{}'.format( app_data_path, folder )
+			if os.path.isdir( app_data_subpath ):
+				folders.append( folder )
+		folders = sorted( folders )
+		return folders
+	
+	def GetAttributes( self, dataset, model ):
+		if dataset in TermiteCore.EXCLUDED_FOLDERS:
+			return None
+		if model == 'default':
+			return None
+		if model == 'lda':
+			return [
+				'DocIndex',
+				'TermIndex',
+				'TopicIndex',
+				'TermTopicMatrix',
+				'DocTopicMatrix',
+				'TopicTermMatrix',
+				'TopicDocMatrix',
+				'TopicCooccurrence',
+				'TopicCovariance',
+				'TopicTopTerms',
+				'TopicTopDocs'
+			]
+		if model == 'corpus':
+			return [
+				'DocMeta',
+				'TermFreqs',
+				'TermCoFreqs',
+				'TermProbs',
+				'TermCoProbs'
+			]
+		if model == 'vis':
+			return [
+				'GroupInABox',
+				'CovariateChart'
+			]
+		return []
+	
+	def GetConfigs( self ):
+		server = self.GetServer()
+		dataset = self.GetDataset()
+		datasets = self.GetDatasets()
+		model = self.GetModel()
+		models = self.GetModels( dataset )
+		attribute = self.GetAttribute()
+		attributes = self.GetAttributes( dataset, model )
 		configs = {
 			'server' : server,
 			'dataset' : dataset,
@@ -95,35 +104,61 @@ class TermiteCore:
 		}
 		return configs
 	
+################################################################################
+# Parameters
+	def GetStringParam( self, key, defaultValue ):
+		try:
+			return unicode( self.request.vars[ key ] )
+		except:
+			return defaultValue
+		
+	def GetNonNegativeIntegerParam( self, key, defaultValue ):
+		try:
+			n = int( self.request.vars[ key ] )
+			if n >= 0:
+				return n
+			else:
+				return 0
+		except:
+			return defaultValue
+	
+################################################################################
+# Generate a response
+
 	def IsDebugMode( self ):
 		return 'debug' in self.request.vars
 	
 	def IsJsonFormat( self ):
 		return 'format' in self.request.vars and 'json' == self.request.vars['format'].lower()
 	
-	def GenerateResponse( self, params = {}, keysAndValues = {} ):
+	def HasAllowedOrigin( self ):
+		return 'origin' in self.request.vars
+	
+	def GetAllowedOrigin( self ):
+		return self.request.vars['origin']
+	
+	def GenerateResponse( self ):
 		if self.IsDebugMode():
 			return self.GenerateDebugResponse()
 		else:
-			return self.GenerateNormalResponse( params, keysAndValues )
+			return self.GenerateNormalResponse()
 	
 	def GenerateDebugResponse( self ):
-		def GetEnv( env ):
-			data = {}
-			for key in env:
-				value = env[key]
-				if isinstance( value, dict ) or \
-				   isinstance( value, list ) or isinstance( value, tuple ) or \
-				   isinstance( value, str ) or isinstance( value, unicode ) or \
-				   isinstance( value, int ) or isinstance( value, long ) or isinstance( value, float ) or \
-				   value is None or value is True or value is False:
-					data[ key ] = value
-				else:
-					data[ key ] = 'N/A'
-			return data
+		envObject = self.request.env
+		envJSON = {}
+		for key in envObject:
+			value = envObject[ key ]
+			if isinstance( value, dict ) or \
+			   isinstance( value, list ) or isinstance( value, tuple ) or \
+			   isinstance( value, str ) or isinstance( value, unicode ) or \
+			   isinstance( value, int ) or isinstance( value, long ) or isinstance( value, float ) or \
+			   value is None or value is True or value is False:
+				envJSON[ key ] = value
+			else:
+				envJSON[ key ] = 'value not JSON-serializable'
 		
-		info = {
-			'env' : GetEnv( self.request.env ),
+		data = {
+			'env' : envJSON,
 			'cookies' : self.request.cookies,
 			'vars' : self.request.vars,
 			'get_vars' : self.request.get_vars,
@@ -134,25 +169,30 @@ class TermiteCore:
 			'function' : self.request.function,
 			'args' : self.request.args,
 			'extension' : self.request.extension,
-			'now' : str( self.request.now )
+			'now' : str( self.request.now ),
+			'configs' : self.configs,
+			'params' : self.params
 		}
-		return json.dumps( info, encoding = 'utf-8', indent = 2, sort_keys = True )
-	
-	
-	def GenerateNormalResponse( self, params, keysAndValues = {} ):
-		data = {
-			'params' : params,
-			'configs' : self.GetConfigs()
-		}
-		data.update( keysAndValues )
+		data.update( self.content )
 		dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 		
-		# Workaround while we build up the server-client architecture
-#		acceptedIPs = [ 'http://' + self.request.env['REMOTE_ADDR'] + ':8080', 'http://127.0.0.1:8000' ]
-#		self.response.headers['Access-Control-Allow-Origin'] = ', '.join(acceptedIPs)
-		self.response.headers['Access-Control-Allow-Origin'] = 'http://localhost:8888'
+		self.response.headers['Content-Type'] = 'application/json'
+		return dataStr
+
+	def GenerateNormalResponse( self ):
+		data = {
+			'configs' : self.configs,
+			'params' : self.params
+		}
+		data.update( self.content )
+		dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+		
 		if self.IsJsonFormat():
+			self.response.headers['Content-Type'] = 'application/json'
+			if self.HasAllowedOrigin():
+				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
 			return dataStr
 		else:
+			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
 			data[ 'content' ] = dataStr
 			return data
