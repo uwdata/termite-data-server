@@ -1,0 +1,28 @@
+{{extend 'template.html'}}
+{{include 'attribute.html'}}
+
+<div class="body">
+	<div class="heading">Request Parameters</div>
+	<div class="params">
+		<div class="param">termLimit = 
+			<select onchange="onSelectParam(this)">
+				{{for n in [5,10,20,50,100,200,500]:}}
+					<option value="{{response.write(QueryString({'termLimit':n}),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+				{{pass}}
+			</select>
+		</div>
+		<div class="param">termOffset = 
+			<select onchange="onSelectParam(this)">
+				{{for n in range(0,100,5):}}
+					<option value="{{response.write(QueryString({'termOffset':n}),escape=False)}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+				{{pass}}
+			</select>
+		</div>
+		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
+	</div>
+
+	<div class="heading">Server Response
+		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']+request.env['PATH_INFO']}}?format=json">Display as a JSON object</a>)</span>
+	</div>
+	<div class="content">{{=content}}</div>
+</div>
