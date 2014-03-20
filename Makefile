@@ -59,7 +59,7 @@ data/demo/nsf127992:
 
 demo: apps/infovis_mallet
 
-demos: apps/infovis_mallet apps/infovis_gensim apps/poliblogs_mallet apps/poliblogs_gensim apps/poliblogs_stm apps/fomc_mallet apps/fomc_gensim apps/fomc_stm
+demos: apps/infovis_mallet apps/infovis_gensim apps/poliblogs_stm
 
 apps/infovis_mallet: web2py tools/mallet data/demo/infovis
 	./demo infovis mallet
@@ -67,23 +67,23 @@ apps/infovis_mallet: web2py tools/mallet data/demo/infovis
 apps/infovis_gensim: web2py tools/gensim data/demo/infovis
 	./demo infovis gensim
 
-apps/poliblogs_mallet: web2py tools/mallet data/demo/poliblogs
-	./demo poliblogs mallet
-
-apps/poliblogs_gensim: web2py tools/gensim data/demo/poliblogs
-	./demo poliblogs gensim
-
 apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
 	./demo poliblogs stm
 
-apps/fomc_mallet: web2py tools/mallet data/demo/fomc
+other-demos:
+	./demo infovis mallet
+	./demo infovis gensim
+	./demo poliblogs mallet
+	./demo poliblogs gensim
+	./demo poliblogs stm
 	./demo fomc mallet
-
-apps/fomc_gensim: web2py tools/gensim data/demo/fomc
 	./demo fomc gensim
-
-apps/fomc_stm: web2py tools/stm data/demo/fomc
 	./demo fomc stm
+	./demo 20newsgroups mallet
+	./demo nsf1k mallet
+	./demo nsf10k mallet
+	./demo nsf25k mallet
+	./demo nsf127992 mallet
 
 ################################################################################
 # Other utilities
