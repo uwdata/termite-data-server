@@ -9,23 +9,15 @@ def index():
 	return core.GenerateResponse()
 
 def GroupInABox():
-	core = TermiteCore( request, response )
-	giab = GroupInABoxModel( request )
-	topicCooccurrence = giab.GetTopicCooccurrence()
-	topTermsPerTopic, termSet = giab.GetTopTermsPerTopic()
-	termCoFreqs = giab.GetTermCoFreqs( termSet = termSet )
-	return core.GenerateResponse( giab.params, {
-		'TopTermsPerTopic' : topTermsPerTopic,
-		'TermCoFreqs' : termCoFreqs,
-		'TopicCooccurrence' : topicCooccurrence
-	})
+	gib = GroupInABoxModel( request, response )
+	gib.LoadTopTermsPerTopic()
+	gib.LoadTopicCovariance()
+	gib.LoadTermCoFreqs()
+	gib.LoadTermPMI()
+	return gib.GenerateResponse()
 
 def CovariateChart():
-	core = TermiteCore( request, response )
-	chart = CovariateChartModel( request )
-	topTerms = chart.GetTopTerms()
-	docTopics = chart.GetDocTopics()
-	return core.GenerateResponse( chart.params, {
-		'TopTerms' : topTerms,
-		'DocTopics' : docTopics
-	})
+	chart = CovariateChartModel( request, response )
+	chart.LoadDocTopicMatrix()
+	chart.LoadTopicTopTerms()
+	return chart.GenerateResponse()
