@@ -20,7 +20,7 @@ class ImportAbstraction( object ):
 		self.database_path = '{}/{}/databases'.format( APPS_ROOT, app_name )
 	
 	def AddAppFolder( self ):
-		if os.path.exists( self.app_path ):
+		if os.path.exists( self.data_path ):
 			return False
 		
 		print '--------------------------------------------------------------------------------'
