@@ -12,6 +12,7 @@ def GroupInABox():
 	gib = GroupInABoxModel( request, response )
 	gib.LoadTopTermsPerTopic()
 	gib.LoadTopicCovariance()
+	gib.LoadTermFreqs()
 	gib.LoadTermCoFreqs()
 	gib.LoadTermPMI()
 	return gib.GenerateResponse()

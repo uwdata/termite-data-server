@@ -16,26 +16,24 @@ class GroupInABox( TermiteCore ):
 				value = self.GetNonNegativeIntegerParam( 'termLimit', 5 )
 			self.params.update({ key : value })
 
-		if key == 'termOffset':
-			value = self.GetNonNegativeIntegerParam( 'termOffset', 0 )
-			self.params.update({ key : value })
-
 		return value
 
 	def LoadTopTermsPerTopic( self ):
 		termLimit = self.GetParam('termLimit')
-		termOffset = self.GetParam('termOffset')
 		filename = os.path.join( self.request.folder, 'data/lda', 'topic-term-matrix.json' )
 		with open( filename ) as f:
 			matrix = json.load( f, encoding = 'utf-8' )
 		submatrix = []
+		vocab = set()
 		for vector in matrix:
 			allTerms = sorted( vector.iterkeys(), key = lambda x : -vector[x] )
-			subTerms = allTerms[termOffset:termOffset+termLimit]
+			subTerms = allTerms[:termLimit]
 			termSet = frozenset(subTerms)
-			submatrix.append( { term : vector[term] for term in termSet if term in vector } )
+			vocab.update( termSet )
+			submatrix.append( [ { term : vector[term] } for term in termSet if term in vector ] )
 		results = {
-			'TopTermsPerTopic' : submatrix
+			'TopTermsPerTopic' : submatrix,
+			'Vocab' : list( vocab )
 		}
 		self.content.update(results)
 		return results
@@ -63,35 +61,25 @@ class GroupInABox( TermiteCore ):
 		return results
 
 	def LoadTermFreqs( self ):
-		termLimit = self.GetParam('termLimit')
-		termOffset = self.GetParam('termOffset')
+		vocab = frozenset( self.content['Vocab'] )
 		filename = os.path.join( self.request.folder, 'data/corpus', 'term-freqs.json' )
 		with open( filename ) as f:
 			allTermFreqs = json.load( f, encoding = 'utf-8' )
-		allTerms = sorted( allTermFreqs.iterkeys(), key = lambda x : -allTermFreqs[x] )
-		termMaxCount = len(allTerms)
-		subTerms = allTerms[termOffset:termOffset+termLimit]
-		termCount = len(subTerms)
-		subTermFreqs = { term : allTermFreqs[term] for term in subTerms }
+		subTermFreqs = { term : allTermFreqs[term] for term in vocab if term in allTermFreqs }
 		results = {
-			'TermLimit' : termLimit,
-			'TermOffset' : termOffset,
-			'TermCount' : termCount,
-			'TermMaxCount' : termMaxCount,
 			'TermFreqs' : subTermFreqs
 		}
 		self.content.update(results)
 		return results
 
 	def LoadTermCoFreqs( self ):
-		self.LoadTermFreqs()
-		termSet = frozenset( self.content['TermFreqs'].iterkeys() )
+		vocab = frozenset( self.content['Vocab'] )
 		filename = os.path.join( self.request.folder, 'data/corpus', 'term-co-freqs.json' )
 		with open( filename ) as f:
 			allTermCoFreqs = json.load( f, encoding = 'utf-8' )
-		subTermCoFreqs = { term : allTermCoFreqs[term] for term in termSet if term in allTermCoFreqs }
+		subTermCoFreqs = { term : allTermCoFreqs[term] for term in vocab if term in allTermCoFreqs }
 		for term, termFreqs in subTermCoFreqs.iteritems():
-			subTermCoFreqs[ term ] = { t : termFreqs[t] for t in termSet if t in termFreqs }
+			subTermCoFreqs[ term ] = { t : termFreqs[t] for t in vocab if t in termFreqs }
 		results = {
 			'TermCoFreqs' : subTermCoFreqs
 		}
@@ -99,39 +87,29 @@ class GroupInABox( TermiteCore ):
 		return results
 
 	def LoadTermProbs( self ):
-		termLimit = self.GetParam('termLimit')
-		termOffset = self.GetParam('termOffset')
+		vocab = frozenset( self.content['Vocab'] )
 		filename = os.path.join( self.request.folder, 'data/corpus', 'term-freqs.json' )
 		with open( filename ) as f:
 			allTermFreqs = json.load( f, encoding = 'utf-8' )
 		normalization = sum( allTermFreqs.itervalues() )
 		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
-		allTerms = sorted( allTermFreqs.iterkeys(), key = lambda x : -allTermFreqs[x] )
-		termMaxCount = len(allTerms)
-		subTerms = allTerms[termOffset:termOffset+termLimit]
-		termCount = len(subTerms)
-		subTermProbs = { term : allTermFreqs[term] * normalization for term in subTerms }
+		subTermProbs = { term : allTermFreqs[term] * normalization for term in vocab if term in allTermFreqs }
 		results = {
-			'TermLimit' : termLimit,
-			'TermOffset' : termOffset,
-			'TermCount' : termCount,
-			'TermMaxCount' : termMaxCount,
 			'TermProbs' : subTermProbs
 		}
 		self.content.update(results)
 		return results
 
 	def LoadTermCoProbs( self ):
-		self.LoadTermProbs()
-		termSet = frozenset( self.content['TermProbs'].iterkeys() )
+		vocab = frozenset( self.content['Vocab'] )
 		filename = os.path.join( self.request.folder, 'data/corpus', 'term-co-freqs.json' )
 		with open( filename ) as f:
 			allTermCoFreqs = json.load( f, encoding = 'utf-8' )
 		normalization = sum( [ sum( d.itervalues() ) for d in allTermCoFreqs.itervalues() ] )
 		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
-		subTermCoProbs = { term : allTermCoFreqs[term] for term in termSet if term in allTermCoFreqs }
+		subTermCoProbs = { term : allTermCoFreqs[term] for term in vocab if term in allTermCoFreqs }
 		for term, termFreqs in subTermCoProbs.iteritems():
-			subTermCoProbs[ term ] = { t : termFreqs[t] * normalization for t in termSet if t in termFreqs }
+			subTermCoProbs[ term ] = { t : termFreqs[t] * normalization for t in vocab if t in termFreqs }
 		results = {
 			'TermCoProbs' : subTermCoProbs
 		}
@@ -139,6 +117,7 @@ class GroupInABox( TermiteCore ):
 		return results
 
 	def LoadTermPMI( self ):
+		self.LoadTermProbs()
 		self.LoadTermCoProbs()
 		termProbs = self.content['TermProbs']
 		termCoProbs = self.content['TermCoProbs']
