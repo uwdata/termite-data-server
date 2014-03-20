@@ -23,7 +23,7 @@ web2py:
 # Topic modeling tools
 #   mallet, treetm, stm, gensim, stmt
 
-tools/mallet:
+tools/mallet: utils
 	bin/setup_mallet.sh
 
 tools/treetm:
@@ -59,7 +59,7 @@ data/demo/nsf127992:
 
 demo: apps/infovis_mallet
 
-demos: apps/infovis_mallet apps/infovis_gensim apps/poliblogs_stm
+demos: apps/infovis_mallet apps/infovis_gensim apps/poliblogs_mallet apps/poliblogs_gensim apps/poliblogs_stm apps/fomc_mallet apps/fomc_gensim apps/fomc_stm
 
 apps/infovis_mallet: web2py tools/mallet data/demo/infovis
 	./demo infovis mallet
@@ -67,16 +67,30 @@ apps/infovis_mallet: web2py tools/mallet data/demo/infovis
 apps/infovis_gensim: web2py tools/gensim data/demo/infovis
 	./demo infovis gensim
 
+apps/poliblogs_mallet: web2py tools/mallet data/demo/poliblogs
+	./demo poliblogs mallet
+
+apps/poliblogs_gensim: web2py tools/gensim data/demo/poliblogs
+	./demo poliblogs gensim
+
 apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
 	./demo poliblogs stm
 
+apps/fomc_mallet: web2py tools/mallet data/demo/fomc
+	./demo fomc mallet
+
+apps/fomc_gensim: web2py tools/gensim data/demo/fomc
+	./demo fomc gensim
+
+apps/fomc_stm: web2py tools/stm data/demo/fomc
+	./demo fomc stm
 
 ################################################################################
 # Other utilities
 
 utils: utils/mallet/CorpusWriter.jar
 
-utils/mallet/CorpusWriter.jar:
+utils/mallet/CorpusWriter.jar: utils/mallet/mallet_helpers/CorpusWriter.java
 	$(MAKE) -C utils/mallet
 
 ################################################################################
@@ -85,5 +99,6 @@ clean:
 	rm -rf externals
 	rm -rf tools/mallet*
 	rm -rf tools/stm*
-	rm -rf data/demo/infovis apps/infovis_mallet web2py/applications/infovis_mallet
-	rm -rf data/demo/poliblogs apps/poliblogs_stm web2py/applications/poliblogs_stm
+	rm -rf data/demo/infovis apps/infovis_* web2py/applications/infovis_*
+	rm -rf data/demo/poliblogs apps/poliblogs_* web2py/applications/poliblogs_*
+	rm -rf data/demo/fomc apps/fomc_* web2py/applications/fomc_*
