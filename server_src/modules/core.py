@@ -72,7 +72,8 @@ class TermiteCore( object ):
 			]
 		if model == 'corpus':
 			return [
-				'DocMeta',
+				'Document',
+				'TextSearch',
 				'TermFreqs',
 				'TermCoFreqs',
 				'TermProbs',
@@ -107,11 +108,11 @@ class TermiteCore( object ):
 	
 ################################################################################
 # Parameters
-	def GetStringParam( self, key, defaultValue ):
-		try:
-			return unicode( self.request.vars[ key ] )
-		except:
-			return defaultValue
+	def GetStringParam( self, key ):
+		if key in self.request.vars:
+			return unicode( self.request.vars[key] )
+		else:
+			return u''
 		
 	def GetNonNegativeIntegerParam( self, key, defaultValue ):
 		try:

@@ -6,9 +6,14 @@ def index():
 	corpus = Corpus( request, response )
 	return corpus.GenerateResponse()
 
-def DocMeta():
+def Document():
 	corpus = Corpus( request, response )
-	corpus.LoadDocMeta()
+	corpus.LoadDocument()
+	return corpus.GenerateResponse()
+
+def TextSearch():
+	corpus = Corpus( request, response )
+	corpus.LoadTextSearch()
 	return corpus.GenerateResponse()
 
 def TermFreqs():

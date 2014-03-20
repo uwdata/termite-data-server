@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import re
 import os
 import json
 from core import TermiteCore
@@ -9,6 +10,10 @@ class Corpus( TermiteCore ):
 		super( Corpus, self ).__init__( request, response )
 
 	def GetParam( self, key ):
+		if key == 'searchText':
+			value = self.GetStringParam( 'searchText' )
+			self.params.update({ key : value })
+
 		if key == 'searchLimit':
 			if self.IsJsonFormat():
 				value = self.GetNonNegativeIntegerParam( 'searchLimit', 100 )
@@ -16,52 +21,72 @@ class Corpus( TermiteCore ):
 				value = self.GetNonNegativeIntegerParam( 'searchLimit', 5 )
 			self.params.update({ key : value })
 
-		elif key == 'searchOffset':
+		if key == 'searchOffset':
 			value = self.GetNonNegativeIntegerParam( 'searchOffset', 0 )
 			self.params.update({ key : value })
 
-		elif key == 'termLimit':
+		if key == 'termLimit':
 			if self.IsJsonFormat():
 				value = self.GetNonNegativeIntegerParam( 'termLimit', 100 )
 			else:
 				value = self.GetNonNegativeIntegerParam( 'termLimit', 5 )
 			self.params.update({ key : value })
 
-		elif key == 'termOffset':
+		if key == 'termOffset':
 			value = self.GetNonNegativeIntegerParam( 'termOffset', 0 )
 			self.params.update({ key : value })
 
-		elif key == 'searchText':
-			value = self.GetStringParam( 'searchText', '' )
+		if key == 'docIndex':
+			value = self.GetStringParam( 'docIndex' )
 			self.params.update({ key : value })
 
 		return value
 	
-	def LoadDocMeta( self ):
-		if params is None:
-			params = self.params
-		searchText = params["searchText"]
-		searchLimit = params["searchLimit"]
-		searchOffset = params["searchOffset"]
-
+	def LoadDocument( self ):
+		docIndex = self.GetParam("docIndex")
 		filename = os.path.join( self.request.folder, 'data/corpus', 'doc-meta.json' )
 		with open( filename ) as f:
-			content = json.load( f, encoding = 'utf-8' )['data']
-			results = {}
-			matchCount = 0
-			keys = sorted(content.iterkeys())
-			for index in range(len(keys)):
-			    obj = content[keys[index]]
-			    docContent = obj["DocContent"]
-			    if searchText in docContent:
-			        matchCount += 1
-			        if len(results) < searchLimit and index >= searchOffset:
-			           results[obj["DocID"]] = obj
-		return {
-			"Documents" : results,
-			"docCount" : len(results),
-			"docMaxCount" : matchCount
+			corpus = json.load( f, encoding = 'utf-8' )
+			corpusHeader = corpus['header']
+			corpusData = corpus['data']
+		if docIndex in corpusData:
+			document = corpusData[docIndex]
+		else:
+			document = None
+		results = {
+			'Document' : document,
+			'DocIndex' : docIndex
 		}
+		self.content.update(results)
+		return results
+	
+	def LoadTextSearch( self ):
+		searchText = self.GetParam("searchText")
+		searchLimit = self.GetParam("searchLimit")
+		searchOffset = self.GetParam("searchOffset")
+		filename = os.path.join( self.request.folder, 'data/corpus', 'doc-meta.json' )
+		with open( filename ) as f:
+			corpus = json.load( f, encoding = 'utf-8' )
+			corpusHeader = corpus['header']
+			corpusData = corpus['data']
+		documents = {}
+		matchCount = 0
+		for docID, document in corpusData.iteritems():
+			docContent = document['DocContent']
+			if re.search( searchText, docContent ) is not None:
+				matchCount += 1
+				if searchOffset <= matchCount and matchCount < searchOffset + searchLimit:
+					documents[ docID ] = document
+		results = {
+			'Documents' : documents,
+			'SearchText' : searchText,
+			'SearchOffset' : searchOffset,
+			'SearchLimit' : searchLimit,
+			'MatchMaxCount' : matchCount,
+			'MatchCount' : len(documents)
+		}
+		self.content.update(results)
+		return results
 
 	def LoadTermFreqs( self ):
 		termLimit = self.GetParam('termLimit')

@@ -1,0 +1,56 @@
+{{extend 'template.html'}}
+{{include 'attribute.html'}}
+{{import json}}
+
+<script type="text/javascript">
+var onSubmitParams = function() {
+	var query = {{response.write( json.dumps({ key : request.vars[key] for key in request.vars }), escape=False )}}
+	var keys = [ "searchText" ];
+	keys.forEach( function(key) {
+		var value = $("."+key).val();
+		if ( value.length > 0 ) {
+			var text = value.replace( /[\n\r\f]+/g, ";" ).replace( /[ ]+/g, ":" );
+			query[key] = text;
+		}
+	});
+	var queryString = []
+	for ( var key in query ) {
+		var value = query[key];
+		queryString.push( key + "=" + escape(value) );
+	}
+	if ( queryString.length > 0 )
+		queryString = "?" + queryString.join("&");
+	else
+		queryString = "";
+	window.location.href = "http://{{=configs['server']}}/{{=configs['dataset']}}/{{=configs['model']}}/{{=configs['attribute']}}" + queryString;
+};
+</script>
+
+<div class="body">
+	<div class="heading">Request Parameters</div>
+	<div class="params">
+		<div class="param">searchText = 
+			<input type="text" class="searchText" value="{{=params['searchText']}}" style="width:150px"/> <input type="button" value="Refresh" onclick="onSubmitParams()" />
+		</div>
+		<div class="param">searchLimit = 
+			<select onchange="onSelectParam(this)">
+				{{for n in [5,10,20,50,100,200,500]:}}
+					<option value="{{response.write(QueryString({'searchLimit':n}),escape=False)}}" {{if params['searchLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+				{{pass}}
+			</select>
+		</div>
+		<div class="param">searchOffset = 
+			<select onchange="onSelectParam(this)">
+				{{for n in range(0,100,5):}}
+					<option value="{{response.write(QueryString({'searchOffset':n}),escape=False)}}" {{if params['searchOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+				{{pass}}
+			</select>
+		</div>
+		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
+	</div>
+
+	<div class="heading">Server Response
+		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']+request.env['PATH_INFO']+QueryString({'format':'json'})}}">Display as a JSON object</a>)</span>
+	</div>
+	<div class="content">{{=content}}</div>
+</div>

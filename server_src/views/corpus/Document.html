@@ -5,7 +5,7 @@
 <script type="text/javascript">
 var onSubmitParams = function() {
 	var query = {{response.write( json.dumps({ key : request.vars[key] for key in request.vars }), escape=False )}}
-	var keys = [ "searchText", "searchOrdering" ];
+	var keys = [ "docIndex" ];
 	keys.forEach( function(key) {
 		var value = $("."+key).val();
 		if ( value.length > 0 ) {
@@ -29,25 +29,8 @@ var onSubmitParams = function() {
 <div class="body">
 	<div class="heading">Request Parameters</div>
 	<div class="params">
-		<div class="param">searchText = 
-			<input type="text" class="searchText" value="{{=params['searchText']}}" style="width:150px"/> <input type="button" value="Refresh" onclick="onSubmitParams()" />
-		</div>
-		<div class="param">searchOrdering = 
-			<input type="text" class="searchOrdering" value="{{=params['searchOrdering']}}" style="width:150px"/> <input type="button" value="Refresh" onclick="onSubmitParams()" />
-		</div>
-		<div class="param">searchLimit = 
-			<select onchange="onSelectParam(this)">
-				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{response.write(QueryString({'searchLimit':n}),escape=False)}}" {{if params['searchLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
-		</div>
-		<div class="param">searchOffset = 
-			<select onchange="onSelectParam(this)">
-				{{for n in range(0,100,5):}}
-					<option value="{{response.write(QueryString({'searchOffset':n}),escape=False)}}" {{if params['searchOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
+		<div class="param">docIndex = 
+			<input type="text" class="docIndex" value="{{=params['docIndex']}}" style="width:150px"/> <input type="button" value="Refresh" onclick="onSubmitParams()" />
 		</div>
 		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
 	</div>

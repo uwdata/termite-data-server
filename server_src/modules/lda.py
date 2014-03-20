@@ -16,22 +16,22 @@ class LDA( TermiteCore ):
 				value = self.GetNonNegativeIntegerParam( 'docLimit', 5 )
 			self.params.update({ key : value })
 		
-		elif key == 'docOffset':
+		if key == 'docOffset':
 			value = self.GetNonNegativeIntegerParam( 'docOffset', 0 )
 			self.params.update({ key : value })
 		
-		elif key == 'termLimit':
+		if key == 'termLimit':
 			if self.IsJsonFormat():
 				value = self.GetNonNegativeIntegerParam( 'termLimit', 100 )
 			else:
 				value = self.GetNonNegativeIntegerParam( 'termLimit', 5 )
 			self.params.update({ key : value })
 
-		elif key == 'termOffset':
+		if key == 'termOffset':
 			value = self.GetNonNegativeIntegerParam( 'termOffset', 0 )
 			self.params.update({ key : value })
 
-		elif key == 'topicIndex':
+		if key == 'topicIndex':
 			value = self.GetNonNegativeIntegerParam( 'topicIndex', 0 )
 			self.params.update({ key : value })
 			
@@ -150,9 +150,8 @@ class LDA( TermiteCore ):
 		return results
 
 	def LoadTopicCovariance( self ):
-		filename = os.path.join( self.request.folder, 'data/lda', 'topic-cooccurrence.json' )
-		with open( filename ) as f:
-			topicCooccurrence = json.load( f, encoding = 'utf-8' )
+		self.LoadTopicCooccurrence()
+		topicCooccurrence = self.content['TopicCooccurrence']
 		normalization = sum( [ sum( vector ) for vector in topicCooccurrence ] )
 		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
 		topicCovariance = [ [ value * normalization for value in vector ] for vector in topicCooccurrence ]
