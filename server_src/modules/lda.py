@@ -172,7 +172,7 @@ class LDA( TermiteCore ):
 			allTerms = sorted( vector.iterkeys(), key = lambda x : -vector[x] )
 			subTerms = allTerms[termOffset:termOffset+termLimit]
 			termSet = frozenset(subTerms)
-			submatrix.append( { term : vector[term] for term in termSet if term in vector } )
+			submatrix.append( [ { term : vector[term] } for term in termSet if term in vector ] )
 		results = {
 			'TopicTopTerms' : submatrix
 		}
@@ -190,7 +190,7 @@ class LDA( TermiteCore ):
 			allDocs = sorted( vector.iterkeys(), key = lambda x : -vector[x] )
 			subDocs = allDocs[docOffset:docOffset+docLimit]
 			docSet = frozenset(subDocs)
-			submatrix.append( { doc : vector[doc] for doc in docSet if doc in vector } )
+			submatrix.append( [ { doc : vector[doc] } for doc in docSet if doc in vector ] )
 		results = {
 			'TopicTopDocs' : submatrix
 		}
