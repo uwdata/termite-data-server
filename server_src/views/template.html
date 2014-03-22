@@ -7,7 +7,23 @@
 	<link rel="stylesheet" href="{{=URL('static','css/font-awesome.min.css')}}" />
 	<script type="text/javascript" src="{{=URL('static','js/jquery.js')}}"></script>
 	<script type="text/javascript" src="{{=URL('static','js/underscore.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/backbone.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/d3.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/vega.js')}}"></script>
 </head>
+
+{{
+	def QueryString( keysAndValues = {} ):
+    	query = { key : request.vars[key] for key in request.vars }
+		query.update( keysAndValues )
+		if len(query) > 0:
+			query = '?' + '&'.join( [ '{}={}'.format( key, value ) for key, value in query.iteritems() ] )
+		else:
+			query = ''
+		pass
+		return query
+}}
+
 <body>
 	{{include}}
 </body>

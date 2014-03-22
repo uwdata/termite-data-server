@@ -27,6 +27,9 @@ class TermiteCore( object ):
 
 	def GetAttribute( self ):
 		return self.request.function
+	
+	def GetURL( self ):
+		return self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO']
 
 	def GetDatasets( self ):
 		folders = []
@@ -95,6 +98,7 @@ class TermiteCore( object ):
 		models = self.GetModels( dataset )
 		attribute = self.GetAttribute()
 		attributes = self.GetAttributes( dataset, model )
+		url = self.GetURL()
 		configs = {
 			'server' : server,
 			'dataset' : dataset,
@@ -102,7 +106,8 @@ class TermiteCore( object ):
 			'model' : model,
 			'models' : models,
 			'attribute' : attribute,
-			'attributes' : attributes
+			'attributes' : attributes,
+			'url' : url
 		}
 		return configs
 	

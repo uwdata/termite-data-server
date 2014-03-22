@@ -54,15 +54,3 @@ var onSelectParam = function( srcElement ) {
 		</select>
 	</div>
 </div>
-
-{{
-	def QueryString( keysAndValues = {} ):
-    	query = { key : request.vars[key] for key in request.vars }
-		query.update( keysAndValues )
-		if len(query) > 0:
-			query = '?' + '&'.join( [ '{}={}'.format( key, value ) for key, value in query.iteritems() ] )
-		else:
-			query = ''
-		pass
-		return query
-}}

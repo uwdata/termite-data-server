@@ -1,1 +1,9 @@
-../lda/index.html
+{{extend 'template.html'}}
+{{include 'model.html'}}
+
+<div class="body">
+	<div class="heading">Server Response
+		<span class="extra">(<a href="http://{{=configs['url']}}?format=json">Display as a JSON object</a>)</span>
+	</div>
+	<div class="content">{{=content}}</div>
+</div>
