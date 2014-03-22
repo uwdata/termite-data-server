@@ -13,7 +13,11 @@
 
 <div class="body">
 	<div class="heading">Server Response
-		<span class="extra">(<a href="http://{{=request.env['HTTP_HOST']+request.env['PATH_INFO']}}?format=json">Display as a JSON object</a>)</span>
+		<span class="format">(
+{{if configs['is:text']:}}<b>Text format</b>{{else:}}<a href="http://{{=configs['url:text']}}">Text format</a>{{pass}} | 
+{{if configs['is:json']:}}<b>JSON object</b>{{else:}}<a href="http://{{=configs['url:json']}}">JSON object</a>{{pass}}
+		)</span>
 	</div>
+
 	<div class="content">{{=content}}</div>
 </div>

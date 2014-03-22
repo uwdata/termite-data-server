@@ -46,6 +46,8 @@ class LDA( TermiteCore ):
 		termMaxCount = len(allTerms)
 		subTerms = allTerms[termOffset:termOffset+termLimit]
 		termCount = len(subTerms)
+		for index, term in enumerate(subTerms):
+			term['index'] = index
 		results = {
 			'TermLimit' : termLimit,
 			'TermOffset' : termOffset,
@@ -65,6 +67,8 @@ class LDA( TermiteCore ):
 		docMaxCount = len(allDocs)
 		subDocs = allDocs[docOffset:docOffset+docLimit]
 		docCount = len(subDocs)
+		for index, doc in enumerate(subDocs):
+			doc['index'] = index
 		results = {
 			'DocLimit' : docLimit,
 			'DocOffset' : docOffset,

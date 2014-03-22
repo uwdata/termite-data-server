@@ -57,6 +57,13 @@ div.body div.heading {
 	margin: 20px 0 2px 0;
 	font-size: 14pt;
 }
+div.body div.heading span.format {
+	margin: 0 0 0 0.2em;
+	font-size: 10pt;
+}
+div.body div.heading span.format b {
+	color: #999;
+}
 div.body div.heading span.extra {
 	font-size: 8pt;
 }

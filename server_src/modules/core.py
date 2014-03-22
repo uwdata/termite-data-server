@@ -2,6 +2,7 @@
 
 import os
 import json
+import urllib
 
 class TermiteCore( object ):
 	def __init__( self, request, response ):
@@ -28,8 +29,24 @@ class TermiteCore( object ):
 	def GetAttribute( self ):
 		return self.request.function
 	
-	def GetURL( self ):
-		return self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO']
+	def GetURLs( self ):
+		urls = {
+			'text' : self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO'] + self.GetQueryString( { 'format' : None } ),
+			'graph' : self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO'] + self.GetQueryString( { 'format' : 'graph' } ),
+			'json' : self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO'] + self.GetQueryString( { 'format' : 'json' } )
+		}
+		return urls
+	
+	def GetQueryString( self, keysAndValues = {} ):
+	   	query = { key : self.request.vars[ key ] for key in self.request.vars }
+		query.update( keysAndValues )
+		for key in query.keys():
+			if query[ key ] is None:
+				del query[ key ]
+		if len(query) > 0:
+			return '?' + urllib.urlencode(query)
+		else:
+			return ''
 
 	def GetDatasets( self ):
 		folders = []
@@ -98,7 +115,7 @@ class TermiteCore( object ):
 		models = self.GetModels( dataset )
 		attribute = self.GetAttribute()
 		attributes = self.GetAttributes( dataset, model )
-		url = self.GetURL()
+		urls = self.GetURLs()
 		configs = {
 			'server' : server,
 			'dataset' : dataset,
@@ -107,7 +124,12 @@ class TermiteCore( object ):
 			'models' : models,
 			'attribute' : attribute,
 			'attributes' : attributes,
-			'url' : url
+			'url:text' : urls['text'],
+			'url:graph' : urls['graph'],
+			'url:json' : urls['json'],
+			'is:text' : not ( self.IsGraphFormat() or self.IsJsonFormat() ),
+			'is:graph' : self.IsGraphFormat(),
+			'is:json' : self.IsJsonFormat()
 		}
 		return configs
 	
@@ -137,6 +159,9 @@ class TermiteCore( object ):
 	
 	def IsJsonFormat( self ):
 		return 'format' in self.request.vars and 'json' == self.request.vars['format'].lower()
+	
+	def IsGraphFormat( self ):
+		return 'format' in self.request.vars and 'graph' == self.request.vars['format'].lower()
 	
 	def HasAllowedOrigin( self ):
 		return 'origin' in self.request.vars
@@ -199,6 +224,10 @@ class TermiteCore( object ):
 			if self.HasAllowedOrigin():
 				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
 			return dataStr
+		elif self.IsGraphFormat():
+			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+			data[ 'content' ] = dataStr
+			return data
 		else:
 			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
 			data[ 'content' ] = dataStr

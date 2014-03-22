@@ -22,7 +22,96 @@
 	</div>
 
 	<div class="heading">Server Response
-		<span class="extra">(<a href="http://{{=configs['url']+QueryString({'format':'json'})}}">Display as a JSON object</a>)</span>
+		<span class="format">(
+{{if configs['is:text']:}}<b>Text format</b>{{else:}}<a href="http://{{=configs['url:text']}}">Text format</a>{{pass}} | 
+{{if configs['is:graph']:}}<b>Graph format</b>{{else:}}<a href="http://{{=configs['url:graph']}}">Graph format</a>{{pass}} | 
+{{if configs['is:json']:}}<b>JSON object</b>{{else:}}<a href="http://{{=configs['url:json']}}">JSON object</a>{{pass}}
+		)</span>
 	</div>
+	
+{{if configs['is:text']:}}
 	<div class="content">{{=content}}</div>
+{{pass}}
+{{if configs['is:graph']:}}
+	<div class="content"><div id="view" class="view"></div></div>
+{{pass}}
+
+{{if configs['is:graph']:}}
+<script type="text/javascript">
+var spec = {
+	"width": 400,
+	"height": 20 * {{=TermCount}},
+	"padding": {
+		"top": 0,
+		"left": 0,
+		"bottom": 0,
+		"right": 0
+	},
+	"data": [
+		{ "name": "table" }
+	],
+	"scales": [
+		{
+			"name": "x", "range": "width", "nice": true,
+			"domain": {"data": "table", "field": "data.freq"}
+		},
+	    {
+			"name": "y", "range": "height", "type": "ordinal",
+			"domain": {"data": "table", "field": "data.index"}
+	    }
+	],
+	"axes": [
+		{"type": "x", "scale": "x"},
+		{"type": "y", "scale": "y"}
+	],
+	"marks": [
+		{
+			"type": "rect",
+			"interactive": true,
+			"from": { "data": "table" },
+			"properties": {
+				"enter": {
+					"x": {"scale": "x", "value": 0},
+					"x2": {"scale": "x", "field": "data.freq"},
+					"y": {"scale": "y", "field": "data.index"},
+					"height": {"scale": "y", "band": true},
+					"fill": {"value": "steelblue"}
+				},
+				"update": {
+					"opacity": {"value": 0.5}
+				},
+				"hover": {
+					"opacity": {"value": 1}
+				}
+			}
+		},
+		{
+			"type" : "text",
+			"from" : { "data" : "table" },
+			"properties" : {
+				"enter": {
+					"x": {"scale": "x", "value": 0},
+					"y": {"scale": "y", "field": "data.index"},
+					"align": {"value": "left"},
+					"dx": {"value": 5},
+					"baseline": {"value": "top"},
+					"dy": {"value": 3},
+					"text": {"field": "data.text"},
+					"font": {"value": "Gill Sans"},
+					"fill": {"value": "steelblue"}
+				}
+			}
+		}
+	]
+};
+
+var data = { "table" :
+	{{import json;response.write(json.dumps(TermIndex,encoding='utf-8'),escape=False)}}
+};
+
+vg.parse.spec( spec, function( chart ) {
+	var view = chart({ el:"#view", data:data }).update();
+});
+</script>
+{{pass}}
 </div>
