@@ -3,10 +3,12 @@
 import os
 import json
 from core import TermiteCore
+from json import encoder as JsonEncoder
 
 class GroupInABox( TermiteCore ):
 	def __init__( self, request, response ):
 		super( GroupInABox, self ).__init__( request, response )
+		JsonEncoder.FLOAT_REPR = lambda number : format( number, '.3g' )
 
 	def GetParam( self, key ):
 		if key == 'termLimit':
