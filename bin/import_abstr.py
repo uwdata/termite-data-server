@@ -37,10 +37,6 @@ class ImportAbstraction( object ):
 			print 'Creating app folder: {}'.format( self.app_path )
 			os.makedirs( self.app_path )
 		
-		if not os.path.exists( self.data_path ):
-			print 'Creating data subfolder: {}'.format( self.data_path )
-			os.makedirs( self.data_path )
-		
 		if not os.path.exists( self.database_path ):
 			print 'Creating database subfolder: {}'.format( self.database_path )
 			os.makedirs( self.database_path )
@@ -55,7 +51,11 @@ class ImportAbstraction( object ):
 		if not os.path.exists( filename ):
 			print 'Setting up __init__.py'
 			os.system( 'touch {}'.format( filename ) )
-		
+
+		if not os.path.exists( self.data_path ):
+			print 'Creating data subfolder: {}'.format( self.data_path )
+			os.makedirs( self.data_path )
+
 		return True
 	
 	def ResolveMatrices( self ):
