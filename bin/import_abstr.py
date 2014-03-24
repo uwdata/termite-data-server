@@ -59,6 +59,12 @@ class ImportAbstraction( object ):
 		return True
 	
 	def ResolveMatrices( self ):
+		"""
+		Generate term-topic and doc-topic matrices (if needed)
+		Combine a 2D array term-topic-matrix.txt file with the term-index.json files.
+		Generate the required term-topic-matrix.json file.
+		Similarly for doc-topic-matrix.json file.
+		"""
 		index_filename = '{}/term-index.json'.format( self.data_path )
 		original_filename = '{}/term-topic-matrix.txt'.format( self.data_path )
 		resolved_filename = '{}/term-topic-matrix.json'.format( self.data_path )
@@ -89,6 +95,10 @@ class ImportAbstraction( object ):
 		return resolved
 			
 	def TransposeMatrices( self ):
+		"""
+		Generate topic-term matrix from term-topic matrix.
+		Generate topic-doc matrix from doc-topic matrix.
+		"""
 		original_filename = '{}/term-topic-matrix.json'.format( self.data_path )
 		transposed_filename = '{}/topic-term-matrix.json'.format( self.data_path )
 		with open( original_filename, 'r' ) as f:
