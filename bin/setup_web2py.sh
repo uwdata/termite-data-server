@@ -69,6 +69,7 @@ function __setup_web2py__ {
 			ln -s ../../landing_src/controllers $APPS_PATH/init/controllers
 			ln -s ../../landing_src/modules $APPS_PATH/init/modules
 			ln -s ../../landing_src/static $APPS_PATH/init/static
+			ln -s ../init $APPS_PATH/welcome
 		fi
 		
 		if [ ! -d $WEB2PY_PATH/applications-original ]
