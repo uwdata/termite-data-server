@@ -8,7 +8,6 @@
 /tools/stm*
 /tools/treetm*
 /tools/stmt*
-/apps/
 /data/
 /web2py/httpserver.log
 /web2py/httpserver.pid
