@@ -64,9 +64,10 @@ class GroupInABox( TermiteCore ):
 
 	def LoadTermFreqs( self ):
 		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'term-freqs.json' )
+		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-stats.json' )
 		with open( filename ) as f:
-			allTermFreqs = json.load( f, encoding = 'utf-8' )
+			termStats = json.load( f, encoding = 'utf-8' )
+			allTermFreqs = termStats['freqs']
 		subTermFreqs = { term : allTermFreqs[term] for term in vocab if term in allTermFreqs }
 		results = {
 			'TermFreqs' : subTermFreqs
@@ -76,9 +77,10 @@ class GroupInABox( TermiteCore ):
 
 	def LoadTermCoFreqs( self ):
 		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'term-co-freqs.json' )
+		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
 		with open( filename ) as f:
-			allTermCoFreqs = json.load( f, encoding = 'utf-8' )
+			termCoStats = json.load( f, encoding = 'utf-8' )
+			allTermCoFreqs = termCoStats['coFreqs']
 		subTermCoFreqs = { term : allTermCoFreqs[term] for term in vocab if term in allTermCoFreqs }
 		for term, termFreqs in subTermCoFreqs.iteritems():
 			subTermCoFreqs[ term ] = { t : termFreqs[t] for t in vocab if t in termFreqs }
@@ -90,12 +92,13 @@ class GroupInABox( TermiteCore ):
 
 	def LoadTermProbs( self ):
 		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'term-freqs.json' )
+		termLimit = self.GetParam('termLimit')
+		termOffset = self.GetParam('termOffset')
+		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-stats.json' )
 		with open( filename ) as f:
-			allTermFreqs = json.load( f, encoding = 'utf-8' )
-		normalization = sum( allTermFreqs.itervalues() )
-		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
-		subTermProbs = { term : allTermFreqs[term] * normalization for term in vocab if term in allTermFreqs }
+			termStats = json.load( f, encoding = 'utf-8' )
+			allTermProbs = termStats['probs']
+		subTermProbs = { term : allTermProbs[term] for term in vocab if term in allTermProbs }
 		results = {
 			'TermProbs' : subTermProbs
 		}
@@ -104,14 +107,13 @@ class GroupInABox( TermiteCore ):
 
 	def LoadTermCoProbs( self ):
 		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'term-co-freqs.json' )
+		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
 		with open( filename ) as f:
-			allTermCoFreqs = json.load( f, encoding = 'utf-8' )
-		normalization = sum( [ sum( d.itervalues() ) for d in allTermCoFreqs.itervalues() ] )
-		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
-		subTermCoProbs = { term : allTermCoFreqs[term] for term in vocab if term in allTermCoFreqs }
-		for term, termFreqs in subTermCoProbs.iteritems():
-			subTermCoProbs[ term ] = { t : termFreqs[t] * normalization for t in vocab if t in termFreqs }
+			termCoStats = json.load( f, encoding = 'utf-8' )
+			allTermCoProbs = termCoStats['coProbs']
+		subTermCoProbs = { term : allTermCoProbs[term] for term in vocab if term in allTermCoProbs }
+		for term, termProbs in subTermCoProbs.iteritems():
+			subTermCoProbs[ term ] = { t : termProbs[t] for t in vocab if t in termProbs }
 		results = {
 			'TermCoProbs' : subTermCoProbs
 		}
@@ -119,20 +121,16 @@ class GroupInABox( TermiteCore ):
 		return results
 
 	def LoadTermPMI( self ):
-		self.LoadTermProbs()
-		self.LoadTermCoProbs()
-		termProbs = self.content['TermProbs']
-		termCoProbs = self.content['TermCoProbs']
-		termPMI = {}
-		for x, probs in termCoProbs.iteritems():
-			termPMI[x] = {}
-			for y, prob in probs.iteritems():
-				if x in termProbs and y in termProbs:
-					termPMI[x][y] = prob / termProbs[x] / termProbs[y]
-				else:
-					termPMI[x][y] = 0.0
+		vocab = frozenset( self.content['Vocab'] )
+		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
+		with open( filename ) as f:
+			termCoStats = json.load( f, encoding = 'utf-8' )
+			allTermPMI = termCoStats['coProbs']
+		subTermPMI = { term : allTermPMI[term] for term in vocab if term in allTermPMI }
+		for term, termProbs in subTermPMI.iteritems():
+			subTermPMI[ term ] = { t : termProbs[t] for t in vocab if t in termProbs }
 		results = {
-			'TermPMI' : termPMI
+			'TermPMI' : subTermPMI
 		}
 		self.content.update(results)
 		return results
