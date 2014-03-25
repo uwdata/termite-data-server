@@ -8,7 +8,7 @@ from json import encoder as JsonEncoder
 class GroupInABox( TermiteCore ):
 	def __init__( self, request, response ):
 		super( GroupInABox, self ).__init__( request, response )
-		JsonEncoder.FLOAT_REPR = lambda number : format( number, '.3g' )
+		JsonEncoder.FLOAT_REPR = lambda number : format( number, '.4g' )
 
 	def GetParam( self, key ):
 		if key == 'termLimit':
@@ -92,8 +92,6 @@ class GroupInABox( TermiteCore ):
 
 	def LoadTermProbs( self ):
 		vocab = frozenset( self.content['Vocab'] )
-		termLimit = self.GetParam('termLimit')
-		termOffset = self.GetParam('termOffset')
 		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-stats.json' )
 		with open( filename ) as f:
 			termStats = json.load( f, encoding = 'utf-8' )
@@ -131,6 +129,21 @@ class GroupInABox( TermiteCore ):
 			subTermPMI[ term ] = { t : termProbs[t] for t in vocab if t in termProbs }
 		results = {
 			'TermPMI' : subTermPMI
+		}
+		self.content.update(results)
+		return results
+
+	def LoadTermSentencePMI( self ):
+		vocab = frozenset( self.content['Vocab'] )
+		filename = os.path.join( self.request.folder, 'data/corpus', 'sentence-term-co-stats.json' )
+		with open( filename ) as f:
+			termCoStats = json.load( f, encoding = 'utf-8' )
+			allTermSentencePMI = termCoStats['coProbs']
+		subTermSentencePMI = { term : allTermSentencePMI[term] for term in vocab if term in allTermSentencePMI }
+		for term, termProbs in subTermSentencePMI.iteritems():
+			subTermSentencePMI[ term ] = { t : termProbs[t] for t in vocab if t in termProbs }
+		results = {
+			'TermSentencePMI' : subTermSentencePMI
 		}
 		self.content.update(results)
 		return results

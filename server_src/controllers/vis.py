@@ -14,7 +14,9 @@ def GroupInABox():
 	gib.LoadTopicCovariance()
 	gib.LoadTermFreqs()
 	gib.LoadTermCoFreqs()
+	gib.LoadTermProbs()
 	gib.LoadTermPMI()
+	gib.LoadTermSentencePMI()
 	return gib.GenerateResponse()
 
 def CovariateChart():
