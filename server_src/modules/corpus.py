@@ -75,7 +75,7 @@ class Corpus( TermiteCore ):
 			docContent = document['DocContent']
 			if re.search( searchText, docContent ) is not None:
 				matchCount += 1
-				if searchOffset <= matchCount and matchCount < searchOffset + searchLimit:
+				if searchOffset < matchCount and matchCount <= searchOffset + searchLimit:
 					documents[ docID ] = document
 		results = {
 			'Documents' : documents,
