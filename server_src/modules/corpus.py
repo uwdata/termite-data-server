@@ -179,3 +179,19 @@ class Corpus( TermiteCore ):
 		}
 		self.content.update(results)
 		return results
+
+	def LoadTermSentencePMI( self ):
+		self.LoadTermProbs()
+		termSet = frozenset( self.content['TermProbs'].iterkeys() )
+		filename = os.path.join( self.request.folder, 'data/corpus', 'sentence-term-co-stats.json' )
+		with open( filename ) as f:
+			termCoStats = json.load( f, encoding = 'utf-8' )
+			allTermPMI = termCoStats['pmi']
+		subTermPMI = { term : allTermPMI[term] for term in termSet if term in allTermPMI }
+		for term, termProbs in subTermPMI.iteritems():
+			subTermPMI[ term ] = { t : termProbs[t] for t in termSet if t in termProbs }
+		results = {
+			'TermPMI' : subTermPMI
+		}
+		self.content.update(results)
+		return results

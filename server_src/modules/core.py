@@ -98,7 +98,8 @@ class TermiteCore( object ):
 				'TermCoFreqs',
 				'TermProbs',
 				'TermCoProbs',
-				'TermPMI'
+				'TermPMI',
+				'TermSentencePMI'
 			]
 		if model == 'vis':
 			return [
