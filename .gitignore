@@ -4,6 +4,7 @@
 *.pyc
 *.sh~
 /externals/
+/tools/corenlp*
 /tools/gensim*
 /tools/stm*
 /tools/treetm*
