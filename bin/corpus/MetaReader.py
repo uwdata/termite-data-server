@@ -7,11 +7,12 @@ import glob
 class MetaReader(object):
 	WHITESPACES = re.compile(r'\W+')
 
-	def __init__(self, path, minChars=3, stopwords=[]):
+	def __init__(self, path, minChars=3, stopwords=[], fromCorpus=False):
 		self.path = path
 		self.minChars = minChars
 		self.stopwords = frozenset(stopwords)
 		self.header = None
+		self.fromCorpus = fromCorpus
 	
 	def Load(self):
 		"""
@@ -19,6 +20,11 @@ class MetaReader(object):
 		"""
 		numDocs = 0
 		self.header = None
+		if self.fromCorpus:
+			self.header = [
+				{'index':0, 'name':'DocID', 'type':'str'},
+				{'index':1, 'name':'DocContent', 'type':'str'}
+			]
 		with open(self.path) as f:
 			for line in f:
 				if self.header is None:
@@ -45,8 +51,8 @@ class MetaReader(object):
 def main():
 	import argparse
 	parser = argparse.ArgumentParser( description = 'Test MetaReader on the infovis dataset' )
-	parser.add_argument( '--min-chars'   , dest = 'minChars'  , action = 'store', type = int  , default = 3    , help = 'Minimum number of characters per token' )
-	parser.add_argument( '--stopwords'   , dest = 'stopwords' , action = 'store', type = str  , default = None , help = 'A file containing a list of stopwords, one per line' )
+	parser.add_argument( '--min-chars'   , dest = 'minChars'  , action = 'store', type = int, default = 3   , help = 'Minimum number of characters per token' )
+	parser.add_argument( '--stopwords'   , dest = 'stopwords' , action = 'store', type = str, default = None, help = 'A file containing a list of stopwords, one per line' )
 	args = parser.parse_args()
 	
 	minChars = args.minChars

@@ -70,12 +70,14 @@ def main():
 			print docID
 			print docContent
 			print
+		print reader.length
 	if args.newsgroups:
 		reader = CorpusReader('data/demo/20newsgroups/corpus', minChars=minChars, stopwords=stopwords)
 		for docID, docContent in reader.Load():
 			print docID
 			print docContent
 			print
+		print reader.length
 
 if __name__ == '__main__':
 	main()
