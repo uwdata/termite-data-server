@@ -6,6 +6,7 @@ import glob
 
 class MetaReader(object):
 	WHITESPACES = re.compile(r'\W+')
+	LINEBREAKS = re.compile(r'[\t\n\x0B\f\r]+')
 
 	def __init__(self, path, minChars=3, stopwords=[], fromCorpus=False):
 		self.path = path
@@ -19,26 +20,60 @@ class MetaReader(object):
 		Load a tab-delimited file with a header line containing at least two fields 'DocID' and 'DocContent'.
 		"""
 		numDocs = 0
-		self.header = None
 		if self.fromCorpus:
 			self.header = [
 				{'index':0, 'name':'DocID', 'type':'str'},
 				{'index':1, 'name':'DocContent', 'type':'str'}
 			]
-		with open(self.path) as f:
-			for line in f:
-				if self.header is None:
-					fields = line[:-1].decode('utf-8', 'ignore').split('\t')
-					self.header = [ {'index':n, 'name':field, 'type':'str'} for n, field in enumerate(fields) ]
-				else:
-					values = line[:-1].decode('utf-8', 'ignore').split('\t')
-					content = { self.header[i]['name'] : value for i, value in enumerate(values) }
-					docID = content['DocID']
-					docContent = content['DocContent']
-					docTokens = MetaReader.WHITESPACES.split(docContent)
-					content['DocTokens'] = self.Preprocess(docTokens)
-					yield docID, content
-				numDocs += 1
+			if os.path.isdir(self.path):
+				# Read two levels of files
+				filenames = glob.glob('{}/*'.format(self.path))
+				for filename in filenames:
+					if os.path.isdir(filename):
+						filenames += glob.glob('{}/*'.format(filename))
+				for filename in filenames:
+					if not os.path.isdir(filename):
+						with open(filename) as f:
+							docID = filename
+							docContent = MetaReader.LINEBREAKS.sub(' ', f.read().decode('utf-8', 'ignore')).strip()
+							docTokens = MetaReader.WHITESPACES.split(docContent)
+							docTokens = self.Preprocess(docTokens)
+							content = {
+								'DocID' : docID,
+								'DocContent' : docContent,
+								'DocTokens' : docTokens
+							}
+							yield docID, content
+							numDocs += 1
+			else:
+				with open(self.path) as f:
+					for line in f:
+						docID, docContent = line[:-1].decode('utf-8', 'ignore').split('\t')
+						docTokens = MetaReader.WHITESPACES.split(docContent)
+						docTokens = self.Preprocess(docTokens)
+						content = {
+							'DocID' : docID,
+							'DocContent' : docContent,
+							'DocTokens' : docTokens
+						}
+						yield docID, content
+						numDocs += 1
+		else:
+			self.header = None
+			with open(self.path) as f:
+				for line in f:
+					if self.header is None:
+						fields = line[:-1].decode('utf-8', 'ignore').split('\t')
+						self.header = [ {'index':n, 'name':field, 'type':'str'} for n, field in enumerate(fields) ]
+					else:
+						values = line[:-1].decode('utf-8', 'ignore').split('\t')
+						content = { self.header[i]['name'] : value for i, value in enumerate(values) }
+						docID = content['DocID']
+						docContent = content['DocContent']
+						docTokens = MetaReader.WHITESPACES.split(docContent)
+						content['DocTokens'] = self.Preprocess(docTokens)
+						yield docID, content
+					numDocs += 1
 		self.length = numDocs
 
 	def Preprocess(self, tokens):
