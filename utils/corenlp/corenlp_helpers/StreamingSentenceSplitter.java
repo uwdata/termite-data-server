@@ -38,6 +38,7 @@ public class StreamingSentenceSplitter {
 					sentenceIndex++;
 					out.write(docID+"\t"+sentenceIndex+"\t"+text);
 					out.newLine();
+					out.flush();
 				}
 			}
 			in.close();
