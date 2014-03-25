@@ -62,13 +62,13 @@ function __import_mallet__ {
 	echo
 	if [ "$META_PATH" == "NONE" ]
 	then
-		echo "bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH
 	else
-		echo "bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet --meta $META_PATH"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet --meta $META_PATH
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH
 	fi
 	echo
 }
@@ -90,13 +90,13 @@ function __import_treetm__ {
 	echo
 	if [ "$META_PATH" == "NONE" ]
 	then
-		echo "bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH
 	else
-		echo "bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet --meta $META_PATH"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER --terms $MODEL_PATH/corpus.mallet --meta $META_PATH
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH
 	fi
 	echo
 }
@@ -115,17 +115,16 @@ function __import_stm__ {
 	echo "bin/import_stm.py $APP_IDENTIFIER $MODEL_PATH"
 	echo
 	bin/import_stm.py $APP_IDENTIFIER $MODEL_FILENAME
-
 	echo
 	if [ "$META_PATH" == "NONE" ]
 	then
-		echo "bin/import_corpus.py $APP_IDENTIFIER"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH
 	else
-		echo "bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH
 	fi
 	echo
 }
@@ -147,13 +146,13 @@ function __import_stmt__ {
 	echo
 	if [ "$META_PATH" == "NONE" ]
 	then
-		echo "bin/import_corpus.py $APP_IDENTIFIER"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH
 	else
-		echo "bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH
 	fi
 	echo
 }
@@ -175,13 +174,13 @@ function __import_gensim__ {
 	echo
 	if [ "$META_PATH" == "NONE" ]
 	then
-		echo "bin/import_corpus.py $APP_IDENTIFIER"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH
 	else
-		echo "bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH"
+		echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH"
 		echo
-		bin/import_corpus.py $APP_IDENTIFIER --meta $META_PATH
+		bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH
 	fi
 	echo
 }
