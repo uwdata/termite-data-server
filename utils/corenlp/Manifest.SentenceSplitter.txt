@@ -1,0 +1,2 @@
+Main-Class: corenlp_helpers.SentenceSplitter
+Class-Path: lib/stanford-corenlp-3.3.1.jar lib/stanford-corenlp-3.3.1-models.jar
