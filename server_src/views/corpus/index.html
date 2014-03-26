@@ -4,8 +4,8 @@
 <div class="body">
 	<div class="heading">Server Response
 		<span class="format">(
-{{if configs['is:text']:}}<b>Text format</b>{{else:}}<a href="http://{{=configs['url:text']}}">Text format</a>{{pass}} | 
-{{if configs['is:json']:}}<b>JSON object</b>{{else:}}<a href="http://{{=configs['url:json']}}">JSON object</a>{{pass}}
+			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GetURL({'format':None})}}">Text format</a>{{pass}} | 
+			<a href="{{=GetURL({'format':'json'})}}">JSON object</a>
 		)</span>
 	</div>
 

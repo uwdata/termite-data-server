@@ -18,7 +18,7 @@ var onSelectAttribute = function( srcElement ) {
 		window.location.href = "http://{{=configs['server']}}/{{=configs['dataset']}}/{{=configs['model']}}";
 };
 var onSelectParam = function( srcElement ) {
-	window.location.href = "http://{{=configs['server']}}/{{=configs['dataset']}}/{{=configs['model']}}/{{=configs['attribute']}}" + srcElement.value;
+	window.location.href = srcElement.value;
 }
 </script>
 

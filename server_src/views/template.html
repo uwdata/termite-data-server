@@ -13,15 +13,20 @@
 </head>
 
 {{
-	def QueryString( keysAndValues = {} ):
-    	query = { key : request.vars[key] for key in request.vars }
+	import urllib
+	def GetURL( keysAndValues = {} ):
+		query = { key : request.vars[ key ] for key in request.vars }
 		query.update( keysAndValues )
+		for key in query.keys():
+			if query[ key ] is None:
+				del query[ key ]
+			pass
 		if len(query) > 0:
-			query = '?' + '&'.join( [ '{}={}'.format( key, value ) for key, value in query.iteritems() ] )
+			return configs['url'] + '?' + urllib.urlencode(query)
 		else:
-			query = ''
+			return configs['url']
 		pass
-		return query
+	pass
 }}
 
 <body>

@@ -5,6 +5,24 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" href="{{=URL('static','css/termite.css')}}" />
 </head>
+
+{{
+	import urllib
+	def GetURL( keysAndValues = {} ):
+		query = { key : request.vars[ key ] for key in request.vars }
+		query.update( keysAndValues )
+		for key in query.keys():
+			if query[ key ] is None:
+				del query[ key ]
+			pass
+		if len(query) > 0:
+			return configs['url'] + '?' + urllib.urlencode(query)
+		else:
+			return configs['url']
+		pass
+	pass
+}}
+
 <body>
 	{{include}}
 </body>

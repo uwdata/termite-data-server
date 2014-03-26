@@ -94,6 +94,9 @@ div.body div.content {
 	border: 1px solid #ccc;
 	min-width: 640px;
 	min-height: 320px;
+	max-width: 960px;
+	max-height: 960px;
+	overflow: scroll;
 	white-space: pre;
 	font-family: monospace;
 	font-size: 10pt;

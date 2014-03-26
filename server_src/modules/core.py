@@ -30,14 +30,8 @@ class TermiteCore( object ):
 	def GetAttribute( self ):
 		return self.request.function
 	
-	def GetURLs( self ):
-		urls = {
-			'text' : self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO'] + self.GetQueryString( { 'format' : None } ),
-			'graph' : self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO'] + self.GetQueryString( { 'format' : 'graph' } ),
-			'json' : self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO'] + self.GetQueryString( { 'format' : 'json' } ),
-			'lyra' : self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO'] + self.GetQueryString( { 'format' : 'lyra' } )
-		}
-		return urls
+	def GetURL( self ):
+		return self.request.env['wsgi_url_scheme'] + '://' + self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO']
 	
 	def GetQueryString( self, keysAndValues = {} ):
 	   	query = { key : self.request.vars[ key ] for key in self.request.vars }
@@ -118,7 +112,7 @@ class TermiteCore( object ):
 		models = self.GetModels( dataset )
 		attribute = self.GetAttribute()
 		attributes = self.GetAttributes( dataset, model )
-		urls = self.GetURLs()
+		url = self.GetURL()
 		configs = {
 			'server' : server,
 			'dataset' : dataset,
@@ -127,14 +121,11 @@ class TermiteCore( object ):
 			'models' : models,
 			'attribute' : attribute,
 			'attributes' : attributes,
-			'url:text' : urls['text'],
-			'url:graph' : urls['graph'],
-			'url:json' : urls['json'],
-			'url:lyra' : urls['lyra'],
-			'is:text' : self.IsTextFormat(),
-			'is:graph' : self.IsGraphFormat(),
-			'is:json' : self.IsJsonFormat(),
-			'is:lyra' : self.IsLyraFormat()
+			'url' : url,
+			'is_text' : self.IsTextFormat(),
+			'is_graph' : self.IsGraphFormat(),
+			'is_json' : self.IsJsonFormat(),
+			'is_lyra' : self.IsLyraFormat()
 		}
 		return configs
 	
@@ -173,6 +164,12 @@ class TermiteCore( object ):
 
 	def IsLyraFormat( self ):
 		return 'format' in self.request.vars and 'lyra' == self.request.vars['format'].lower()
+	
+	def HasLyraField( self ):
+		return 'lyra' in self.request.vars
+		
+	def GetLyraField( self ):
+		return self.request.vars['lyra']
 
 	def HasAllowedOrigin( self ):
 		return 'origin' in self.request.vars
@@ -197,10 +194,8 @@ class TermiteCore( object ):
 			   isinstance( value, int ) or isinstance( value, long ) or isinstance( value, float ) or \
 			   value is None or value is True or value is False:
 				envJSON[ key ] = value
-			elif isinstance( value, set ) or isinstance( value, frozenset ):
-				envJSON[ key ] = sorted( value )
 			else:
-				envJSON[ key ] = 'value not JSON-serializable'
+				envJSON[ key ] = 'Value not JSON-serializable'
 		
 		data = {
 			'env' : envJSON,
@@ -225,32 +220,33 @@ class TermiteCore( object ):
 		return dataStr
 
 	def GenerateNormalResponse( self ):
-		if self.IsLyraFormat():
-			data = self.lyra
-			dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-			self.response.headers['Content-Type'] = 'application/json'
-			if self.HasAllowedOrigin():
-				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
-			return dataStr
-		
-		else:
-			data = {
-				'configs' : self.configs,
-				'params' : self.params
-			}
-			data.update( self.content )
-			dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-		
-			if self.IsJsonFormat():
+		if self.IsLyraFormat() and self.HasLyraField():
+			field = self.GetLyraField()
+			if field in self.content:
+				data = self.content[ field ]
+				dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 				self.response.headers['Content-Type'] = 'application/json'
 				if self.HasAllowedOrigin():
 					self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
 				return dataStr
-			elif self.IsGraphFormat():
-				self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-				data[ 'content' ] = dataStr
-				return data
-			else:
-				self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-				data[ 'content' ] = dataStr
-				return data
+
+		data = {
+			'configs' : self.configs,
+			'params' : self.params
+		}
+		data.update( self.content )
+		dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	
+		if self.IsJsonFormat():
+			self.response.headers['Content-Type'] = 'application/json'
+			if self.HasAllowedOrigin():
+				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
+			return dataStr
+		elif self.IsGraphFormat():
+			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+			data[ 'content' ] = dataStr
+			return data
+		else:
+			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+			data[ 'content' ] = dataStr
+			return data
