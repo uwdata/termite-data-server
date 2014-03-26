@@ -228,8 +228,7 @@ class TermiteCore( object ):
 		if self.IsLyraFormat():
 			data = self.lyra
 			dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-#			self.response.headers['Content-Type'] = 'application/json'
-			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+			self.response.headers['Content-Type'] = 'application/json'
 			if self.HasAllowedOrigin():
 				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
 			return dataStr
