@@ -24,8 +24,11 @@ public class StreamingSentenceSplitter {
 			final OutputStreamWriter writer = new OutputStreamWriter(System.out, "UTF-8");
 			final BufferedReader in = new BufferedReader(reader);
 			final BufferedWriter out = new BufferedWriter(writer);
-			String line;
-			while ((line = in.readLine()) != null) {
+			while (true) {
+				final String line = in.readLine();
+				if ((line == null) || (line.length() == 0)) {
+					break;
+				}
 				final String[] fields = line.split("\\t");
 				final String docID = fields[0];
 				final String docContent = fields[1];
