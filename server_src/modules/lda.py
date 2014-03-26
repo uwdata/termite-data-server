@@ -225,7 +225,7 @@ class LDA( TermiteCore ):
 		self.content.update(results)
 		return results
 
-	def LoadTopicTopTerms( self ):
+	def LoadTopTerms( self ):
 		def GetTopTerms( vector, index ):
 			allTerms = sorted( vector.iterkeys(), key = lambda x : -vector[x] )
 			subTerms = allTerms[termOffset:termOffset+termLimit]
@@ -250,12 +250,12 @@ class LDA( TermiteCore ):
 
 		# Responses
 		results = {
-			'TopicTopTerms' : table
+			'TopTerms' : table
 		}
 		self.content.update(results)
 		return results
 
-	def LoadTopicTopDocs( self ):
+	def LoadTopDocs( self ):
 		def GetTopDocs( vector, index ):
 			allDocs = sorted( vector.iterkeys(), key = lambda x : -vector[x] )
 			subDocs = allDocs[docOffset:docOffset+docLimit]
@@ -280,7 +280,7 @@ class LDA( TermiteCore ):
 
 		# Responses
 		results = {
-			'TopicTopDocs' : table
+			'TopDocs' : table
 		}
 		self.content.update(results)
 		return results

@@ -83,8 +83,8 @@ class TermiteCore( object ):
 				'TopicDocMatrix',
 				'TopicCooccurrence',
 				'TopicCovariance',
-				'TopicTopTerms',
-				'TopicTopDocs'
+				'TopTerms',
+				'TopDocs'
 			]
 		if model == 'corpus':
 			return [
