@@ -31,16 +31,6 @@ def DocTopicMatrix():
 	lda.LoadDocTopicMatrix()
 	return lda.GenerateResponse()
 
-def TopicTermMatrix():
-	lda = LDA( request, response )
-	lda.LoadTopicTermMatrix()
-	return lda.GenerateResponse()
-
-def TopicDocMatrix():
-	lda = LDA( request, response )
-	lda.LoadTopicDocMatrix()
-	return lda.GenerateResponse()
-
 def TopicCooccurrence():
 	lda = LDA( request, response )
 	lda.LoadTopicCooccurrence()

@@ -79,8 +79,6 @@ class TermiteCore( object ):
 				'TopicIndex',
 				'TermTopicMatrix',
 				'DocTopicMatrix',
-				'TopicTermMatrix',
-				'TopicDocMatrix',
 				'TopicCooccurrence',
 				'TopicCovariance',
 				'TopTerms',
