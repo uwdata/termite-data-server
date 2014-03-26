@@ -7,14 +7,14 @@
 		<div class="param">termLimit = 
 			<select onchange="onSelectParam(this)">
 				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{response.write(QueryString({'termLimit':n}),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{response.write(GetURL({'termLimit':n}),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
 		<div class="param">termOffset = 
 			<select onchange="onSelectParam(this)">
 				{{for n in range(0,100,5):}}
-					<option value="{{response.write(QueryString({'termOffset':n}),escape=False)}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{response.write(GetURL({'termOffset':n}),escape=False)}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
@@ -23,29 +23,30 @@
 
 	<div class="heading">Server Response
 		<span class="format">(
-{{if configs['is:text']:}}<b>Text format</b>{{else:}}<a href="http://{{=configs['url:text']}}">Text format</a>{{pass}} | 
-{{if configs['is:graph']:}}<b>Graph format</b>{{else:}}<a href="http://{{=configs['url:graph']}}">Graph format</a>{{pass}} | 
-{{if configs['is:json']:}}<b>JSON object</b>{{else:}}<a href="http://{{=configs['url:json']}}">JSON object</a>{{pass}}
+			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GetURL({'format':None})}}">Text format</a>{{pass}} | 
+			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GetURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
+			<a href="{{=GetURL({'format':'json'})}}">JSON object</a> | 
+			<a href="{{=GetURL({'format':'lyra','lyra':'TermIndex'})}}">Lyra table</a>
 		)</span>
 	</div>
 	
-{{if configs['is:text']:}}
+{{if configs['is_text']:}}
 	<div class="content">{{=content}}</div>
 {{pass}}
-{{if configs['is:graph']:}}
+{{if configs['is_graph']:}}
 	<div class="content"><div id="view" class="view"></div></div>
 {{pass}}
 
-{{if configs['is:graph']:}}
+{{if configs['is_graph']:}}
 <script type="text/javascript">
 var spec = {
 	"width": 400,
 	"height": 20 * {{=TermCount}},
 	"padding": {
-		"top": 0,
-		"left": 0,
-		"bottom": 0,
-		"right": 0
+		"top": 10,
+		"left": 10,
+		"bottom": 10,
+		"right": 10
 	},
 	"data": [
 		{ "name": "table" }
@@ -59,10 +60,6 @@ var spec = {
 			"name": "y", "range": "height", "type": "ordinal",
 			"domain": {"data": "table", "field": "data.index"}
 	    }
-	],
-	"axes": [
-		{"type": "x", "scale": "x"},
-		{"type": "y", "scale": "y"}
 	],
 	"marks": [
 		{

@@ -45,3 +45,13 @@ def TermSentencePMI():
 	corpus = Corpus( request, response )
 	corpus.LoadTermSentencePMI()
 	return corpus.GenerateResponse()
+
+def TermG2():
+	corpus = Corpus( request, response )
+	corpus.LoadTermG2()
+	return corpus.GenerateResponse()
+
+def TermSentenceG2():
+	corpus = Corpus( request, response )
+	corpus.LoadTermSentenceG2()
+	return corpus.GenerateResponse()

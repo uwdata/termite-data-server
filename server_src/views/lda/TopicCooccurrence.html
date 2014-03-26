@@ -4,16 +4,17 @@
 <div class="body">
 	<div class="heading">Server Response
 		<span class="format">(
-{{if configs['is:text']:}}<b>Text format</b>{{else:}}<a href="http://{{=configs['url:text']}}">Text format</a>{{pass}} | 
-{{if configs['is:graph']:}}<b>Graph format</b>{{else:}}<a href="http://{{=configs['url:graph']}}">Graph format</a>{{pass}} | 
-{{if configs['is:json']:}}<b>JSON object</b>{{else:}}<a href="http://{{=configs['url:json']}}">JSON object</a>{{pass}}
+			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GetURL({'format':None})}}">Text format</a>{{pass}} | 
+			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GetURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
+			<a href="{{=GetURL({'format':'json'})}}">JSON object</a> | 
+			<a href="{{=GetURL({'format':'lyra','lyra':'TopicCooccurrence'})}}">Lyra table</a>
 		)</span>
 	</div>
 
-{{if configs['is:text']:}}
+{{if configs['is_text']:}}
 	<div class="content">{{=content}}</div>
 {{pass}}
-{{if configs['is:graph']:}}
+{{if configs['is_graph']:}}
 	<div class="content"><div id="view" class="view"></div></div>
 {{pass}}
 </div>

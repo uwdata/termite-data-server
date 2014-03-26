@@ -3,7 +3,6 @@
 import re
 import os
 import json
-import operator
 from core import TermiteCore
 
 class Corpus( TermiteCore ):
@@ -12,33 +11,30 @@ class Corpus( TermiteCore ):
 
 	def GetParam( self, key ):
 		if key == 'searchText':
-			value = self.GetStringParam( 'searchText' )
+			value = self.GetStringParam( key )
 			self.params.update({ key : value })
-
-		if key == 'searchLimit':
-			if self.IsJsonFormat():
-				value = self.GetNonNegativeIntegerParam( 'searchLimit', 100 )
-			else:
-				value = self.GetNonNegativeIntegerParam( 'searchLimit', 5 )
-			self.params.update({ key : value })
-
 		if key == 'searchOffset':
-			value = self.GetNonNegativeIntegerParam( 'searchOffset', 0 )
+			value = self.GetNonNegativeIntegerParam( key, 0 )
 			self.params.update({ key : value })
-
-		if key == 'termLimit':
-			if self.IsJsonFormat():
-				value = self.GetNonNegativeIntegerParam( 'termLimit', 100 )
+		if key == 'searchLimit':
+			if self.IsMachineFormat():
+				value = self.GetNonNegativeIntegerParam( key, 100 )
 			else:
-				value = self.GetNonNegativeIntegerParam( 'termLimit', 5 )
+				value = self.GetNonNegativeIntegerParam( key, 5 )
 			self.params.update({ key : value })
 
 		if key == 'termOffset':
-			value = self.GetNonNegativeIntegerParam( 'termOffset', 0 )
+			value = self.GetNonNegativeIntegerParam( key, 0 )
+			self.params.update({ key : value })
+		if key == 'termLimit':
+			if self.IsMachineFormat():
+				value = self.GetNonNegativeIntegerParam( key, 100 )
+			else:
+				value = self.GetNonNegativeIntegerParam( key, 5 )
 			self.params.update({ key : value })
 
 		if key == 'docIndex':
-			value = self.GetStringParam( 'docIndex' )
+			value = self.GetStringParam( key )
 			self.params.update({ key : value })
 
 		return value
@@ -103,21 +99,21 @@ class Corpus( TermiteCore ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-stats.json' )
 		with open( filename ) as f:
 			termStats = json.load( f, encoding = 'utf-8' )
-			table = termStats['freqs']
-		termMaxCount = len(table)
-		vocab = sorted( table.iterkeys(), key = lambda x : -table[x] )
-		vocab = frozenset( vocab[ termOffset:termOffset+termLimit ] )
-		subTable = [ { 'text' : term, 'freq' : table[term] } for term in vocab ]
-		termCount = len(subTable)
+			fullTable = termStats['freqs']
+		termMaxCount = len(fullTable)
+		vocab = sorted( fullTable.iterkeys(), key = lambda x : -fullTable[x] )
+		vocab = vocab[ termOffset:termOffset+termLimit ]
+		table = [ { 'text' : term, 'freq' : fullTable[term] } for term in vocab ]
+		termCount = len(table)
 		
 		# Responses
 		results = {
-			'TermFreqs' : subTable,
+			'TermFreqs' : table,
 			'TermLimit' : termLimit,
 			'TermOffset' : termOffset,
 			'TermMaxCount' : termMaxCount,
 			'TermCount' : termCount,
-			'Vocab' : list(vocab)
+			'Vocab' : vocab
 		}
 		self.content.update(results)
 		return results
@@ -131,21 +127,21 @@ class Corpus( TermiteCore ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-stats.json' )
 		with open( filename ) as f:
 			termStats = json.load( f, encoding = 'utf-8' )
-			table = termStats['probs']
-		termMaxCount = len(table)
-		vocab = sorted( table.iterkeys(), key = lambda x : -table[x] )
-		vocab = frozenset( vocab[ termOffset:termOffset+termLimit ] )
-		subTable = [ { 'text' : term, 'prob' : table[term] } for term in vocab ]
-		termCount = len(subTable)
+			fullTable = termStats['probs']
+		termMaxCount = len(fullTable)
+		vocab = sorted( fullTable.iterkeys(), key = lambda x : -fullTable[x] )
+		vocab = vocab[ termOffset:termOffset+termLimit ]
+		table = [ { 'text' : term, 'prob' : fullTable[term] } for term in vocab ]
+		termCount = len(table)
 
 		# Responses
 		results = {
-			'TermProbs' : subTable,
+			'TermProbs' : table,
 			'TermLimit' : termLimit,
 			'TermOffset' : termOffset,
 			'TermMaxCount' : termMaxCount,
 			'TermCount' : termCount,
-			'Vocab' : list(vocab)
+			'Vocab' : vocab
 		}
 		self.content.update(results)
 		return results
@@ -159,15 +155,16 @@ class Corpus( TermiteCore ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
 		with open( filename ) as f:
 			termCoStats = json.load( f, encoding = 'utf-8' )
-			table = termCoStats['coFreqs']
-		subTable = []
-		for firstTerm, d in table.iteritems():
+			fullTable = termCoStats['coFreqs']
+		table = []
+		for firstTerm, d in fullTable.iteritems():
 			if firstTerm in vocab:
-				subTable += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : freq } for secondTerm, freq in d.iteritems() if secondTerm in vocab ]
-
+				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
+		table.sort( key = lambda x : -x['freq'] )
+		
 		# Responses
 		results = {
-			'TermCoFreqs' : subTable
+			'TermCoFreqs' : table
 		}
 		self.content.update(results)
 		return results
@@ -181,15 +178,16 @@ class Corpus( TermiteCore ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
 		with open( filename ) as f:
 			termCoStats = json.load( f, encoding = 'utf-8' )
-			table = termCoStats['coProbs']
-		subTable = []
-		for firstTerm, d in table.iteritems():
+			fullTable = termCoStats['coProbs']
+		table = []
+		for firstTerm, d in fullTable.iteritems():
 			if firstTerm in vocab:
-				subTable += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : freq } for secondTerm, freq in d.iteritems() if secondTerm in vocab ]
+				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'prob' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
+		table.sort( key = lambda x : -x['prob'] )
 
 		# Responses
 		results = {
-			'TermCoProbs' : subTable
+			'TermCoProbs' : table
 		}
 		self.content.update(results)
 		return results
@@ -203,15 +201,16 @@ class Corpus( TermiteCore ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
 		with open( filename ) as f:
 			termCoStats = json.load( f, encoding = 'utf-8' )
-			table = termCoStats['pmi']
-		subTable = []
-		for firstTerm, d in table.iteritems():
+			fullTable = termCoStats['pmi']
+		table = []
+		for firstTerm, d in fullTable.iteritems():
 			if firstTerm in vocab:
-				subTable += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : freq } for secondTerm, freq in d.iteritems() if secondTerm in vocab ]
+				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'pmi' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
+		table.sort( key = lambda x : -x['pmi'] )
 
 		# Responses
 		results = {
-			'TermPMI' : subTable
+			'TermPMI' : table
 		}
 		self.content.update(results)
 		return results
@@ -225,15 +224,16 @@ class Corpus( TermiteCore ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'sentence-term-co-stats.json' )
 		with open( filename ) as f:
 			termCoStats = json.load( f, encoding = 'utf-8' )
-			table = termCoStats['pmi']
-		subTable = []
-		for firstTerm, d in table.iteritems():
+			fullTable = termCoStats['pmi']
+		table = []
+		for firstTerm, d in fullTable.iteritems():
 			if firstTerm in vocab:
-				subTable += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : freq } for secondTerm, freq in d.iteritems() if secondTerm in vocab ]
+				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'pmi' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
+		table.sort( key = lambda x : -x['pmi'] )
 
 		# Responses
 		results = {
-			'TermSentencePMI' : subTable
+			'TermSentencePMI' : table
 		}
 		self.content.update(results)
 		return results
@@ -247,15 +247,16 @@ class Corpus( TermiteCore ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
 		with open( filename ) as f:
 			termCoStats = json.load( f, encoding = 'utf-8' )
-			table = termCoStats['g2']
-		subTable = []
-		for firstTerm, d in table.iteritems():
+			fullTable = termCoStats['g2']
+		table = []
+		for firstTerm, d in fullTable.iteritems():
 			if firstTerm in vocab:
-				subTable += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : freq } for secondTerm, freq in d.iteritems() if secondTerm in vocab ]
+				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'g2' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
+		table.sort( key = lambda x : -x['g2'] )
 
 		# Responses
 		results = {
-			'TermG2' : subTable
+			'TermG2' : table
 		}
 		self.content.update(results)
 		return results
@@ -269,15 +270,16 @@ class Corpus( TermiteCore ):
 		filename = os.path.join( self.request.folder, 'data/corpus', 'sentence-term-co-stats.json' )
 		with open( filename ) as f:
 			termCoStats = json.load( f, encoding = 'utf-8' )
-			table = termCoStats['g2']
-		subTable = []
-		for firstTerm, d in table.iteritems():
+			fullTable = termCoStats['g2']
+		table = []
+		for firstTerm, d in fullTable.iteritems():
 			if firstTerm in vocab:
-				subTable += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : freq } for secondTerm, freq in d.iteritems() if secondTerm in vocab ]
+				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'g2' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
+		table.sort( key = lambda x : -x['g2'] )
 
 		# Responses
 		results = {
-			'TermSentenceG2' : subTable
+			'TermSentenceG2' : table
 		}
 		self.content.update(results)
 		return results

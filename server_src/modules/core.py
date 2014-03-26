@@ -148,6 +148,16 @@ class TermiteCore( object ):
 				return 0
 		except:
 			return defaultValue
+
+	def GetNonNegativeFloatParam( self, key, defaultValue ):
+		try:
+			n = float( self.request.vars[ key ] )
+			if n >= 0:
+				return n
+			else:
+				return 0.0
+		except:
+			return defaultValue
 	
 ################################################################################
 # Generate a response
@@ -166,6 +176,9 @@ class TermiteCore( object ):
 
 	def IsLyraFormat( self ):
 		return 'format' in self.request.vars and 'lyra' == self.request.vars['format'].lower()
+	
+	def IsMachineFormat( self ):
+		return self.IsJsonFormat() or self.IsLyraFormat()
 	
 	def HasLyraField( self ):
 		return 'lyra' in self.request.vars
