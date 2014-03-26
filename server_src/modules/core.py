@@ -128,7 +128,7 @@ class TermiteCore( object ):
 			'url:text' : urls['text'],
 			'url:graph' : urls['graph'],
 			'url:json' : urls['json'],
-			'is:text' : not ( self.IsGraphFormat() or self.IsJsonFormat() ),
+			'is:text' : self.IsTextFormat(),
 			'is:graph' : self.IsGraphFormat(),
 			'is:json' : self.IsJsonFormat()
 		}
@@ -158,11 +158,14 @@ class TermiteCore( object ):
 	def IsDebugMode( self ):
 		return 'debug' in self.request.vars
 	
-	def IsJsonFormat( self ):
-		return 'format' in self.request.vars and 'json' == self.request.vars['format'].lower()
+	def IsTextFormat( self ):
+		return not self.IsGraphFormat() and not self.IsJsonFormat()
 	
 	def IsGraphFormat( self ):
 		return 'format' in self.request.vars and 'graph' == self.request.vars['format'].lower()
+
+	def IsJsonFormat( self ):
+		return 'format' in self.request.vars and 'json' == self.request.vars['format'].lower()
 	
 	def HasAllowedOrigin( self ):
 		return 'origin' in self.request.vars
@@ -187,6 +190,8 @@ class TermiteCore( object ):
 			   isinstance( value, int ) or isinstance( value, long ) or isinstance( value, float ) or \
 			   value is None or value is True or value is False:
 				envJSON[ key ] = value
+			elif isinstance( value, set ) or isinstance( value, frozenset ):
+				envJSON[ key ] = sorted( value )
 			else:
 				envJSON[ key ] = 'value not JSON-serializable'
 		
