@@ -164,7 +164,7 @@ class ImportCorpus( ImportAbstraction ):
 					for secondToken, secondFreq in freqs.iteritems():
 						coFreq = firstFreq * secondFreq
 						allCoFreq += coFreq
-						if firstToken in vocab and secondToken in vocab and firstToken <= secondToken:
+						if firstToken in vocab and secondToken in vocab and firstToken < secondToken:
 							if firstToken not in jointFreqs:
 								jointFreqs[firstToken] = { secondToken : coFreq }
 							elif secondToken not in jointFreqs[firstToken]:
