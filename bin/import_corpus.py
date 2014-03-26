@@ -74,7 +74,7 @@ class ImportCorpus( ImportAbstraction ):
 		print 'Computing document-level term statistics...' 
 		print '    Reading text corpus: {}'.format( filename )
 		reader = CorpusReader( filename, stopwords = self.stopwords )
-		corpus = { docID : docContent for docID, docContent in reader.Load() }
+		corpus = { docID : docTokens for docID, docContent, docTokens in reader.Load() }
 		termStats, termFreqs, termProbs, termDocFreqs = self.ComputeTermFreqs( corpus )
 		termCoStats = self.ComputeTermCoFreqs( corpus, termFreqs, termProbs, termDocFreqs, minFreq, minDocFreq, maxCount )
 		termFreqSortedList, termTfIdfSortedList = self.CompileTermKeys( termStats )
@@ -84,7 +84,7 @@ class ImportCorpus( ImportAbstraction ):
 		print 'Computing sentence-level term statistics...'
 		print '    Reading text corpus: {}'.format( filename )
 		reader = SentenceReader( filename, stopwords = self.stopwords )
-		corpus = { docID+":"+docSubID : docContent for docID, docSubID, docContent in reader.Load() }
+		corpus = { docID+":"+docSubID : docTokens for docID, docSubID, docSentence, docTokens in reader.Load() }
 		termStats, termFreqs, termProbs, termDocFreqs = self.ComputeTermFreqs( corpus )
 		termCoStats = self.ComputeTermCoFreqs( corpus, termFreqs, termProbs, termDocFreqs, minFreq, minDocFreq, maxCount )
 		termFreqSortedList, termTfIdfSortedList = self.CompileTermKeys( termStats )
