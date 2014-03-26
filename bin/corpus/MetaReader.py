@@ -1,63 +1,38 @@
 #!/usr/bin/env python
 
-import re
-import os
-import glob
+from CorpusReader import CorpusReader
+from Tokenizer import Tokenizer
 
 class MetaReader(object):
-	WHITESPACES = re.compile(r'\W+')
-	LINEBREAKS = re.compile(r'[\t\n\x0B\f\r]+')
 
 	def __init__(self, path, minChars=3, stopwords=[], fromCorpus=False):
-		self.path = path
-		self.minChars = minChars
-		self.stopwords = frozenset(stopwords)
+		if fromCorpus:
+			self.reader = CorpusReader(path, minChars, stopwords)
+		else:
+			self.reader = None
+			self.path = path
+			self.tokenizer = Tokenizer(minChars, stopwords)
 		self.header = None
-		self.fromCorpus = fromCorpus
 	
 	def Load(self):
 		"""
 		Load a tab-delimited file with a header line containing at least two fields 'DocID' and 'DocContent'.
+		Alternatively, load a corpus file/folder using CorpusReader.
 		"""
 		numDocs = 0
-		if self.fromCorpus:
+		if self.reader is not None:
 			self.header = [
 				{'index':0, 'name':'DocID', 'type':'str'},
 				{'index':1, 'name':'DocContent', 'type':'str'}
 			]
-			if os.path.isdir(self.path):
-				# Read two levels of files
-				filenames = glob.glob('{}/*'.format(self.path))
-				for filename in filenames:
-					if os.path.isdir(filename):
-						filenames += glob.glob('{}/*'.format(filename))
-				for filename in filenames:
-					if not os.path.isdir(filename):
-						with open(filename) as f:
-							docID = filename
-							docContent = MetaReader.LINEBREAKS.sub(' ', f.read().decode('utf-8', 'ignore')).strip()
-							docTokens = MetaReader.WHITESPACES.split(docContent)
-							docTokens = self.Preprocess(docTokens)
-							content = {
-								'DocID' : docID,
-								'DocContent' : docContent,
-								'DocTokens' : docTokens
-							}
-							yield docID, content
-							numDocs += 1
-			else:
-				with open(self.path) as f:
-					for line in f:
-						docID, docContent = line[:-1].decode('utf-8', 'ignore').split('\t')
-						docTokens = MetaReader.WHITESPACES.split(docContent)
-						docTokens = self.Preprocess(docTokens)
-						content = {
-							'DocID' : docID,
-							'DocContent' : docContent,
-							'DocTokens' : docTokens
-						}
-						yield docID, content
-						numDocs += 1
+			for docID, docContent, docTokens in self.reader.Load():
+				content = {
+					'DocID' : docID,
+					'DocContent' : docContent,
+					'DocTokens' : docTokens
+				}
+				numDocs += 1
+				yield docID, content
 		else:
 			self.header = None
 			with open(self.path) as f:
@@ -70,24 +45,18 @@ class MetaReader(object):
 						content = { self.header[i]['name'] : value for i, value in enumerate(values) }
 						docID = content['DocID']
 						docContent = content['DocContent']
-						docTokens = MetaReader.WHITESPACES.split(docContent)
-						content['DocTokens'] = self.Preprocess(docTokens)
+						docTokens = self.tokenizer.Tokenize(docContent)
+						content['DocTokens'] = docTokens
+						numDocs += 1
 						yield docID, content
-					numDocs += 1
 		self.length = numDocs
-
-	def Preprocess(self, tokens):
-		"""
-		Lowercase, remove stopwords etc. from a list of unicode strings.
-		"""
-		result = [ token.lower() for token in tokens if len(token) >= self.minChars and token.isalpha() ]
-		return [ token for token in result if token not in self.stopwords ]
 
 def main():
 	import argparse
 	parser = argparse.ArgumentParser( description = 'Test MetaReader on the infovis dataset' )
-	parser.add_argument( '--min-chars'   , dest = 'minChars'  , action = 'store', type = int, default = 3   , help = 'Minimum number of characters per token' )
-	parser.add_argument( '--stopwords'   , dest = 'stopwords' , action = 'store', type = str, default = None, help = 'A file containing a list of stopwords, one per line' )
+	parser.add_argument( '--min-chars'   , dest = 'minChars'  , action = 'store'      , type = int  , default = 3     , help = 'Minimum number of characters per token' )
+	parser.add_argument( '--stopwords'   , dest = 'stopwords' , action = 'store'      , type = str  , default = None  , help = 'Stopwords, one per line as a file' )
+	parser.add_argument( '--from-corpus' , dest = 'fromCorpus', action = 'store_const', const = True, default = False , help = 'Load from a corpus file instead' )
 	args = parser.parse_args()
 	
 	minChars = args.minChars
@@ -95,12 +64,17 @@ def main():
 	if args.stopwords is not None:
 		with open(args.stopwords) as f:
 			stopwords = f.read().decode('utf-8', 'ignore').splitlines()
-	reader = MetaReader('data/demo/infovis/corpus/infovis-papers-meta.txt')
+	if args.fromCorpus:
+		reader = MetaReader('data/demo/infovis/corpus/infovis-papers.txt', fromCorpus=True)
+	else:
+		reader = MetaReader('data/demo/infovis/corpus/infovis-papers-meta.txt')
 	for docID, docMeta in reader.Load():
 		print docID
 		print docMeta
 		print
 	print reader.header
+	print
+	print "Actual/Expected = {}/{} documents".format( reader.length, 449 )
 
 if __name__ == '__main__':
 	main()
