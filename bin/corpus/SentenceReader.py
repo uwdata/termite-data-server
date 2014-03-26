@@ -29,6 +29,7 @@ class SentenceReader(object):
 				numSentences += 1
 				yield self.SplitSentencesAfter()
 		
+		self.process.stdin.flush()
 		startTime = datetime.now()
 		while self.process.poll() is None:
 			while not self.queue.empty():
@@ -37,7 +38,7 @@ class SentenceReader(object):
 				yield self.SplitSentencesAfter()
 			endTime = datetime.now()
 			inactivity = (endTime - startTime).seconds
-			if inactivity >= 1.0: # Wait for 1.0 second of pause
+			if inactivity >= 2.5: # Wait for 2.5 second of pause
 				break
 			else:
 				time.sleep( 0.25 )
@@ -47,7 +48,6 @@ class SentenceReader(object):
 	def SplitSentencesBefore(self, docID, docContent):
 		line = u'{}\t{}\n'.format(docID, docContent).encode('utf-8')
 		self.process.stdin.write(line)
-		self.process.stdin.flush()
 
 	def SplitSentencesWorker( self, queue, process ):
 		while process.poll() is None:
