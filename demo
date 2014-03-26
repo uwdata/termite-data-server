@@ -11,24 +11,24 @@ function __fetch_20newsgroups__ {
 	CORPUS_PATH=$DATASET_PATH/corpus
 }
 
-function __fetch_nsf127992__ {
-	bin/fetch_nsf127992.sh $DATASET_PATH
-	CORPUS_PATH=$DATASET_PATH/corpus/nsf127992.txt
+function __fetch_nsf146k__ {
+	bin/fetch_nsf146k.sh $DATASET_PATH
+	CORPUS_PATH=$DATASET_PATH/corpus/nsf146k-src.txt
 }
 
 function __fetch_nsf25k__ {
 	bin/fetch_nsf25k.py $DATASET_PATH
-	CORPUS_PATH=$DATASET_PATH/corpus/nsf25k.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/nsf25k-src.txt
 }
 
 function __fetch_nsf10k__ {
 	bin/fetch_nsf10k.py $DATASET_PATH
-	CORPUS_PATH=$DATASET_PATH/corpus/nsf10k.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/nsf10k-src.txt
 }
 
 function __fetch_nsf1k__ {
 	bin/fetch_nsf1k.py $DATASET_PATH
-	CORPUS_PATH=$DATASET_PATH/corpus/nsf1k.txt
+	CORPUS_PATH=$DATASET_PATH/corpus/nsf1k-src.txt
 }
 
 function __fetch_poliblogs__ {
@@ -188,7 +188,7 @@ function __import_gensim__ {
 if [ $# -ge 1 ] && [ "$1" != "-h" ] && [ "$1" != "--help" ]
 then
 	DATASET=$1
-	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf127992" ] || [ "$DATASET" == "nsf25k" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ] || [ "$DATASET" == "poliblogs" ] || [ "$DATASET" == "fomc" ]
+	if [ "$DATASET" == "infovis" ] || [ "$DATASET" == "20newsgroups" ] || [ "$DATASET" == "nsf146k" ] || [ "$DATASET" == "nsf25k" ] || [ "$DATASET" == "nsf10k" ] || [ "$DATASET" == "nsf1k" ] || [ "$DATASET" == "poliblogs" ] || [ "$DATASET" == "fomc" ]
 	then
 		FETCH_DATASET_FUNCTION=__fetch_${DATASET}__
 		DATASET_PATH=data/demo/$DATASET
@@ -227,8 +227,8 @@ echo " 20newsgroups | User postings in 20 newsgroups"
 echo "              | 18,828 postings with duplicates removed"
 echo "              | http://qwone.com/~jason/20Newsgroups"
 echo
-echo "    nsf127992 | NSF grants"
-echo "              | 127,992 abstracts"
+echo "      nsf146k | NSF grants"
+echo "              | 146,308 abstracts"
 echo
 echo "    poliblogs | Poliblogs (2008)"
 echo "              | 13,246 political blogs with date, rating, political affiliation"

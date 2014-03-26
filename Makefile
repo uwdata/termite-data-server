@@ -50,8 +50,8 @@ data/demo/infovis:
 data/demo/poliblogs:
 	bin/fetch_poliblogs.sh
 
-data/demo/nsf127992:
-	bin/fetch_nsf127992.sh
+data/demo/nsf146k:
+	bin/fetch_nsf146k.sh
 
 ################################################################################
 # Demos
@@ -80,10 +80,14 @@ other-demos:
 	./demo fomc gensim
 	./demo fomc stm
 	./demo 20newsgroups mallet
+	bin/fetch_nsf146k.sh
+	bin/derive_nsf1k.py
 	./demo nsf1k mallet
+	bin/derive_nsf10k.py
 	./demo nsf10k mallet
+	bin/derive_nsf25k.py
 	./demo nsf25k mallet
-	./demo nsf127992 mallet
+	./demo nsf146k mallet
 
 ################################################################################
 # Other utilities
@@ -103,8 +107,3 @@ utils/corenlp/StreamingSentenceSplitter.jar:
 
 clean:
 	rm -rf externals
-	rm -rf tools/mallet*
-	rm -rf tools/stm*
-	rm -rf data/demo/infovis apps/infovis_* web2py/applications/infovis_*
-	rm -rf data/demo/poliblogs apps/poliblogs_* web2py/applications/poliblogs_*
-	rm -rf data/demo/fomc apps/fomc_* web2py/applications/fomc_*
