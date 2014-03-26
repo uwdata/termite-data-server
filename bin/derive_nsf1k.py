@@ -2,10 +2,12 @@
 
 import json
 import os
+from corpus.Tokenizer import Tokenizer
 
-INPUT_CORPUS = 'data/demo/nsf127992/corpus/nsf127992.txt'
+INPUT_CORPUS = 'data/demo/nsf146k/corpus/nsf146k-src.txt'
 OUTPUT_PATH = 'data/demo/nsf1k/corpus'
-OUTPUT_CORPUS = '{}/nsf1k.txt'.format( OUTPUT_PATH )
+OUTPUT_CORPUS = '{}/nsf1k-src.txt'.format( OUTPUT_PATH )
+tokenizer = Tokenizer( stopwords = 'tools/mallet/stoplists/en.txt' )
 
 def ReadAll( searchTerms ):
 	corpus = {}
@@ -14,7 +16,7 @@ def ReadAll( searchTerms ):
 		for index, line in enumerate(f):
 			line = line[:-1]
 			docID, content = line.split('\t')
-			tokens = frozenset(content.split(' '))
+			tokens = frozenset( tokenizer.Tokenize(content) )
 			matches = set()
 			for searchTerm in searchTerms:
 				if searchTerm in tokens:
