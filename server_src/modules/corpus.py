@@ -237,3 +237,47 @@ class Corpus( TermiteCore ):
 		}
 		self.content.update(results)
 		return results
+
+	def LoadTermG2( self ):
+		# Vocab
+		self.LoadTermProbs()
+		vocab = frozenset( self.content['Vocab'] )
+
+		# Load from disk
+		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
+		with open( filename ) as f:
+			termCoStats = json.load( f, encoding = 'utf-8' )
+			table = termCoStats['g2']
+		subTable = []
+		for firstTerm, d in table.iteritems():
+			if firstTerm in vocab:
+				subTable += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : freq } for secondTerm, freq in d.iteritems() if secondTerm in vocab ]
+
+		# Responses
+		results = {
+			'TermG2' : subTable
+		}
+		self.content.update(results)
+		return results
+
+	def LoadTermSentenceG2( self ):
+		# Vocab
+		self.LoadTermProbs()
+		vocab = frozenset( self.content['Vocab'] )
+
+		# Load from disk
+		filename = os.path.join( self.request.folder, 'data/corpus', 'sentence-term-co-stats.json' )
+		with open( filename ) as f:
+			termCoStats = json.load( f, encoding = 'utf-8' )
+			table = termCoStats['g2']
+		subTable = []
+		for firstTerm, d in table.iteritems():
+			if firstTerm in vocab:
+				subTable += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : freq } for secondTerm, freq in d.iteritems() if secondTerm in vocab ]
+
+		# Responses
+		results = {
+			'TermSentenceG2' : subTable
+		}
+		self.content.update(results)
+		return results
