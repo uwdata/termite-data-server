@@ -7,7 +7,7 @@
 		<div class="param">termLimit = 
 			<select onchange="onSelectParam(this)">
 				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{response.write(QueryString({'termLimit':n}),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{response.write(GetURL({'termLimit':n}),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
@@ -16,16 +16,16 @@
 
 	<div class="heading">Server Response
 		<span class="format">(
-{{if configs['is:text']:}}<b>Text format</b>{{else:}}<a href="http://{{=configs['url:text']}}">Text format</a>{{pass}} | 
-{{if configs['is:graph']:}}<b>Graph format</b>{{else:}}<a href="http://{{=configs['url:graph']}}">Graph format</a>{{pass}} | 
-{{if configs['is:json']:}}<b>JSON object</b>{{else:}}<a href="http://{{=configs['url:json']}}">JSON object</a>{{pass}}
+			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GetURL({'format':None})}}">Text format</a>{{pass}} | 
+			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GetURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
+			<a href="{{=GetURL({'format':'json'})}}">JSON object</a> 
 		)</span>
 	</div>
 
-{{if configs['is:text']:}}
+{{if configs['is_text']:}}
 	<div class="content">{{=content}}</div>
 {{pass}}
-{{if configs['is:graph']:}}
+{{if configs['is_graph']:}}
 	<div class="content"><div id="view" class="view"></div></div>
 {{pass}}
 </div>
