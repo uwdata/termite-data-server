@@ -176,13 +176,13 @@ class TermiteCore( object ):
 		return 'format' in self.request.vars and 'lyra' == self.request.vars['format'].lower()
 	
 	def IsMachineFormat( self ):
-		return self.IsJsonFormat() or self.IsLyraFormat()
+		return self.IsJsonFormat()
 	
-	def HasLyraField( self ):
-		return 'lyra' in self.request.vars
-		
 	def GetLyraField( self ):
-		return self.request.vars['lyra']
+		if 'lyra' in self.request.vars:
+			return self.request.vars['lyra']
+		else:
+			return self.GetAttribute()
 
 	def HasAllowedOrigin( self ):
 		return 'origin' in self.request.vars
@@ -233,7 +233,7 @@ class TermiteCore( object ):
 		return dataStr
 
 	def GenerateNormalResponse( self ):
-		if self.IsLyraFormat() and self.HasLyraField():
+		if self.IsLyraFormat():
 			field = self.GetLyraField()
 			if field in self.content:
 				data = self.content[ field ]
