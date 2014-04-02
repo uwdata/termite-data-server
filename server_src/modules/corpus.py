@@ -80,7 +80,7 @@ class Corpus( TermiteCore ):
 		
 		# Responses
 		results = {
-			'Documents' : documents,
+			'TextSearch' : documents,
 			'SearchText' : searchText,
 			'SearchOffset' : searchOffset,
 			'SearchLimit' : searchLimit,

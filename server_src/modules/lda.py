@@ -108,6 +108,7 @@ class LDA( TermiteCore ):
 	def LoadTermTopicMatrix( self ):
 		# Parameters
 		self.LoadTermIndex()
+		self.LoadTopicIndex()
 		termSet = frozenset( d['text'] for d in self.content['TermIndex'] )
 		threshold = self.GetParam('threshold')
 		
@@ -130,6 +131,7 @@ class LDA( TermiteCore ):
 	def LoadTopicTermMatrix( self ):
 		# Parameters
 		self.LoadTermIndex()
+		self.LoadTopicIndex()
 		termSet = frozenset( d['text'] for d in self.content['TermIndex'] )
 		threshold = self.GetParam('threshold')
 
@@ -151,6 +153,7 @@ class LDA( TermiteCore ):
 	def LoadDocTopicMatrix( self ):
 		# Parameters
 		self.LoadDocIndex()
+		self.LoadTopicIndex()
 		docSet = frozenset( d['docID'] for d in self.content['DocIndex'] )
 		threshold = self.GetParam('threshold')
 		
@@ -173,6 +176,7 @@ class LDA( TermiteCore ):
 	def LoadTopicDocMatrix( self ):
 		# Parameters
 		self.LoadDocIndex()
+		self.LoadTopicIndex()
 		docSet = frozenset( d['docID'] for d in self.content['DocIndex'] )
 		threshold = self.GetParam('threshold')
 		

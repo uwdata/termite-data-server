@@ -248,18 +248,17 @@ class TermiteCore( object ):
 			'params' : self.params
 		}
 		data.update( self.content )
-		dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	
 		if self.IsJsonFormat():
 			self.response.headers['Content-Type'] = 'application/json'
 			if self.HasAllowedOrigin():
 				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
-			return dataStr
-		elif self.IsGraphFormat():
+			return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+		
+		if self.IsGraphFormat():
 			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-			data[ 'content' ] = dataStr
 			return data
-		else:
-			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-			data[ 'content' ] = dataStr
-			return data
+
+		self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+		data[ 'content' ] = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+		return data
