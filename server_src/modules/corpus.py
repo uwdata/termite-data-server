@@ -18,7 +18,7 @@ class Corpus( TermiteCore ):
 			self.params.update({ key : value })
 		if key == 'searchLimit':
 			if self.IsMachineFormat():
-				value = self.GetNonNegativeIntegerParam( key, 25 )
+				value = self.GetNonNegativeIntegerParam( key, 50 )
 			else:
 				value = self.GetNonNegativeIntegerParam( key, 5 )
 			self.params.update({ key : value })
@@ -28,7 +28,7 @@ class Corpus( TermiteCore ):
 			self.params.update({ key : value })
 		if key == 'termLimit':
 			if self.IsMachineFormat():
-				value = self.GetNonNegativeIntegerParam( key, 25 )
+				value = self.GetNonNegativeIntegerParam( key, 50 )
 			else:
 				value = self.GetNonNegativeIntegerParam( key, 5 )
 			self.params.update({ key : value })
