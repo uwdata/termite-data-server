@@ -24,9 +24,7 @@
 	<div class="heading">Server Response
 		<span class="format">(
 			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
-			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">JSON object</a> | 
-			<a href="{{=GenerateURL({'format':'lyra'})}}">Lyra table</a>
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> 
 		)</span>
 	</div>
 

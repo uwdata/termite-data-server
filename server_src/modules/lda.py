@@ -198,6 +198,7 @@ class LDA( TermiteCore ):
 		
 	def LoadTopicCooccurrence( self ):
 		# Load from disk
+		self.LoadTopicIndex()
 		filename = os.path.join( self.request.folder, 'data/lda', 'topic-cooccurrence.json' )
 		with open( filename ) as f:
 			topicCooccurrence = json.load( f, encoding = 'utf-8' )
@@ -215,6 +216,7 @@ class LDA( TermiteCore ):
 
 	def LoadTopicCovariance( self ):
 		# Load from disk
+		self.LoadTopicIndex()
 		self.LoadTopicCooccurrence()
 		topicCooccurrence = self.content['TopicCooccurrence']
 		normalization = sum( d['value'] for d in topicCooccurrence )
