@@ -26,7 +26,7 @@
 			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
 			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
 			<a href="{{=GenerateURL({'format':'json'})}}">JSON object</a> | 
-			<a href="{{=GenerateURL({'format':'lyra'})}}">Lyra table</a>
+			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
 		)</span>
 	</div>
 
@@ -37,3 +37,274 @@
 	<div class="content"><div id="view" class="view"></div></div>
 {{pass}}
 </div>
+
+<script type="text/javascript">
+var spec = {
+	"width": 120 + 400,
+	"height": 50 + 12 * {{=TermCount}},
+	"padding": {
+		"top" : 40,
+		"bottom" : 10,
+		"left" : 110,
+		"right" : 10
+	},
+	"data": [
+		{
+			"name": "TermFreqs",
+		}
+	],
+	"scales": [],
+	"marks": [
+		{
+			"properties": {
+				"enter": {
+					"x": {
+						"value": 0
+					},
+					"width": {
+						"value": 400
+					},
+					"y": {
+						"value": 0
+					},
+					"height": {
+						"value": 12 * {{=TermCount}},
+					},
+					"clip": {
+						"value": 0
+					},
+					"fill": {
+						"value": "#ffffff"
+					},
+					"fillOpacity": {
+						"value": 0
+					},
+					"stroke": {
+						"value": "#000000"
+					},
+					"strokeWidth": {
+						"value": 0
+					}
+				}
+			},
+			"scales": [
+				{
+					"type": "linear",
+					"points": true,
+					"nice": true,
+					"padding": 0,
+					"zero": true,
+					"name": "TermFreqs_scale_Freqs",
+					"domain": {
+						"data": "TermFreqs",
+						"field": "data.freq"
+					},
+					"inheritFromGroup": false,
+					"range": "width"
+				},
+				{
+					"type": "ordinal",
+					"points": false,
+					"nice": true,
+					"padding": 0,
+					"zero": true,
+					"name": "TermFreqs_scale_Terms",
+					"domain": {
+						"data": "TermFreqs",
+						"field": "data.text"
+					},
+					"inheritFromGroup": false,
+					"range": "height"
+				}
+			],
+			"axes": [
+				{
+					"type": "x",
+					"orient": "top",
+					"scale": "TermFreqs_scale_Freqs",
+					"title": "Term Frequency",
+					"layer": "back",
+					"ticks": 10,
+					"tickSize": 0,
+					"titleOffset": 35,
+					"grid": true,
+					"properties": {
+						"ticks": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": 0
+							}
+						},
+						"labels": {
+							"fontSize": {
+								"value": 9.5
+							},
+							"font": {
+								"value": "Verdana"
+							},
+							"angle": {
+								"value": 0
+							},
+							"fill": {
+								"value": "#000"
+							}
+						},
+						"title": {
+							"font": {
+								"value": "Verdana"
+							},
+							"fontSize": {
+								"value": 9.5
+							},
+							"fontWeight": {
+								"value": "bold"
+							},
+							"fill": {
+								"value": "#000"
+							}
+						},
+						"axis": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						},
+						"grid": {
+							"stroke": {
+								"value": "#d8d8d8"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						}
+					}
+				},
+				{
+					"type": "y",
+					"orient": "left",
+					"scale": "TermFreqs_scale_Terms",
+					"layer": "back",
+					"ticks": 0,
+					"tickSize": 12,
+					"titleOffset": 0,
+					"grid": false,
+					"properties": {
+						"ticks": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": 0
+							}
+						},
+						"labels": {
+							"fontSize": {
+								"value": 9.5
+							},
+							"font": {
+								"value": "Verdana"
+							},
+							"angle": {
+								"value": 0
+							},
+							"fill": {
+								"value": "#444"
+							}
+						},
+						"axis": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": 0
+							}
+						},
+						"grid": {
+							"stroke": {
+								"value": "#ddd"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						}
+					}
+				}
+			],
+			"marks": [
+				{
+					"properties": {
+						"enter": {
+							"x": {
+								"scale": "TermFreqs_scale_Freqs",
+								"value": 0,
+								"default": 1
+							},
+							"x2": {
+								"scale": "TermFreqs_scale_Freqs",
+								"field": "data.freq",
+								"default": 1
+							},
+							"y": {
+								"scale": "TermFreqs_scale_Terms",
+								"field": "data.text",
+								"default": 1
+							},
+							"height": {
+								"scale": "TermFreqs_scale_Terms",
+								"band": true,
+								"offset": -1
+							},
+							"fillOpacity": {
+								"value": 0.25
+							},
+							"strokeWidth": {
+								"value": 0.5
+							}
+						},
+						"update": {
+							"fill": {
+								"value": "#999"
+							},
+							"stroke": {
+								"value": "#999"
+							}
+						},
+						"hover": {
+							"fill": {
+								"value": "#d62728"
+							},
+							"stroke": {
+								"value": "#d62728"
+							}
+						}
+					},
+					"name": "rect_1396491579242",
+					"type": "rect",
+					"from": {
+						"data": "TermFreqs"
+					}
+				}
+			],
+			"name": "layer_0",
+			"type": "group",
+			"from": {}
+		}
+	]
+};
+
+var data = {
+	"TermFreqs" : {{response.write(AsJSON(TermFreqs),escape=False)}}
+};
+
+vg.parse.spec( spec, function( chart ) {
+	var view = chart({ el:"#view", data:data }).update();
+	var png = $('#view canvas')[0].toDataURL('image/png');
+	d3.select("#SaveAsPNG")
+		.attr("href", png)
+		.attr("download", "TermFreqs.png");
+});
+</script>

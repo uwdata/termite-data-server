@@ -99,7 +99,7 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": false,
+					"zero": true,
 					"name": "DocTopicMatrix_scale_CircleArea",
 					"domain": {
 						"data": "DocTopicMatrix",
@@ -116,11 +116,11 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": false,
+					"zero": true,
 					"name": "DocTopicMatrix_scale_Topics",
 					"domain": {
-						"data": "DocTopicMatrix",
-						"field": "data.topic"
+						"data": "TopicIndex",
+						"field": "data.index"
 					},
 					"inheritFromGroup": false,
 					"range": "width"
@@ -130,10 +130,10 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": false,
+					"zero": true,
 					"name": "DocTopicMatrix_scale_Docs",
 					"domain": {
-						"data": "DocTopicMatrix",
+						"data": "DocIndex",
 						"field": "data.docID"
 					},
 					"inheritFromGroup": false,
@@ -161,19 +161,19 @@ var spec = {
 						},
 						"labels": {
 							"fontSize": {
-								"value": 11
+								"value": 9.5
 							},
 							"font": {
-								"value": "Helvetica"
-							},
-							"angle": {
-								"value": -60
+								"value": "Verdana"
 							},
 							"fill": {
 								"value": "#444"
 							},
 							"text": {
 								"field": "data"
+							},
+							"angle": {
+								"value": -60
 							},
 							"dy": {
 								"value": 7
@@ -217,10 +217,10 @@ var spec = {
 						},
 						"labels": {
 							"fontSize": {
-								"value": 11
+								"value": 9.5
 							},
 							"font": {
-								"value": "Helvetica"
+								"value": "Verdana"
 							},
 							"angle": {
 								"value": 0

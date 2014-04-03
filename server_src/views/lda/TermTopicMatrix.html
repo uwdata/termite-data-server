@@ -99,7 +99,7 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": false,
+					"zero": true,
 					"name": "TermTopicMatrix_scale_CircleArea",
 					"domain": {
 						"data": "TermTopicMatrix",
@@ -116,11 +116,11 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": false,
+					"zero": true,
 					"name": "TermTopicMatrix_scale_Topics",
 					"domain": {
-						"data": "TermTopicMatrix",
-						"field": "data.topic"
+						"data": "TopicIndex",
+						"field": "data.index"
 					},
 					"inheritFromGroup": false,
 					"range": "width"
@@ -130,11 +130,11 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": false,
+					"zero": true,
 					"name": "TermTopicMatrix_scale_Terms",
 					"domain": {
-						"data": "TermTopicMatrix",
-						"field": "data.term"
+						"data": "TermIndex",
+						"field": "data.text"
 					},
 					"inheritFromGroup": false,
 					"range": "height"
@@ -156,24 +156,24 @@ var spec = {
 								"value": "#000"
 							},
 							"strokeWidth": {
-								"value": "0"
+								"value": 0
 							}
 						},
 						"labels": {
 							"fontSize": {
-								"value": 11
+								"value": 9.5
 							},
 							"font": {
-								"value": "Helvetica"
-							},
-							"angle": {
-								"value": -60
+								"value": "Verdana"
 							},
 							"fill": {
 								"value": "#444"
 							},
 							"text": {
 								"field": "data"
+							},
+							"angle": {
+								"value": -60
 							},
 							"dy": {
 								"value": 7
@@ -184,7 +184,7 @@ var spec = {
 								"value": "#000"
 							},
 							"strokeWidth": {
-								"value": "0"
+								"value": 0
 							}
 						},
 						"grid": {
@@ -212,15 +212,15 @@ var spec = {
 								"value": "#000"
 							},
 							"strokeWidth": {
-								"value": "0"
+								"value": 0
 							}
 						},
 						"labels": {
 							"fontSize": {
-								"value": 11
+								"value": 9.5
 							},
 							"font": {
-								"value": "Helvetica"
+								"value": "Verdana"
 							},
 							"angle": {
 								"value": 0
@@ -234,7 +234,7 @@ var spec = {
 								"value": "#000"
 							},
 							"strokeWidth": {
-								"value": "0"
+								"value": 0
 							}
 						},
 						"grid": {
