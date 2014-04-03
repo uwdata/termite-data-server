@@ -3,6 +3,8 @@
 import os
 import json
 import urllib
+import cStringIO
+from UnicodeWriter import UnicodeWriter
 
 class TermiteCore( object ):
 	def __init__( self, request, response ):
@@ -10,8 +12,9 @@ class TermiteCore( object ):
 		self.response = response
 		self.configs = self.GetConfigs()
 		self.params = {}
-		self.content = {}
-		self.lyra = [ { 'a' : 1, 'b' : 5 }, { 'a': 3, 'b' : 7 } ]
+		self.content = {}   # All variables returned by an API call
+		self.table = []     # Primary variable returned by an API call as rows of records
+		self.header = []    # Header for primary variable
 
 ################################################################################		
 # Server, Dataset, Model, and Attribute
@@ -84,17 +87,30 @@ class TermiteCore( object ):
 				'TopTerms',
 				'TopDocs'
 			]
+		if model == 'itm':
+			return [
+				'DocIndex',
+				'TermIndex',
+				'TopicIndex',
+				'TermTopicMatrix',
+				'DocTopicMatrix',
+				'TopicCooccurrence',
+				'TopicCovariance',
+				'TopTerms',
+				'TopDocs',
+				'Update'
+			]
 		if model == 'corpus':
 			return [
 				'Document',
 				'TextSearch',
 				'TermFreqs',
-				'TermCoFreqs',
 				'TermProbs',
+				'TermCoFreqs',
 				'TermCoProbs',
 				'TermPMI',
-				'TermSentencePMI',
 				'TermG2',
+				'TermSentencePMI',
 				'TermSentenceG2'
 			]
 		if model == 'vis':
@@ -125,12 +141,14 @@ class TermiteCore( object ):
 			'is_text' : self.IsTextFormat(),
 			'is_graph' : self.IsGraphFormat(),
 			'is_json' : self.IsJsonFormat(),
-			'is_lyra' : self.IsLyraFormat()
+			'is_csv' : self.IsCSVFormat(),
+			'is_tsv' : self.IsTSVFormat()
 		}
 		return configs
 	
 ################################################################################
 # Parameters
+
 	def GetStringParam( self, key ):
 		if key in self.request.vars:
 			return unicode( self.request.vars[key] )
@@ -172,18 +190,15 @@ class TermiteCore( object ):
 	def IsJsonFormat( self ):
 		return 'format' in self.request.vars and 'json' == self.request.vars['format'].lower()
 
-	def IsLyraFormat( self ):
-		return 'format' in self.request.vars and 'lyra' == self.request.vars['format'].lower()
+	def IsCSVFormat( self ):
+		return 'format' in self.request.vars and 'csv' == self.request.vars['format'].lower()
+	
+	def IsTSVFormat( self ):
+		return 'format' in self.request.vars and 'tsv' == self.request.vars['format'].lower()
 	
 	def IsMachineFormat( self ):
-		return self.IsJsonFormat() or self.IsGraphFormat() or self.IsLyraFormat()
+		return self.IsJsonFormat() or self.IsGraphFormat() or self.IsCSVFormat() or self.IsTSVFormat()
 	
-	def GetLyraField( self ):
-		if 'lyra' in self.request.vars:
-			return self.request.vars['lyra']
-		else:
-			return self.GetAttribute()
-
 	def HasAllowedOrigin( self ):
 		return 'origin' in self.request.vars
 	
@@ -233,32 +248,44 @@ class TermiteCore( object ):
 		return dataStr
 
 	def GenerateNormalResponse( self ):
-		if self.IsLyraFormat():
-			field = self.GetLyraField()
-			if field in self.content:
-				data = self.content[ field ]
-				dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-				self.response.headers['Content-Type'] = 'application/json'
-				if self.HasAllowedOrigin():
-					self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
-				return dataStr
-
 		data = {
 			'configs' : self.configs,
 			'params' : self.params
 		}
 		data.update( self.content )
-	
+
 		if self.IsJsonFormat():
 			self.response.headers['Content-Type'] = 'application/json'
 			if self.HasAllowedOrigin():
 				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
 			return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-		
-		if self.IsGraphFormat():
-			self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-			return data
 
+		if self.IsCSVFormat():
+			f = cStringIO.StringIO()
+			writer = UnicodeWriter(f)
+			writer.writerow( [ d['name'] for d in self.header ] )
+			for record in self.table:
+				row = [ record[d['name']] for d in self.header ]
+				writer.writerow(row)
+			dataStr = f.getvalue()
+			f.close()
+			self.response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+			if self.HasAllowedOrigin():
+				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
+			return dataStr
+		
+		if self.IsTSVFormat():
+			headerStr = u'\t'.join( d['name'] for d in self.header )
+			rowStrs = []
+			for record in self.table:
+				rowStrs.append( u'\t'.join( u'{}'.format( record[d['name']]) for d in self.header ) )
+			tableStr = u'\n'.join(rowStrs)
+			dataStr = u'{}\n{}\n'.format( headerStr, tableStr ).encode('utf-8')
+			self.response.headers['Content-Type'] = 'text/tab-separated-values; charset=utf-8'
+			if self.HasAllowedOrigin():
+				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
+			return dataStr
+	
 		self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-		data[ 'content' ] = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+		data['content'] = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 		return data

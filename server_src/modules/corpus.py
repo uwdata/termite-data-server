@@ -40,7 +40,10 @@ class Corpus( TermiteCore ):
 		return value
 	
 	def LoadDocument( self ):
+		# Parameters
 		docIndex = self.GetParam('docIndex')
+		
+		# Load from disk
 		filename = os.path.join( self.request.folder, 'data/corpus', 'documents-meta.json' )
 		with open( filename ) as f:
 			corpus = json.load( f, encoding = 'utf-8' )
@@ -50,12 +53,14 @@ class Corpus( TermiteCore ):
 			document = corpusData[docIndex]
 		else:
 			document = None
-		results = {
+			
+		# Responses
+		self.content.update({
 			'Document' : document,
 			'DocIndex' : docIndex
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = [ document ]
+		self.header = corpusHeader
 	
 	def LoadTextSearch( self ):
 		# Parameters
@@ -69,6 +74,8 @@ class Corpus( TermiteCore ):
 			corpus = json.load( f, encoding = 'utf-8' )
 			corpusHeader = corpus['header']
 			corpusData = corpus['data']
+		
+		# Processing
 		documents = []
 		matchCount = 0
 		for docID, document in corpusData.iteritems():
@@ -77,18 +84,16 @@ class Corpus( TermiteCore ):
 				matchCount += 1
 				if searchOffset < matchCount and matchCount <= searchOffset + searchLimit:
 					documents.append( document )
+		matchMaxCount = len(documents)
 		
 		# Responses
-		results = {
-			'TextSearch' : documents,
-			'SearchText' : searchText,
-			'SearchOffset' : searchOffset,
-			'SearchLimit' : searchLimit,
-			'MatchMaxCount' : matchCount,
-			'MatchCount' : len(documents)
-		}
-		self.content.update(results)
-		return results
+		self.content.update({
+			'Documents' : documents,
+			'DocCount' : matchMaxCount,
+			'DocMaxCount' : matchCount
+		})
+		self.table = documents
+		self.header = corpusHeader
 
 	def LoadTermFreqs( self ):
 		# Parameters
@@ -100,23 +105,27 @@ class Corpus( TermiteCore ):
 		with open( filename ) as f:
 			termStats = json.load( f, encoding = 'utf-8' )
 			fullTable = termStats['freqs']
-		termMaxCount = len(fullTable)
+		
+		# Processing
 		vocab = sorted( fullTable.iterkeys(), key = lambda x : -fullTable[x] )
 		vocab = vocab[ termOffset:termOffset+termLimit ]
-		table = [ { 'text' : term, 'freq' : fullTable[term] } for term in vocab ]
+		table = [ { 'term' : term, 'freq' : fullTable[term] } for term in vocab ]
+		header = [
+			{ 'name' : 'term', 'type' : 'string' },
+			{ 'name' : 'freq', 'type' : 'number' }
+		]
+		termMaxCount = len(fullTable)
 		termCount = len(table)
 		
 		# Responses
-		results = {
+		self.content.update({
 			'TermFreqs' : table,
-			'TermLimit' : termLimit,
-			'TermOffset' : termOffset,
-			'TermMaxCount' : termMaxCount,
 			'TermCount' : termCount,
+			'TermMaxCount' : termMaxCount,
 			'Vocab' : vocab
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = table
+		self.header = header
 
 	def LoadTermProbs( self ):
 		# Parameters
@@ -131,20 +140,23 @@ class Corpus( TermiteCore ):
 		termMaxCount = len(fullTable)
 		vocab = sorted( fullTable.iterkeys(), key = lambda x : -fullTable[x] )
 		vocab = vocab[ termOffset:termOffset+termLimit ]
-		table = [ { 'text' : term, 'prob' : fullTable[term] } for term in vocab ]
+		table = [ { 'term' : term, 'prob' : fullTable[term] } for term in vocab ]
+		header = [
+			{ 'name' : 'term', 'type' : 'string' },
+			{ 'name' : 'prob', 'type' : 'number' }
+		]
+		termMaxCount = len(fullTable)
 		termCount = len(table)
 
 		# Responses
-		results = {
+		self.content.update({
 			'TermProbs' : table,
-			'TermLimit' : termLimit,
-			'TermOffset' : termOffset,
-			'TermMaxCount' : termMaxCount,
 			'TermCount' : termCount,
+			'TermMaxCount' : termMaxCount,
 			'Vocab' : vocab
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = table
+		self.header = header
 
 	def LoadTermCoFreqs( self ):
 		# Vocab
@@ -161,13 +173,18 @@ class Corpus( TermiteCore ):
 			if firstTerm in vocab:
 				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'freq' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
 		table.sort( key = lambda x : -x['freq'] )
+		header = [
+			{ 'name' : 'firstTerm', 'type' : 'string' },
+			{ 'name' : 'secondTerm', 'type' : 'string' },
+			{ 'name' : 'freq', 'type' : 'number' }
+		]
 		
 		# Responses
-		results = {
+		self.content.update({
 			'TermCoFreqs' : table
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = table
+		self.header = header
 
 	def LoadTermCoProbs( self ):
 		# Vocab
@@ -184,13 +201,18 @@ class Corpus( TermiteCore ):
 			if firstTerm in vocab:
 				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'prob' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
 		table.sort( key = lambda x : -x['prob'] )
+		header = [
+			{ 'name' : 'firstTerm', 'type' : 'string' },
+			{ 'name' : 'secondTerm', 'type' : 'string' },
+			{ 'name' : 'prob', 'type' : 'number' }
+		]
 
 		# Responses
-		results = {
+		self.content.update({
 			'TermCoProbs' : table
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = table
+		self.header = header
 
 	def LoadTermPMI( self ):
 		# Vocab
@@ -207,13 +229,18 @@ class Corpus( TermiteCore ):
 			if firstTerm in vocab:
 				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'pmi' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
 		table.sort( key = lambda x : -x['pmi'] )
+		header = [
+			{ 'name' : 'firstTerm', 'type' : 'string' },
+			{ 'name' : 'secondTerm', 'type' : 'string' },
+			{ 'name' : 'pmi', 'type' : 'number' }
+		]
 
 		# Responses
-		results = {
+		self.content.update({
 			'TermPMI' : table
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = table
+		self.header = header
 
 	def LoadTermSentencePMI( self ):
 		# Vocab
@@ -230,13 +257,18 @@ class Corpus( TermiteCore ):
 			if firstTerm in vocab:
 				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'pmi' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
 		table.sort( key = lambda x : -x['pmi'] )
+		header = [
+			{ 'name' : 'firstTerm', 'type' : 'string' },
+			{ 'name' : 'secondTerm', 'type' : 'string' },
+			{ 'name' : 'pmi', 'type' : 'number' }
+		]
 
 		# Responses
-		results = {
+		self.content.update({
 			'TermSentencePMI' : table
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = table
+		self.header = header
 
 	def LoadTermG2( self ):
 		# Vocab
@@ -253,13 +285,18 @@ class Corpus( TermiteCore ):
 			if firstTerm in vocab:
 				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'g2' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
 		table.sort( key = lambda x : -x['g2'] )
+		header = [
+			{ 'name' : 'firstTerm', 'type' : 'string' },
+			{ 'name' : 'secondTerm', 'type' : 'string' },
+			{ 'name' : 'g2', 'type' : 'number' }
+		]
 
 		# Responses
-		results = {
+		self.content.update({
 			'TermG2' : table
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = table
+		self.header = header
 
 	def LoadTermSentenceG2( self ):
 		# Vocab
@@ -276,10 +313,15 @@ class Corpus( TermiteCore ):
 			if firstTerm in vocab:
 				table += [ { 'firstTerm' : firstTerm, 'secondTerm' : secondTerm, 'g2' : value } for secondTerm, value in d.iteritems() if secondTerm in vocab ]
 		table.sort( key = lambda x : -x['g2'] )
+		header = [
+			{ 'name' : 'firstTerm', 'type' : 'string' },
+			{ 'name' : 'secondTerm', 'type' : 'string' },
+			{ 'name' : 'g2', 'type' : 'number' }
+		]
 
 		# Responses
-		results = {
+		self.content.update({
 			'TermSentenceG2' : table
-		}
-		self.content.update(results)
-		return results
+		})
+		self.table = table
+		self.header = header

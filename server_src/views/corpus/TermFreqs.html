@@ -7,14 +7,14 @@
 		<div class="param">termLimit = 
 			<select onchange="onSelectParam(this)">
 				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{response.write(GenerateURL({'termLimit':n}),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{WriteURL({'termLimit':n})}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
 		<div class="param">termOffset = 
 			<select onchange="onSelectParam(this)">
 				{{for n in range(0,100,5):}}
-					<option value="{{response.write(GenerateURL({'termOffset':n}),escape=False)}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{WriteURL({'termOffset':n})}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
@@ -25,7 +25,9 @@
 		<span class="format">(
 			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
 			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">JSON object</a> | 
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
+			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
+			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> | 
 			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
 		)</span>
 	</div>
@@ -111,7 +113,7 @@ var spec = {
 					"name": "TermFreqs_scale_Terms",
 					"domain": {
 						"data": "TermFreqs",
-						"field": "data.text"
+						"field": "data.term"
 					},
 					"inheritFromGroup": false,
 					"range": "height"
@@ -250,7 +252,7 @@ var spec = {
 							},
 							"y": {
 								"scale": "TermFreqs_scale_Terms",
-								"field": "data.text",
+								"field": "data.term",
 								"default": 1
 							},
 							"height": {
@@ -297,7 +299,7 @@ var spec = {
 };
 
 var data = {
-	"TermFreqs" : {{response.write(AsJSON(TermFreqs),escape=False)}}
+	"TermFreqs" : {{WriteJSON(TermFreqs)}}
 };
 
 vg.parse.spec( spec, function( chart ) {

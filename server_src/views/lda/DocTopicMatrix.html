@@ -7,14 +7,14 @@
 		<div class="param">docLimit = 
 			<select onchange="onSelectParam(this)">
 				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{response.write(GenerateURL({'docLimit':n}),escape=False)}}" {{if params['docLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{WriteURL({'docLimit':n})}}" {{if params['docLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
 		<div class="param">docOffset = 
 			<select onchange="onSelectParam(this)">
 				{{for n in range(0,100,5):}}
-					<option value="{{response.write(GenerateURL({'docOffset':n}),escape=False)}}" {{if params['docOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{WriteURL({'docOffset':n})}}" {{if params['docOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
@@ -25,7 +25,9 @@
 		<span class="format">(
 			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
 			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">JSON object</a> | 
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
+			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
+			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> | 
 			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
 		)</span>
 	</div>
@@ -306,9 +308,9 @@ var spec = {
 };
 
 var data = {
-	"DocTopicMatrix" : {{response.write(AsJSON(DocTopicMatrix),escape=False)}},
-	"DocIndex" : {{response.write(AsJSON(DocIndex),escape=False)}},
-	"TopicIndex" : {{response.write(AsJSON(TopicIndex),escape=False)}}
+	"DocTopicMatrix" : {{WriteJSON(DocTopicMatrix)}},
+	"DocIndex" : {{WriteJSON(DocIndex)}},
+	"TopicIndex" : {{WriteJSON(TopicIndex)}}
 };
 
 vg.parse.spec( spec, function( chart ) {

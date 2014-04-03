@@ -7,6 +7,8 @@
 			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
 			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
 			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
+			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
+			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> | 
 			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
 		)</span>
 	</div>
@@ -270,8 +272,8 @@ var spec = {
 };
 
 var data = {
-	"TopicCooccurrence" : {{response.write(AsJSON(TopicCooccurrence),escape=False)}},
-	"TopicIndex" : {{response.write(AsJSON(TopicIndex),escape=False)}}
+	"TopicCooccurrence" : {{WriteJSON(TopicCooccurrence)}},
+	"TopicIndex" : {{WriteJSON(TopicIndex)}}
 };
 
 vg.parse.spec( spec, function( chart ) {

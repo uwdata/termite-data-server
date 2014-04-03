@@ -7,14 +7,14 @@
 		<div class="param">termLimit = 
 			<select onchange="onSelectParam(this)">
 				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{response.write(GenerateURL({'termLimit':n}),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{WriteURL({'termLimit':n})}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
 		<div class="param">termOffset = 
 			<select onchange="onSelectParam(this)">
 				{{for n in range(0,100,5):}}
-					<option value="{{response.write(GenerateURL({'termOffset':n}),escape=False)}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{WriteURL({'termOffset':n})}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
@@ -26,6 +26,8 @@
 			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
 			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
 			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
+			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
+			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> | 
 			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
 		)</span>
 	</div>
@@ -337,8 +339,8 @@ var spec = {
 };
 
 var data = {
-	"TermSentencePMI" : {{response.write(AsJSON(TermSentencePMI),escape=False)}},
-	"Vocab" : {{response.write(AsJSON(Vocab),escape=False)}}
+	"TermSentencePMI" : {{WriteJSON(TermSentencePMI)}},
+	"Vocab" : {{WriteJSON(Vocab)}}
 };
 
 vg.parse.spec( spec, function( chart ) {
