@@ -5,8 +5,8 @@
 	<div class="heading">Server Response
 		<span class="format">(
 			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">JSON object</a>
-		)</span>
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> 
+>
 	</div>
 
 	<div class="content">{{=content}}</div>

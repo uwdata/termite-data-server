@@ -34,10 +34,9 @@
 	<div class="content">{{=content}}</div>
 {{pass}}
 {{if configs['is_graph']:}}
-	<div class="content">
-		<div id="view" class="view"></div></div>
-	</div>
+	<div class="content"><div id="view" class="view"></div></div>
 {{pass}}
+</div>
 
 <script type="text/javascript">
 var spec = {
@@ -100,7 +99,7 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": true,
+					"zero": false,
 					"name": "TermTopicMatrix_scale_CircleArea",
 					"domain": {
 						"data": "TermTopicMatrix",
@@ -117,11 +116,11 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": true,
+					"zero": false,
 					"name": "TermTopicMatrix_scale_Topics",
 					"domain": {
-						"data": "TopicIndex",
-						"field": "data.index"
+						"data": "TermTopicMatrix",
+						"field": "data.topic"
 					},
 					"inheritFromGroup": false,
 					"range": "width"
@@ -131,11 +130,11 @@ var spec = {
 					"points": true,
 					"nice": true,
 					"padding": 0,
-					"zero": true,
+					"zero": false,
 					"name": "TermTopicMatrix_scale_Terms",
 					"domain": {
-						"data": "TermIndex",
-						"field": "data.text"
+						"data": "TermTopicMatrix",
+						"field": "data.term"
 					},
 					"inheritFromGroup": false,
 					"range": "height"
@@ -320,5 +319,3 @@ vg.parse.spec( spec, function( chart ) {
 		.attr("download", "TermTopicMatrix.png");
 });
 </script>
-
-</div>

@@ -8,7 +8,7 @@
 
 {{
 	import urllib
-	def GetURL( keysAndValues = {} ):
+	def GenerateQueryString( keysAndValues = {} ):
 		query = { key : request.vars[ key ] for key in request.vars }
 		query.update( keysAndValues )
 		for key in query.keys():
@@ -16,13 +16,22 @@
 				del query[ key ]
 			pass
 		if len(query) > 0:
-			return configs['url'] + '?' + urllib.urlencode(query)
+			return '?' + urllib.urlencode(query)
 		else:
-			return configs['url']
+			return ''
 		pass
+	pass
+	def GenerateURL( keysAndValues = {} ):
+		return configs['url'] + GenerateQueryString( keysAndValues )
 	pass
 }}
 
+{{
+	import json
+	def AsJSON( data ):
+		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	pass
+}}
 <body>
 	{{include}}
 </body>
