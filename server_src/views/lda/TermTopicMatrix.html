@@ -7,14 +7,14 @@
 		<div class="param">termLimit = 
 			<select onchange="onSelectParam(this)">
 				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{response.write(GenerateURL({'termLimit':n}),escape=False)}}" {{if params['termLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{response.write(GenerateURL({'termLimit':n}),escape=False)}}" {{if TermLimit == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
 		<div class="param">termOffset = 
 			<select onchange="onSelectParam(this)">
 				{{for n in range(0,100,5):}}
-					<option value="{{response.write(GenerateURL({'termOffset':n}),escape=False)}}" {{if params['termOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+					<option value="{{response.write(GenerateURL({'termOffset':n}),escape=False)}}" {{if TermOffset == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
 			</select>
 		</div>
@@ -25,8 +25,8 @@
 		<span class="format">(
 			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
 			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">JSON object</a> | 
-			<a href="{{=GenerateURL({'format':'lyra'})}}">Lyra table</a>
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
+			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
 		)</span>
 	</div>
 
@@ -34,288 +34,291 @@
 	<div class="content">{{=content}}</div>
 {{pass}}
 {{if configs['is_graph']:}}
-	<div class="content"><div id="view" class="view"></div></div>
+	<div class="content">
+		<div id="view" class="view"></div></div>
+	</div>
 {{pass}}
 
-{{if configs['is_graph']:}}
 <script type="text/javascript">
 var spec = {
-  "width": 50 + 16 * {{=TermCount}},
-  "height": 50 + 16 * {{=TopicCount}},
-  "padding": "auto",
-  "data": [
-    {
-      "name": "pipeline_0"
-    }
-  ],
-  "scales": [],
-  "marks": [
-    {
-      "properties": {
-        "enter": {
-          "x": {
-            "value": 0
-          },
-          "width": {
-            "value": 50 + 16 * {{=TopicCount}}
-          },
-          "y": {
-            "value": 0
-          },
-          "height": {
-            "value": 50 + 16 * {{=TermCount}}
-          },
-          "clip": {
-            "value": 0
-          },
-          "fill": {
-            "value": "#ffffff"
-          },
-          "fillOpacity": {
-            "value": 0
-          },
-          "stroke": {
-            "value": "#000000"
-          },
-          "strokeWidth": {
-            "value": 0
-          }
-        }
-      },
-      "scales": [
-        {
-          "type": "linear",
-          "points": true,
-          "nice": true,
-          "padding": 0,
-          "zero": true,
-          "name": "pipeline_0_scale_r1396474615824",
-          "domain": {
-            "data": "pipeline_0",
-            "field": "data.value"
-          },
-          "inheritFromGroup": false,
-          "range": [
-            -1,
-            1000
-          ]
-        },
-        {
-          "type": "linear",
-          "points": true,
-          "nice": true,
-          "padding": 0,
-          "zero": true,
-          "name": "pipeline_0_scale_r1396474630516",
-          "domain": {
-            "data": "pipeline_0",
-            "field": "data.topic"
-          },
-          "inheritFromGroup": false,
-          "range": "width"
-        },
-        {
-          "type": "ordinal",
-          "points": true,
-          "nice": true,
-          "padding": 0,
-          "zero": true,
-          "name": "pipeline_0_scale_r1396474634329",
-          "domain": {
-            "data": "pipeline_0",
-            "field": "data.term"
-          },
-          "inheritFromGroup": false,
-          "range": "height"
-        }
-      ],
-      "axes": [
-        {
-          "type": "x",
-          "orient": "top",
-          "scale": "pipeline_0_scale_r1396474630516",
-          "title": ".",
-          "layer": "back",
-          "ticks": 20,
-          "tickSize": 6,
-          "titleOffset": 35,
-          "grid": true,
-          "properties": {
-            "ticks": {
-              "stroke": {
-                "value": "#000"
-              },
-              "strokeWidth": {
-                "value": "0"
-              }
-            },
-            "labels": {
-              "fontSize": {
-                "value": 11
-              },
-              "font": {
-                "value": "Helvetica"
-              },
-              "angle": {
-                "value": 0
-              },
-              "fill": {
-                "value": "#000"
-              }
-            },
-            "title": {
-              "font": {
-                "value": "Helvetica"
-              },
-              "fontSize": {
-                "value": 11
-              },
-              "fontWeight": {
-                "value": "bold"
-              },
-              "fill": {
-                "value": "#000"
-              }
-            },
-            "axis": {
-              "stroke": {
-                "value": "#000"
-              },
-              "strokeWidth": {
-                "value": "0"
-              }
-            },
-            "grid": {
-              "stroke": {
-                "value": "#d8d8d8"
-              },
-              "strokeWidth": {
-                "value": 1
-              }
-            }
-          }
-        },
-        {
-          "type": "y",
-          "orient": "left",
-          "scale": "pipeline_0_scale_r1396474634329",
-          "title": ".",
-          "layer": "back",
-          "ticks": 160,
-          "tickSize": 6,
-          "titleOffset": 35,
-          "grid": true,
-          "properties": {
-            "ticks": {
-              "stroke": {
-                "value": "#000"
-              },
-              "strokeWidth": {
-                "value": "0"
-              }
-            },
-            "labels": {
-              "fontSize": {
-                "value": 11
-              },
-              "font": {
-                "value": "Helvetica"
-              },
-              "angle": {
-                "value": 0
-              },
-              "fill": {
-                "value": "#000"
-              }
-            },
-            "title": {
-              "font": {
-                "value": "Helvetica"
-              },
-              "fontSize": {
-                "value": 11
-              },
-              "fontWeight": {
-                "value": "bold"
-              },
-              "fill": {
-                "value": "#000"
-              }
-            },
-            "axis": {
-              "stroke": {
-                "value": "#000"
-              },
-              "strokeWidth": {
-                "value": "0"
-              }
-            },
-            "grid": {
-              "stroke": {
-                "value": "#d8d8d8"
-              },
-              "strokeWidth": {
-                "value": 1
-              }
-            }
-          }
-        }
-      ],
-      "marks": [
-        {
-          "properties": {
-            "enter": {
-              "x": {
-                "scale": "pipeline_0_scale_r1396474630516",
-                "field": "data.topic"
-              },
-              "y": {
-                "scale": "pipeline_0_scale_r1396474634329",
-                "field": "data.term"
-              },
-              "size": {
-                "scale": "pipeline_0_scale_r1396474615824",
-                "field": "data.value"
-              },
-              "shape": {
-                "value": "circle"
-              },
-              "fill": {
-                "value": "#4682b4"
-              },
-              "fillOpacity": {
-                "value": 1
-              },
-              "stroke": {
-                "value": "#000000"
-              },
-              "strokeWidth": {
-                "value": 0.25
-              }
-            }
-          },
-          "name": "symbol_1396474589329",
-          "type": "symbol",
-          "from": {
-            "data": "pipeline_0"
-          }
-        }
-      ],
-      "name": "layer_0",
-      "type": "group",
-      "from": {}
-    }
-  ]
+	"width": 120 + 16 * {{=TopicCount}},
+	"height": 50 + 16 * {{=TermCount}},
+	"padding": {
+		"top" : 40,
+		"bottom" : 10,
+		"left" : 110,
+		"right" : 10
+	},
+	"data": [
+		{
+			"name": "TermIndex"
+		},
+		{
+			"name": "TopicIndex"
+		},
+		{
+			"name": "TermTopicMatrix"
+		}
+	],
+	"scales": [],
+	"marks": [
+		{
+			"properties": {
+				"enter": {
+					"x": {
+						"value": 0
+					},
+					"width": {
+						"value": 16 * {{=TopicCount}}
+					},
+					"y": {
+						"value": 0
+					},
+					"height": {
+						"value": 16 * {{=TermCount}}
+					},
+					"clip": {
+						"value": 0
+					},
+					"fill": {
+						"value": "#fff"
+					},
+					"fillOpacity": {
+						"value": 0
+					},
+					"stroke": {
+						"value": "#000000"
+					},
+					"strokeWidth": {
+						"value": 0
+					}
+				}
+			},
+			"scales": [
+				{
+					"type": "linear",
+					"points": true,
+					"nice": true,
+					"padding": 0,
+					"zero": true,
+					"name": "TermTopicMatrix_scale_CircleArea",
+					"domain": {
+						"data": "TermTopicMatrix",
+						"field": "data.value"
+					},
+					"inheritFromGroup": false,
+					"range": [
+						-1,
+						1000
+					]
+				},
+				{
+					"type": "linear",
+					"points": true,
+					"nice": true,
+					"padding": 0,
+					"zero": true,
+					"name": "TermTopicMatrix_scale_Topics",
+					"domain": {
+						"data": "TopicIndex",
+						"field": "data.index"
+					},
+					"inheritFromGroup": false,
+					"range": "width"
+				},
+				{
+					"type": "ordinal",
+					"points": true,
+					"nice": true,
+					"padding": 0,
+					"zero": true,
+					"name": "TermTopicMatrix_scale_Terms",
+					"domain": {
+						"data": "TermIndex",
+						"field": "data.text"
+					},
+					"inheritFromGroup": false,
+					"range": "height"
+				}
+			],
+			"axes": [
+				{
+					"type": "x",
+					"orient": "top",
+					"scale": "TermTopicMatrix_scale_Topics",
+					"layer": "back",
+					"ticks": 20,
+					"tickSize": 12,
+					"titleOffset": 0,
+					"grid": true,
+					"properties": {
+						"ticks": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": "0"
+							}
+						},
+						"labels": {
+							"fontSize": {
+								"value": 11
+							},
+							"font": {
+								"value": "Helvetica"
+							},
+							"angle": {
+								"value": -60
+							},
+							"fill": {
+								"value": "#444"
+							},
+							"text": {
+								"field": "data"
+							},
+							"dy": {
+								"value": 7
+							}
+						},
+						"axis": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": "0"
+							}
+						},
+						"grid": {
+							"stroke": {
+								"value": "#ddd"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						}
+					}
+				},
+				{
+					"type": "y",
+					"orient": "left",
+					"scale": "TermTopicMatrix_scale_Terms",
+					"layer": "back",
+					"ticks": 160,
+					"tickSize": 12,
+					"titleOffset": 0,
+					"grid": true,
+					"properties": {
+						"ticks": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": "0"
+							}
+						},
+						"labels": {
+							"fontSize": {
+								"value": 11
+							},
+							"font": {
+								"value": "Helvetica"
+							},
+							"angle": {
+								"value": 0
+							},
+							"fill": {
+								"value": "#444"
+							}
+						},
+						"axis": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": "0"
+							}
+						},
+						"grid": {
+							"stroke": {
+								"value": "#ddd"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						}
+					}
+				}
+			],
+			"marks": [
+				{
+					"properties": {
+						"enter": {
+							"x": {
+								"scale": "TermTopicMatrix_scale_Topics",
+								"field": "data.topic"
+							},
+							"y": {
+								"scale": "TermTopicMatrix_scale_Terms",
+								"field": "data.term"
+							},
+							"size": {
+								"scale": "TermTopicMatrix_scale_CircleArea",
+								"field": "data.value"
+							},
+							"shape": {
+								"value": "circle"
+							},
+							"fillOpacity": {
+								"value": 0.25
+							},
+							"strokeWidth": {
+								"value": 0.5
+							}
+						},
+						"update": {
+							"fill": {
+								"value": "#999"
+							},
+							"stroke": {
+								"value": "#999"
+							}
+						},
+						"hover": {
+							"fill": {
+								"value": "#d62728"
+							},
+							"stroke": {
+								"value": "#d62728"
+							}
+						}
+					},
+					"name": "symbol_1396474589329",
+					"type": "symbol",
+					"from": {
+						"data": "TermTopicMatrix"
+					}
+				}
+			],
+			"name": "layer_0",
+			"type": "group",
+			"from": {}
+		}
+	]
 };
 
 var data = {
-	"pipeline_0" : {{response.write(AsJSON(TermTopicMatrix),escape=False)}}
+	"TermTopicMatrix" : {{response.write(AsJSON(TermTopicMatrix),escape=False)}},
+	"TermIndex" : {{response.write(AsJSON(TermIndex),escape=False)}},
+	"TopicIndex" : {{response.write(AsJSON(TopicIndex),escape=False)}}
 };
 
 vg.parse.spec( spec, function( chart ) {
 	var view = chart({ el:"#view", data:data }).update();
+	var png = $('#view canvas')[0].toDataURL('image/png');
+	d3.select("#SaveAsPNG")
+		.attr("href", png)
+		.attr("download", "TermTopicMatrix.png");
 });
 </script>
-{{pass}}
 
 </div>

@@ -176,7 +176,7 @@ class TermiteCore( object ):
 		return 'format' in self.request.vars and 'lyra' == self.request.vars['format'].lower()
 	
 	def IsMachineFormat( self ):
-		return self.IsJsonFormat()
+		return self.IsJsonFormat() or self.IsGraphFormat() or self.IsLyraFormat()
 	
 	def GetLyraField( self ):
 		if 'lyra' in self.request.vars:

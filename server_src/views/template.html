@@ -33,12 +33,10 @@
 }}
 
 {{
-if configs['is_graph']:
 	import json
 	def AsJSON( data ):
 		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
 	pass
-pass
 }}
 <body>
 	{{include}}
