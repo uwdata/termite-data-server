@@ -61,7 +61,7 @@ class TermiteCore( object ):
 	def GetModels( self, dataset ):
 		if dataset in TermiteCore.EXCLUDED_FOLDERS:
 			return None
-		folders = [ 'vis' ]
+		folders = [ 'vis', 'charts' ]
 		app_data_path = '{}/data'.format( self.request.folder )
 		for folder in os.listdir( app_data_path ):
 			app_data_subpath = '{}/{}'.format( app_data_path, folder )
@@ -112,6 +112,10 @@ class TermiteCore( object ):
 				'TermG2',
 				'TermSentencePMI',
 				'TermSentenceG2'
+			]
+		if model == 'charts':
+			return [
+				'ScatterPlot'
 			]
 		if model == 'vis':
 			return [

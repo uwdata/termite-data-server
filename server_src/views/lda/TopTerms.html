@@ -20,7 +20,7 @@
 		</div>
 		<div class="param">topicIndex = 
 			<select onchange="onSelectParam(this)">
-				<option value="{{WriteURL({'topicIndex':None})}}" {{if 'topicIndex' in params:}}selected="selected"{{pass}}>&mdash;</option>
+				<option value="{{WriteURL({'topicIndex':None})}}" {{if params['topicIndex'] is None:}}selected="selected"{{pass}}>&mdash;</option>
 				{{for n in range(0,TopicMaxCount):}}
 					<option value="{{WriteURL({'topicIndex':n})}}" {{if params['topicIndex'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}
@@ -323,7 +323,7 @@ var data = {
 };
 
 vg.parse.spec( spec, function( chart ) {
-	var view = chart({ el:"#view", data:data }).update();
+	view = chart({ el:"#view", data:data }).update();
 	var png = $('#view canvas')[0].toDataURL('image/png');
 	d3.select("#SaveAsPNG")
 		.attr("href", png)

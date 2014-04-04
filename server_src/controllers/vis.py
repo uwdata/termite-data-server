@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from core import TermiteCore
-from GroupInABox import GroupInABox as GroupInABoxModel
-from CovariateChart import CovariateChart as CovariateChartModel
+from vis.GroupInABox import GroupInABox as GroupInABoxModel
+from vis.CovariateChart import CovariateChart as CovariateChartModel
 
 def index():
 	core = TermiteCore( request, response )

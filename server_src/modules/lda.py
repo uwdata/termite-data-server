@@ -114,7 +114,8 @@ class LDA( TermiteCore ):
 		# Responses
 		self.content.update({
 			'TopicIndex' : table,
-			'TopicCount' : topicCount
+			'TopicCount' : topicCount,
+			'TopicMaxCount' : topicCount
 		})
 		self.table = table
 		self.header = header

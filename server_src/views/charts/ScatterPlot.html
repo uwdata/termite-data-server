@@ -1,0 +1,54 @@
+{{extend 'template.html'}}
+{{include 'attribute.html'}}
+
+<div class="body">
+	<div class="heading">Request Parameters</div>
+	<div class="params">
+		<div class="param">firstDim = 
+			<select onchange="onSelectParam(this)">
+				<option value="{{WriteURL({'firstDim':None})}}" {{if params['firstDim'] is None:}}selected="selected"{{pass}}>&mdash;</option>
+				{{for dim in Dimensions:}}
+					{{if dim['type'] == 'number':}}
+						<option value="{{WriteURL({'firstDim':dim['name']})}}" {{if params['firstDim'] == dim['name']:}}selected="selected"{{pass}}>{{=dim['name']}}</option>
+					{{pass}}
+				{{pass}}
+			</select>
+		</div>
+		<div class="param">secondDim = 
+			<select onchange="onSelectParam(this)">
+				<option value="{{WriteURL({'secondDim':None})}}" {{if params['secondDim'] is None:}}selected="selected"{{pass}}>&mdash;</option>
+				{{for dim in Dimensions:}}
+					{{if dim['type'] == 'number':}}
+						<option value="{{WriteURL({'secondDim':dim['name']})}}" {{if params['secondDim'] == dim['name']:}}selected="selected"{{pass}}>{{=dim['name']}}</option>
+					{{pass}}
+				{{pass}}
+			</select>
+		</div>
+		<div class="param">docLimit = 
+			<select onchange="onSelectParam(this)">
+				{{for n in [5,10,20,50,100,200,500]:}}
+					<option value="{{WriteURL({'docLimit':n})}}" {{if params['docLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
+				{{pass}}
+			</select>
+		</div>
+		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
+	</div>
+
+	<div class="heading">Server Response
+		<span class="format">(
+			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
+			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
+			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
+			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> | 
+			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
+		)</span>
+	</div>
+
+{{if configs['is_text']:}}
+	<div class="content">{{=content}}</div>
+{{pass}}
+{{if configs['is_graph']:}}
+	<div class="content"><div id="view" class="view"></div></div>
+{{pass}}
+</div>

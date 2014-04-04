@@ -20,7 +20,7 @@
 		</div>
 		<div class="param">topicIndex = 
 			<select onchange="onSelectParam(this)">
-				<option value="{{WriteURL({'topicIndex':None})}}" {{if 'topicIndex' in params:}}selected="selected"{{pass}}>&mdash;</option>
+				<option value="{{WriteURL({'topicIndex':None})}}" {{if params['topicIndex'] is None:}}selected="selected"{{pass}}>&mdash;</option>
 				{{for n in range(0,TopicMaxCount):}}
 					<option value="{{WriteURL({'topicIndex':n})}}" {{if params['topicIndex'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
 				{{pass}}

@@ -21,14 +21,14 @@ def TermFreqs():
 	corpus.LoadTermFreqs()
 	return corpus.GenerateResponse()
 
-def TermCoFreqs():
-	corpus = Corpus( request, response )
-	corpus.LoadTermCoFreqs()
-	return corpus.GenerateResponse()
-
 def TermProbs():
 	corpus = Corpus( request, response )
 	corpus.LoadTermProbs()
+	return corpus.GenerateResponse()
+
+def TermCoFreqs():
+	corpus = Corpus( request, response )
+	corpus.LoadTermCoFreqs()
 	return corpus.GenerateResponse()
 
 def TermCoProbs():
@@ -41,14 +41,14 @@ def TermPMI():
 	corpus.LoadTermPMI()
 	return corpus.GenerateResponse()
 
-def TermSentencePMI():
-	corpus = Corpus( request, response )
-	corpus.LoadTermSentencePMI()
-	return corpus.GenerateResponse()
-
 def TermG2():
 	corpus = Corpus( request, response )
 	corpus.LoadTermG2()
+	return corpus.GenerateResponse()
+
+def TermSentencePMI():
+	corpus = Corpus( request, response )
+	corpus.LoadTermSentencePMI()
 	return corpus.GenerateResponse()
 
 def TermSentenceG2():
