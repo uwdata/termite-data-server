@@ -4,23 +4,19 @@
 <div class="body">
 	<div class="heading">Request Parameters</div>
 	<div class="params">
-		<div class="param">firstDim = 
+		<div class="param">xAxis = 
 			<select onchange="onSelectParam(this)">
-				<option value="{{WriteURL({'firstDim':None})}}" {{if params['firstDim'] is None:}}selected="selected"{{pass}}>&mdash;</option>
-				{{for dim in Dimensions:}}
-					{{if dim['type'] == 'number':}}
-						<option value="{{WriteURL({'firstDim':dim['name']})}}" {{if params['firstDim'] == dim['name']:}}selected="selected"{{pass}}>{{=dim['name']}}</option>
-					{{pass}}
+				<option value="{{WriteURL({'xAxis':None})}}" {{if params['xAxis'] is None:}}selected="selected"{{pass}}>&mdash;</option>
+				{{for dim in AvailableXDims:}}
+					<option value="{{WriteURL({'xAxis':dim['name']})}}" {{if params['xAxis'] == dim['name']:}}selected="selected"{{pass}}>{{=dim['label']}}</option>
 				{{pass}}
 			</select>
 		</div>
-		<div class="param">secondDim = 
+		<div class="param">yAxis = 
 			<select onchange="onSelectParam(this)">
-				<option value="{{WriteURL({'secondDim':None})}}" {{if params['secondDim'] is None:}}selected="selected"{{pass}}>&mdash;</option>
-				{{for dim in Dimensions:}}
-					{{if dim['type'] == 'number':}}
-						<option value="{{WriteURL({'secondDim':dim['name']})}}" {{if params['secondDim'] == dim['name']:}}selected="selected"{{pass}}>{{=dim['name']}}</option>
-					{{pass}}
+				<option value="{{WriteURL({'yAxis':None})}}" {{if params['yAxis'] is None:}}selected="selected"{{pass}}>&mdash;</option>
+				{{for dim in AvailableYDims:}}
+					<option value="{{WriteURL({'yAxis':dim['name']})}}" {{if params['yAxis'] == dim['name']:}}selected="selected"{{pass}}>{{=dim['label']}}</option>
 				{{pass}}
 			</select>
 		</div>
@@ -52,3 +48,271 @@
 	<div class="content"><div id="view" class="view"></div></div>
 {{pass}}
 </div>
+
+<script type="text/javascript">
+var spec = {
+	"width": 800,
+	"height": 600,
+	"padding": {
+		"left" : 60,
+		"right" : 20,
+		"top" : 20,
+		"bottom" : 40
+	},
+	"data": [
+		{
+			"name": "ScatterPlot",
+		}
+	],
+	"scales": [],
+	"marks": [
+		{
+			"properties": {
+				"enter": {
+					"x": {
+						"value": 0
+					},
+					"width": {
+						"value": 720
+					},
+					"y": {
+						"value": 0
+					},
+					"height": {
+						"value": 540
+					},
+					"clip": {
+						"value": 0
+					},
+					"fill": {
+						"value": "#ffffff"
+					},
+					"fillOpacity": {
+						"value": 1
+					},
+					"stroke": {
+						"value": "#000000"
+					},
+					"strokeWidth": {
+						"value": 0
+					}
+				}
+			},
+			"scales": [
+				{
+					"type": "linear",
+					"points": true,
+					"nice": false,
+					"padding": 0,
+					"zero": true,
+					"name": "ScatterPlot_scale_xAxis",
+					"domain": {
+						"data": "ScatterPlot",
+						"field": "data.x"
+					},
+					"inheritFromGroup": false,
+					"range": "width"
+				},
+				{
+					"type": "linear",
+					"points": true,
+					"nice": true,
+					"padding": 0,
+					"zero": true,
+					"name": "ScatterPlot_scale_yAxis",
+					"domain": {
+						"data": "ScatterPlot",
+						"field": "data.y"
+					},
+					"inheritFromGroup": false,
+					"range": "height"
+				}
+			],
+			"axes": [
+				{
+					"type": "x",
+					"orient": "bottom",
+					"scale": "ScatterPlot_scale_xAxis",
+					"title": "X",
+					"layer": "back",
+					"ticks": 10,
+					"tickSize": 6,
+					"titleOffset": 35,
+					"properties": {
+						"ticks": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						},
+						"labels": {
+							"fontSize": {
+								"value": 11
+							},
+							"font": {
+								"value": "Helvetica"
+							},
+							"angle": {
+								"value": 0
+							},
+							"fill": {
+								"value": "#000"
+							}
+						},
+						"title": {
+							"font": {
+								"value": "Helvetica"
+							},
+							"fontSize": {
+								"value": 11
+							},
+							"fontWeight": {
+								"value": "bold"
+							},
+							"fill": {
+								"value": "#000"
+							}
+						},
+						"axis": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						},
+						"grid": {
+							"stroke": {
+								"value": "#d8d8d8"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						}
+					}
+				},
+				{
+					"type": "y",
+					"orient": "left",
+					"scale": "ScatterPlot_scale_yAxis",
+					"title": "Y",
+					"layer": "back",
+					"ticks": 10,
+					"tickSize": 6,
+					"titleOffset": 35,
+					"properties": {
+						"ticks": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						},
+						"labels": {
+							"fontSize": {
+								"value": 11
+							},
+							"font": {
+								"value": "Helvetica"
+							},
+							"angle": {
+								"value": 0
+							},
+							"fill": {
+								"value": "#000"
+							}
+						},
+						"title": {
+							"font": {
+								"value": "Helvetica"
+							},
+							"fontSize": {
+								"value": 11
+							},
+							"fontWeight": {
+								"value": "bold"
+							},
+							"fill": {
+								"value": "#000"
+							}
+						},
+						"axis": {
+							"stroke": {
+								"value": "#000"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						},
+						"grid": {
+							"stroke": {
+								"value": "#d8d8d8"
+							},
+							"strokeWidth": {
+								"value": 1
+							}
+						}
+					}
+				}
+			],
+			"marks": [
+				{
+					"properties": {
+						"enter": {
+							"x": {
+								"scale": "ScatterPlot_scale_xAxis",
+								"field": "data.x"
+							},
+							"y": {
+								"scale": "ScatterPlot_scale_yAxis",
+								"field": "data.y"
+							},
+							"size": {
+								"value": 100
+							},
+							"shape": {
+								"value": "circle"
+							},
+							"fill": {
+								"value": "#4682b4"
+							},
+							"fillOpacity": {
+								"value": 1
+							},
+							"stroke": {
+								"value": "#000000"
+							},
+							"strokeWidth": {
+								"value": 0.25
+							}
+						}
+					},
+					"name": "symbol_1396640516071",
+					"type": "symbol",
+					"from": {
+						"data": "ScatterPlot"
+					}
+				}
+			],
+			"name": "layer_0",
+			"type": "group",
+			"from": {}
+		}
+	]
+};
+
+var data = {
+	"ScatterPlot" : {{WriteJSON(ScatterPlot)}}
+};
+
+vg.parse.spec( spec, function( chart ) {
+	var view = chart({ el:"#view", data:data }).update();
+	var png = $('#view canvas')[0].toDataURL('image/png');
+	d3.select("#SaveAsPNG")
+		.attr("href", png)
+		.attr("download", "ScatterPlot.png");
+});
+</script>

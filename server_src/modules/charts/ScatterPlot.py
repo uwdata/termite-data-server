@@ -19,11 +19,11 @@ class ScatterPlot( TermiteCore ):
 				value = self.GetNonNegativeIntegerParam( key, 5 )
 			self.params.update({ key : value })
 		
-		if key == 'firstDim':
+		if key == 'xAxis':
 			value = self.GetStringParam( key )
 			self.params.update({ key : value })
 		
-		if key == 'secondDim':
+		if key == 'yAxis':
 			value = self.GetStringParam( key )
 			self.params.update({ key : value })
 			
@@ -65,7 +65,7 @@ class ScatterPlot( TermiteCore ):
 			allTopics = json.load( f, encoding = 'utf-8' )
 
 		# Processing
-		table = [ { 'index' : index, 'name' : 'Topic #{}'.format(topic['index']+1) } for index, topic in enumerate(allTopics) ]
+		table = [ { 'index' : index, 'name' : 'Topic #{}'.format(topic['index']) } for index, topic in enumerate(allTopics) ]
 		header = [
 			{ 'name' : 'index', 'type' : 'number' },
 			{ 'name' : 'name', 'type' : 'string' }
@@ -80,16 +80,34 @@ class ScatterPlot( TermiteCore ):
 		})
 		self.table = table
 		self.header = header
+		
+	def LoadTopTerms( self ):
+		def GetTopTerms( vector, index ):
+			allTerms = sorted( vector.iterkeys(), key = lambda x : -vector[x] )
+			subTerms = allTerms[:5]
+			return ', '.join(subTerms)
+
+		# Load from disk
+		filename = os.path.join( self.request.folder, 'data/lda', 'topic-term-matrix.json' )
+		with open( filename ) as f:
+			matrix = json.load( f, encoding = 'utf-8' )
+
+		# Processing
+		topTerms = []
+		for index, vector in enumerate(matrix):
+			topTerms.append( GetTopTerms( vector, index ) )
+		return topTerms
 	
 	def PrepareChart( self ):
 		# Parameters
 		self.LoadTopicIndex()
 		self.LoadDocIndex()
+		topTerms = self.LoadTopTerms()
 		topicIndex = self.content['TopicIndex']
 		docLimit = self.GetParam('docLimit')
 		docOffset = self.GetParam('docOffset')
-		firstDim = self.GetParam('firstDim')
-		secondDim = self.GetParam('secondDim')
+		xAxis = self.GetParam('xAxis')
+		yAxis = self.GetParam('yAxis')
 		
 		# Load from disk
 		filename = os.path.join( self.request.folder, 'data/lda', 'doc-topic-matrix.json' )
@@ -102,17 +120,19 @@ class ScatterPlot( TermiteCore ):
 			corpusData = corpus['data']
 			
 		# Processing
-		dimensions = corpusHeader
-		dimensions += [ { 'name' : d['name'], 'index' : d['index'], 'type' : 'number' } for d in topicIndex ]
+		xDimensions = [ { 'name' : d['name'], 'label' : d['name'], 'type' : d['type'] } for d in corpusHeader if d['type'] == 'number' ]
+		yDimensions = [ { 'name' : d['name'], 'label' : d['name'], 'type' : d['type'] } for d in corpusHeader if d['type'] == 'number' ]
+		xDimensions += [ { 'name' : d['name'], 'label' : '{}: {}'.format(d['name'], topTerms[index]), 'index' : d['index'], 'type' : 'number' } for index, d in enumerate(topicIndex) ]
+		yDimensions += [ { 'name' : d['name'], 'label' : '{}: {}'.format(d['name'], topTerms[index]), 'index' : d['index'], 'type' : 'number' } for index, d in enumerate(topicIndex) ]
 		header = [
-			{ 'name' : 'DocID', 'type' : 'string' }
+			{ 'name' : 'DocID', 'type' : 'string' },
 		]
-		for dimension in dimensions:
-			if dimension['name'] == firstDim:
-				header.append(dimension)
-		for dimension in dimensions:
-			if dimension['name'] == secondDim:
-				header.append(dimension)
+		for d in xDimensions:
+			if d['name'] == xAxis:
+				header.append( { 'name' : 'x', 'type' : d['type'] } )
+		for d in yDimensions:
+			if d['name'] == yAxis:
+				header.append( { 'name' : 'y', 'type' : d['type'] } )
 		fullTable = corpusData.values()
 		subTable = fullTable[docOffset:docOffset+docLimit]
 		table = []
@@ -120,19 +140,24 @@ class ScatterPlot( TermiteCore ):
 			docID = record['DocID']
 			row = { 'DocID' : docID }
 			for key in record.iterkeys():
-				if key == firstDim or key == secondDim:
-					row[key] = record[key]
+				if key == xAxis:
+					row['x'] = int(record[key])
+				if key == yAxis:
+					row['y'] = int(record[key])
 			for d in topicIndex:
-				if d['name'] == firstDim or d['name'] == secondDim:
-					row[d['name']] = matrix[docID][d['index']]
+				if d['name'] == xAxis:
+					row['x'] = matrix[docID][d['index']]
+				if d['name'] == yAxis:
+					row['y'] = matrix[docID][d['index']]
 			table.append(row)
 		docCount = len(table)
 		docMaxCount = len(fullTable)
 		
 		self.content.update({
-			'Dimensions' : dimensions,
-			'Header' : header,
-			'Data' : table
+			'ScatterPlot' : table,
+			'Axes' : header,
+			'AvailableXDims' : xDimensions,
+			'AvailableYDims' : yDimensions
 		})
 		self.table = table
 		self.header = header
