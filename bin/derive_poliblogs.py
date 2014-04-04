@@ -37,9 +37,10 @@ def ReadCSV( filename ):
 				
 				assert 'day' in record
 				year, month, day = GetDate( int(record['day']) )
-				record[ 'date' ] = '{:04d}/{:02d}/{:02d}'.format( year, month, day )
+				record['day'] = int(record['day'])
+				record['date'] = '{:04d}/{:02d}/{:02d}'.format( year, month, day )
 				
-				key = record[ 'DocID' ]
+				key = record['DocID']
 				keys.append( key )
 				documents[ key ] = record
 	return header, keys, documents
@@ -66,7 +67,7 @@ def WriteMeta( filename, header, keys, documents ):
 		for key in keys:
 			record = documents[ key ]
 			values = [ record[i] for i in header ]
-			f.write( u'{}\n'.format( u'\t'.join( values ) ).encode( 'utf-8' ) )
+			f.write( u'{}\n'.format( u'\t'.join( u'{}'.format(value) for value in values ) ).encode( 'utf-8' ) )
 
 def WriteHeader( filename ):
 	header = [
