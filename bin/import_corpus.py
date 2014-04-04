@@ -20,12 +20,15 @@ class ImportCorpus( ImportAbstraction ):
 		with open( STOPWORDS ) as f:
 			self.stopwords = f.read().decode('utf-8', 'ignore').splitlines()
 	
-	def ImportDocMeta( self, filename, fromCorpus = False ):
+	def ImportDocMeta( self, filename, fromCorpus = False, headerFilename = None ):
 		print 'Importing document metadata...'
 		print '    Reading document metadata: {}'.format( filename )
 		reader = MetaReader( filename, stopwords = self.stopwords, fromCorpus = fromCorpus )
 		meta = { docID : docMeta for docID, docMeta in reader.Load() }
 		header = reader.header
+		if headerFilename is not None:
+			with open(headerFilename) as f:
+				header = json.load(f, encoding = 'utf-8')
 		self.SaveDocMetaToDisk( header, meta )
 		self.SaveDocMetaToDB( header, meta )
 	
@@ -303,14 +306,17 @@ def main():
 	parser.add_argument( 'app_name', type = str, help = 'Web2py application identifier' )
 	parser.add_argument( 'corpus'  , type = str, help = 'Import corpus from a file or folder' )
 	parser.add_argument( 'meta'    , type = str, nargs = '?', default = None, help = 'Import document metadata from a tab-delimited file [with header and fields DocID and DocContent]' )
+	parser.add_argument( 'types'   , type = str, nargs = '?', default = None, help = 'Import document metadata types from a JSON file' )
 	args = parser.parse_args()
 	
 	importer = ImportCorpus( app_name = args.app_name )
 	if importer.AddAppFolder():
 		if args.meta is None:
 			importer.ImportDocMeta( args.corpus, fromCorpus = True )
-		else:
+		elif args.types is None:
 			importer.ImportDocMeta( args.meta )
+		else:
+			importer.ImportDocMeta( args.meta, headerFilename = args.types )
 		importer.ImportCorpusStats( args.corpus )
 		importer.ImportSentenceStats( args.corpus )
 		importer.AddToWeb2py()

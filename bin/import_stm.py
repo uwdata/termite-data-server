@@ -24,6 +24,9 @@ app.path.TopicIndex = "{DATA_PATH}/topic-index.json"
 load( file = "{MODEL_FILENAME}" )
 model = mod.out
 
+meta = read.delim( file = "{META_FILENAME}", quote = "" )
+docIDs = meta["DocID"]
+
 library( jsonlite )
 
 data.DocTopicMatrix = model$theta
@@ -33,7 +36,7 @@ data.TermTopicMatrix = exp( t( model$beta$logbeta[[1]] ) )
 temp.DocCount <- nrow(model$theta)
 temp.DocIDs <- paste( "Document #", 1:temp.DocCount, sep = "" )
 temp.DocIndex <- 1:temp.DocCount
-temp.DocIndexValues <- cbind( temp.DocIndex, temp.DocIDs )
+temp.DocIndexValues <- cbind( temp.DocIndex, docIDs )
 temp.DocIndexHeader <- c( "index", "docID" )
 colnames( temp.DocIndexValues ) <- temp.DocIndexHeader
 data.DocIndexJSON <- toJSON( as.data.frame( temp.DocIndexValues ), pretty = TRUE, digits = 10 )
@@ -79,11 +82,11 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 	def __init__( self, app_name, app_model = 'lda', app_desc = 'Structural Topic Model' ):
 		ImportAbstraction.__init__( self, app_name, app_model, app_desc )
 
-	def ImportLDA( self, model_filename ):
-		self.GenerateR( model_filename )
+	def ImportLDA( self, model_filename, meta_filename ):
+		self.GenerateR( model_filename, meta_filename )
 	
-	def GenerateR( self, model_filename ):
-		r = ImportSTM.SCRIPT.format( DATA_PATH = self.data_path, MODEL_FILENAME = model_filename )
+	def GenerateR( self, model_filename, meta_filename ):
+		r = ImportSTM.SCRIPT.format( DATA_PATH = self.data_path, MODEL_FILENAME = model_filename, META_FILENAME = meta_filename )
 		script_filename = '{}/import.r'.format( self.data_path )
 		with open( script_filename, 'w' ) as f:
 			f.write( r.encode( 'utf-8' ) )
@@ -99,11 +102,12 @@ def main():
 	parser = argparse.ArgumentParser( description = 'Import a STM topic model as a web2py application.' )
 	parser.add_argument( 'app_name'  , type = str, help = 'Web2py application identifier'               )
 	parser.add_argument( 'model'     , type = str, help = 'File containing a STM model (RData)'         )
+	parser.add_argument( 'meta'      , type = str, help = 'File containing metadata (tab-delimited)'    )
 	args = parser.parse_args()
 	
 	importer = ImportSTM( args.app_name )
 	if importer.AddAppFolder():
-		importer.ImportLDA( args.model )
+		importer.ImportLDA( args.model, args.meta )
 		importer.ResolveMatrices()
 		importer.TransposeMatrices()
 		importer.AddToWeb2py()
