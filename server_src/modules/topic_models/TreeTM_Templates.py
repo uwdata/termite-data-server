@@ -6,21 +6,21 @@ ML_ 100
 CL_ 0.00000000001
 """
 
-GENERATE_VOCAB_COMMANDS = u"""java -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.GenerateVocab \\
+GENERATE_VOCAB_COMMANDS = u"""java -Xmx8g -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.GenerateVocab \\
 	--input {filenameMallet} \\
 	--vocab {filenameVocab}"""
 
 INIT_BASH_SCRIPT = u"""#!/bin/bash
 
 echo ">> Generating correlations..."
-java -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.GenerateTree \\
+java -Xmx8g -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.GenerateTree \\
 	--vocab {filenameVocab} \\
 	--constraint {filenameConstraints} \\
 	--tree {filenameWN} \\
 	--merge-constraints false
 
 echo ">> Start training a topic model..."
-java -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
+java -Xmx8g -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
 	--input {filenameMallet} \\
 	--output-interval {finalIter} \\
 	--output-dir {filenameNextModel} \\
@@ -43,14 +43,14 @@ java -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
 RESUME_BASH_SCRIPT = u"""#!/bin/bash
 
 echo ">> Generating correlations..."
-java -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.GenerateTree \\
+java -Xmx8g -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.GenerateTree \\
 	--vocab {filenameVocab} \\
 	--constraint {filenameConstraints} \\
 	--tree {filenameWN} \\
 	--merge-constraints false
 
 echo ">> Resume training a topic model..."
-java -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
+java -Xmx8g -cp {TOOL}/class:{TOOL}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
 	--input {filenameMallet} \\
 	--output-interval {finalIter} \\
 	--output-dir {filenameNextModel} \\
