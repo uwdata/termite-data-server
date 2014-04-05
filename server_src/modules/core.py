@@ -4,7 +4,7 @@ import os
 import json
 import urllib
 import cStringIO
-from UnicodeWriter import UnicodeWriter
+from utils.UnicodeWriter import UnicodeWriter
 
 class TermiteCore( object ):
 	def __init__( self, request, response ):
