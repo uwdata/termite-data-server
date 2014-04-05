@@ -4,7 +4,7 @@ import json
 import os
 from TreeTM_Templates import HYPER_PARAMS, GENERATE_VOCAB_COMMANDS, INIT_BASH_SCRIPT, RESUME_BASH_SCRIPT
 
-class TreeTM:
+class TreeTM(object):
 	def __init__( self, toolPath = 'tools/treetm', runPath = 'data', resume = False, prevEntryID = None, numTopics = 20, finalIter = 1000 ):
 		self.toolPath = toolPath
 		self.runPath = runPath
@@ -114,8 +114,7 @@ class TreeTM:
 		removeTermsPrevious = self.ReadRemoveTermsFile()
 		self.removeTermsAll = frozenset(removeTerms)
 		self.removeTermsNew = self.removeTermsAll.difference(removeTermsPrevious)
-	
-	
+
 ################################################################################
 # File I/O Operations
 
@@ -124,18 +123,21 @@ class TreeTM:
 			"lastEntryID" : -1,
 			"numTopics" : numTopics
 		}
+		with open( self.filenameIndex, 'w' ) as f:
+			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 		
 	def ReadRunIndexFile( self ):
-		with open( self.filenameIndex ) as f:
+		with open( self.filenameIndex, 'r' ) as f:
 			data = json.load( f, encoding = 'utf-8' )
 		lastEntryID = data['lastEntryID']
 		numTopics = data['numTopics']
 		return lastEntryID, numTopics
 
 	def WriteRunIndexFile( self ):
-		with open( self.filenameIndex ) as f:
-			data = json.load( f, encoding = 'utf-8' )
-		data['lastEntryID'] = self.nextEntryID
+		data = {
+			"lastEntryID" : self.nextEntryID,
+			"numTopics" : self.numTopics
+		}
 		with open( self.filenameIndex, 'w' ) as f:
 			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
@@ -210,3 +212,4 @@ class TreeTM:
 	
 	def Execute( self ):
 		os.system( self.filenameExecute )
+		self.WriteRunIndexFile()
