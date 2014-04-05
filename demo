@@ -80,11 +80,11 @@ function __import_treetm__ {
 	echo "# Importing a TreeTM model..."
 	echo "bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH"
 	echo
-	bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH
+#	bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH
 	echo
 	echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH"
 	echo
-	bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH
+#	bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH
 	echo
 }
 
