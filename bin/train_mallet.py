@@ -4,6 +4,7 @@
 import os
 import subprocess
 import argparse
+from topic_models.LDA import LDA
 
 class TrainMallet(object):
 
@@ -41,18 +42,8 @@ class TrainMallet(object):
 			process = subprocess.call( command )
 			
 			print 'Training an LDA topic model: [{}]'.format(model_path)
-			command = [
-				mallet_executable, 'train-topics'
-				'--input', model_filename,
-				'--output-model', '{}/output.model'.format(model_path),
-				'--output-topic-keys', '{}/output-topic-keys.txt'.format(model_path),
-				'--topic-word-weights-file', '{}/topic-word-weights.txt'.format(model_path),
-				'--output-doc-topics', '{}/doc-topic-mixtures.txt'.format(model_path),
-				'--word-topic-counts-file', '{}/word-topic-counts.txt'.format(model_path),
-				'--num-topics', num_topics,
-				'--num-iterations', num_iters
-			]
-			process = subprocess.call( command )
+			lda = LDA( malletPath = self.MALLET_PATH, modelPath = model_path, numTopics = num_topics, numIters = num_iters )
+			lda.Execute()
 
 			print '--------------------------------------------------------------------------------'
 		else:
