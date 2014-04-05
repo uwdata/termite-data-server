@@ -49,9 +49,9 @@ function __fetch_fomc__ {
 function __train_mallet__ {
 	bin/setup_mallet.sh
 	echo "# Training a MALLET LDA topic model..."
-	echo "bin/train_mallet.sh $CORPUS_PATH $MODEL_PATH"
+	echo "bin/train_mallet.py $CORPUS_PATH $MODEL_PATH"
 	echo
-	bin/train_mallet.sh $CORPUS_PATH $MODEL_PATH
+	bin/train_mallet.py $CORPUS_PATH $MODEL_PATH
 	echo
 }
 
