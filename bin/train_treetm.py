@@ -30,10 +30,10 @@ class TrainTreeTM(object):
 			model_filename = '{}/corpus.mallet'.format( model_path )
 			
 			if os.path.isdir( corpus_path ):
-				print 'Importing a folder into Mallet: [{}] --> [{}]'.format( corpus_path, model_filename )
+				print 'Importing a folder using MALLET: [{}] --> [{}]'.format( corpus_path, model_filename )
 				command = [ mallet_executable, 'import-dir' ]
 			else:
-				print 'Importing a file into Mallet: [{}] --> [{}]'.format( corpus_path, model_filename )
+				print 'Importing a file using MALLET: [{}] --> [{}]'.format( corpus_path, model_filename )
 				command = [ mallet_executable, 'import-file' ]
 			command += [ '--input', corpus_path ]
 			command += [ '--output', model_filename ]
@@ -52,7 +52,7 @@ class TrainTreeTM(object):
 			print '    Already available: {}'.format( model_path )
 
 def main():
-	parser = argparse.ArgumentParser( description = 'Train a gensim topic model.' )
+	parser = argparse.ArgumentParser( description = 'Train an interactive topic model.' )
 	parser.add_argument( 'corpus_path', type = str , help = 'Input text corpus as a folder or a file' )
 	parser.add_argument( 'model_path' , type = str , help = 'Output model path'                       )
 	parser.add_argument( '--topics'     , dest = 'topics'     , type = int , help = 'Number of topics'    , default = 20              )
