@@ -1,35 +1,113 @@
 #!/usr/bin/env python
 
-import json
 import os
-from TreeTM_Templates import HYPER_PARAMS, GENERATE_VOCAB_COMMANDS, INIT_BASH_SCRIPT, RESUME_BASH_SCRIPT
+import json
+import subprocess
+
+HYPER_PARAMS = u"""DEFAULT_ 0.01
+NL_ 0.01
+ML_ 100
+CL_ 0.00000000001
+"""
+
+GENERATE_VOCAB_COMMANDS = u"""java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.GenerateVocab \\
+	--input {filenameMallet} \\
+	--vocab {filenameVocab}"""
+
+INIT_BASH_SCRIPT = u"""#!/bin/bash
+
+echo ">> Generate correlations..."
+java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.GenerateTree \\
+	--vocab {filenameVocab} \\
+	--constraint {filenameConstraints} \\
+	--tree {filenameWN} \\
+	--merge-constraints false
+
+echo ">> Start training a topic model..."
+java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
+	--input {filenameMallet} \\
+	--output-interval {finalIter} \\
+	--output-dir {filenameNextModel} \\
+	--vocab {filenameVocab} \\
+	--tree {filenameWN} \\
+	--tree-hyperparameters {filenameHyperparams} \\
+	--inferencer-filename {filenameInferencer} \\
+	--alpha 0.5 \\
+	--num-topics {numTopics} \\
+	--num-iterations {finalIter} \\
+	--num-top-words 480 \\
+	--random-seed 0 \\
+	--forget-topics doc \\
+	--resume false \\
+	--constraint {filenameConstraints} \\
+	--remove-words {filenameRemoveTermsPrefix} \\
+	--keep {filenameKeepTerms}
+"""
+
+RESUME_BASH_SCRIPT = u"""#!/bin/bash
+
+echo ">> Generate correlations..."
+java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.GenerateTree \\
+	--vocab {filenameVocab} \\
+	--constraint {filenameConstraints} \\
+	--tree {filenameWN} \\
+	--merge-constraints false
+
+echo ">> Resume training a topic model..."
+java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
+	--input {filenameMallet} \\
+	--output-interval {finalIter} \\
+	--output-dir {filenameNextModel} \\
+	--vocab {filenameVocab} \\
+	--tree {filenameWN} \\
+	--tree-hyperparameters {filenameHyperparams} \\
+	--inferencer-filename {filenameInferencer} \\
+	--alpha 0.5 \\
+	--num-topics {numTopics} \\
+	--num-iterations {finalIter} \\
+	--num-top-words 480 \\
+	--random-seed 0 \\
+	--forget-topics doc \\
+	--resume true \\
+	--resume-dir {filenamePrevModel} \\
+	--constraint {filenameConstraints} \\
+	--remove-words {filenameRemoveTermsPrefix} \\
+	--keep {filenameKeepTerms}
+"""
 
 class TreeTM(object):
-	def __init__( self, toolPath = 'tools/treetm', runPath = 'data', resume = False, prevEntryID = None, numTopics = 20, finalIter = 1000 ):
-		self.toolPath = toolPath
-		self.runPath = runPath
-		self.filenameIndex       = '{runPath}/index.json'.format( runPath = self.runPath )
-		self.filenameMallet      = '{runPath}/corpus.mallet'.format( runPath = self.runPath )
-		self.filenameVocab       = '{runPath}/corpus.voc'.format( runPath = self.runPath )
-		self.filenameHyperparams = '{runPath}/tree_hyperparams'.format( runPath = self.runPath )
+	def __init__( self, corpusPath, modelsPath = 'data', tokenRegex = '\p{Alpha}{3,}', resume = False, prevEntryID = None, numTopics = 20, finalIter = 1000, MALLET_PATH = 'tools/mallet', TREETM_PATH = 'tools/treetm' ):
+		self.TREETM_PATH = TREETM_PATH
+		self.MALLET_PATH = MALLET_PATH
+		self.corpusPath = corpusPath
+		self.modelsPath = modelsPath
+		self.tokenRegex = tokenRegex
+		self.corpusInMallet = '{}/corpus.mallet'.format( self.modelsPath )
+		self.filenameIndex       = '{modelsPath}/index.json'.format( modelsPath = self.modelsPath )
+		self.filenameMallet      = '{modelsPath}/corpus.mallet'.format( modelsPath = self.modelsPath )
+		self.filenameVocab       = '{modelsPath}/corpus.voc'.format( modelsPath = self.modelsPath )
+		self.filenameHyperparams = '{modelsPath}/tree_hyperparams'.format( modelsPath = self.modelsPath )
 
 		if resume:
-			lastEntryID, numTopics = self.ReadRunIndexFile()
+			completedEntryID, nextEntryID, numTopics = self.ReadRunIndexFile()
 			if prevEntryID is None:
-				self.prevEntryID = lastEntryID
+				self.prevEntryID = completedEntryID
 			else:
 				self.prevEntryID = prevEntryID
-			self.nextEntryID = lastEntryID + 1
+			self.nextEntryID = nextEntryID
+			self.numTopics = numTopics
+			print 'Training an interactive topic model: [{}][#{}] --> [{}][#{}]'.format( self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
 		else:
-			self.CreateRunIndexFile( numTopics )
-			self.prevEntryID = 0
-			self.nextEntryID = 0
+			nextEntryID, numTopics = self.CreateRunIndexFile( numTopics )
+			self.prevEntryID = -1
+			self.nextEntryID = nextEntryID
+			self.numTopics = numTopics
+			print 'Training an interactive topic model: [{}] --> [{}][#{}]'.format( self.corpusInMallet, self.modelsPath, self.nextEntryID )
 
 		self.resume = resume
-		self.numTopics = numTopics
 		self.finalIter = finalIter
-		self.prevEntryPath = '{runPath}/entry-{prevEntryID:06d}'.format( runPath = self.runPath, prevEntryID = self.prevEntryID )
-		self.nextEntryPath = '{runPath}/entry-{nextEntryID:06d}'.format( runPath = self.runPath, nextEntryID = self.nextEntryID )
+		self.prevEntryPath = '{modelsPath}/entry-{prevEntryID:06d}'.format( modelsPath = self.modelsPath, prevEntryID = self.prevEntryID )
+		self.nextEntryPath = '{modelsPath}/entry-{nextEntryID:06d}'.format( modelsPath = self.modelsPath, nextEntryID = self.nextEntryID )
 		self.filenamePrevStates  = '{prevEntryPath}/states.json'.format( prevEntryPath = self.prevEntryPath )
 		self.filenamePrevModel   = '{prevEntryPath}/model'.format( prevEntryPath = self.prevEntryPath )
 		self.filenameNextStates  = '{nextEntryPath}/states.json'.format( nextEntryPath = self.nextEntryPath )
@@ -47,13 +125,13 @@ class TreeTM(object):
 		
 		self.HYPER_PARAMS = HYPER_PARAMS
 		self.GENERATE_VOCAB_COMMANDS = GENERATE_VOCAB_COMMANDS.format(
-			TOOL = self.toolPath, 
+			TREETM_PATH = self.TREETM_PATH, 
 			filenameMallet = self.filenameMallet, 
 			filenameVocab = self.filenameVocab
 		)
 		if resume:
 			self.EXECUTE_BASH_SCRIPT = RESUME_BASH_SCRIPT.format(
-				TOOL = self.toolPath,
+				TREETM_PATH = self.TREETM_PATH,
 				numTopics = self.numTopics,
 				finalIter = self.finalIter,
 				filenameMallet = self.filenameMallet,
@@ -69,7 +147,7 @@ class TreeTM(object):
 			)
 		else:
 			self.EXECUTE_BASH_SCRIPT = INIT_BASH_SCRIPT.format(
-				TOOL = self.toolPath,
+				TREETM_PATH = self.TREETM_PATH,
 				numTopics = self.numTopics,
 				finalIter = self.finalIter,
 				filenameMallet = self.filenameMallet,
@@ -119,25 +197,31 @@ class TreeTM(object):
 # File I/O Operations
 
 	def CreateRunIndexFile( self, numTopics ):
+		self.CreateModelPath()
 		data = {
-			"lastEntryID" : -1,
+			"completedEntryID" : -1,
+			"nextEntryID" : 1,
 			"numTopics" : numTopics
 		}
 		with open( self.filenameIndex, 'w' ) as f:
 			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+		return 0, numTopics
 		
 	def ReadRunIndexFile( self ):
 		with open( self.filenameIndex, 'r' ) as f:
 			data = json.load( f, encoding = 'utf-8' )
-		lastEntryID = data['lastEntryID']
+		completedEntryID = data['completedEntryID']
+		nextEntryID = data['nextEntryID']
 		numTopics = data['numTopics']
-		return lastEntryID, numTopics
+		data["nextEntryID"] += 1
+		with open( self.filenameIndex, 'w' ) as f:
+			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+		return completedEntryID, nextEntryID, numTopics
 
 	def WriteRunIndexFile( self ):
-		data = {
-			"lastEntryID" : self.nextEntryID,
-			"numTopics" : self.numTopics
-		}
+		with open( self.filenameIndex, 'r' ) as f:
+			data = json.load( f, encoding = 'utf-8' )
+		data["completedEntryID"] = self.nextEntryID
 		with open( self.filenameIndex, 'w' ) as f:
 			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
@@ -201,6 +285,8 @@ class TreeTM(object):
 
 	def Prepare( self ):
 		if not self.resume:
+			self.CreateModelPath()
+			self.ImportFileOrFolder()
 			self.CreateHyperparamsFile()
 			self.CreateVocabFile()
 		self.CreateEntryFolder()
@@ -209,7 +295,29 @@ class TreeTM(object):
 		self.WriteKeepTermsFile()
 		self.WriteRemoveTermsFiles()
 		self.WriteExecuteBashScript()
-	
+		
+	def CreateModelPath( self ):
+		if not os.path.exists( self.modelsPath ):
+			print 'Creating model folder: {}'.format( self.modelsPath )
+			os.makedirs( self.modelsPath )
+
+	def ImportFileOrFolder( self ):
+		mallet_executable = '{}/bin/mallet'.format( self.MALLET_PATH )
+		if os.path.isdir( self.corpusPath ):
+			print 'Importing a folder into MALLET: [{}] --> [{}]'.format( self.corpusPath, self.corpusInMallet ) 
+			command = [ mallet_executable, 'import-dir' ]
+		else:
+			print 'Importing a file into MALLET: [{}] --> [{}]'.format( self.corpusPath, self.corpusInMallet )
+			command = [ mallet_executable, 'import-file' ]
+		command += [
+			'--input', self.corpusPath,
+			'--output', self.corpusInMallet,
+			'--remove-stopwords',
+			'--token-regex', self.tokenRegex,
+			'--keep-sequence'
+		]
+		process = subprocess.call( command )
+
 	def Execute( self ):
 		os.system( self.filenameExecute )
 		self.WriteRunIndexFile()
