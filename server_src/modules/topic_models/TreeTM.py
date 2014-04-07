@@ -2,6 +2,7 @@
 
 import os
 import json
+import shutil
 import subprocess
 
 HYPER_PARAMS = u"""DEFAULT_ 0.01
@@ -285,10 +286,12 @@ class TreeTM(object):
 
 	def Prepare( self ):
 		if not self.resume:
-			self.CreateModelPath()
+			self.CreateEntryFolder()
 			self.ImportFileOrFolder()
 			self.CreateHyperparamsFile()
 			self.CreateVocabFile()
+		else:
+			self.CopyEntryFolder()
 		self.CreateEntryFolder()
 		self.WriteStatesFile()
 		self.WriteConstraintsFile()
@@ -300,6 +303,18 @@ class TreeTM(object):
 		if not os.path.exists( self.modelsPath ):
 			print 'Creating model folder: {}'.format( self.modelsPath )
 			os.makedirs( self.modelsPath )
+	
+	def CreateEntryFolder( self ):
+		if not os.path.exists( self.nextEntryPath ):
+			print 'Copying model folder: {}'.format( self.nextEntryPath )
+			os.makedirs( self.nextEntryPath )
+
+	def CopyEntryFolder( self ):
+		if not os.path.exists( self.nextEntryPath ):
+			print 'Copying model folder: {}'.format( self.nextEntryPath )
+			shutil.copytree( self.prevEntryPath, self.nextEntryPath )
+			with open( self.filenameRemoveTermsNew, 'w' ) as f:
+				f.write('')
 
 	def ImportFileOrFolder( self ):
 		mallet_executable = '{}/bin/mallet'.format( self.MALLET_PATH )
