@@ -25,7 +25,6 @@ class TrainMallet(object):
 		else:
 			print '    Already available: {}'.format( model_path )
 
-
 def main():
 	parser = argparse.ArgumentParser( description = 'Train an LDA topic model using MALLET.' )
 	parser.add_argument( 'corpus_path', type = str , help = 'Input text corpus as a folder or a file' )
