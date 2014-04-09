@@ -14,8 +14,10 @@ def TrainSTM( is_quiet, overwrite ):
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train a structural topic model.' )
-	args = parser.parse_args( False, False )
-	TrainSTM()
+	parser.add_argument( 'corpus_path'  , type = str , help = 'Input text corpus (as a folder or a file)' )
+	parser.add_argument( 'model_path'   , type = str , help = 'Output model path' )
+	args = parser.parse_args()
+	TrainSTM( False, False )
 
 if __name__ == '__main__':
 	main()
