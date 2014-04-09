@@ -43,7 +43,7 @@ class ScatterPlot( TermiteCore ):
 		subDocs = allDocs[docOffset:docOffset+docLimit]
 		table = [ { 'index' : index, 'docID' : doc['docID'] } for index, doc in enumerate(subDocs) ]
 		header = [
-			{ 'name' : 'index', 'type' : 'number' },
+			{ 'name' : 'index', 'type' : 'integer' },
 			{ 'name' : 'docID', 'type' : 'string' }
 		]
 		docMaxCount = len(allDocs)
@@ -67,7 +67,7 @@ class ScatterPlot( TermiteCore ):
 		# Processing
 		table = [ { 'index' : index, 'name' : 'Topic #{}'.format(topic['index']) } for index, topic in enumerate(allTopics) ]
 		header = [
-			{ 'name' : 'index', 'type' : 'number' },
+			{ 'name' : 'index', 'type' : 'integer' },
 			{ 'name' : 'name', 'type' : 'string' }
 		]
 		topicCount = len(allTopics)
@@ -120,10 +120,10 @@ class ScatterPlot( TermiteCore ):
 			corpusData = corpus['data']
 			
 		# Processing
-		xDimensions = [ { 'name' : d['name'], 'label' : d['name'], 'type' : d['type'] } for d in corpusHeader if d['type'] == 'number' ]
-		yDimensions = [ { 'name' : d['name'], 'label' : d['name'], 'type' : d['type'] } for d in corpusHeader if d['type'] == 'number' ]
-		xDimensions += [ { 'name' : d['name'], 'label' : '{}: {}'.format(d['name'], topTerms[index]), 'index' : d['index'], 'type' : 'number' } for index, d in enumerate(topicIndex) ]
-		yDimensions += [ { 'name' : d['name'], 'label' : '{}: {}'.format(d['name'], topTerms[index]), 'index' : d['index'], 'type' : 'number' } for index, d in enumerate(topicIndex) ]
+		xDimensions = [ { 'name' : d['name'], 'label' : d['name'], 'type' : d['type'] } for d in corpusHeader if d['type'] == 'integer' or d['type'] == 'real' ]
+		yDimensions = [ { 'name' : d['name'], 'label' : d['name'], 'type' : d['type'] } for d in corpusHeader if d['type'] == 'integer' or d['type'] == 'real' ]
+		xDimensions += [ { 'name' : d['name'], 'label' : '{}: {}'.format(d['name'], topTerms[index]), 'index' : d['index'], 'type' : 'real' } for index, d in enumerate(topicIndex) ]
+		yDimensions += [ { 'name' : d['name'], 'label' : '{}: {}'.format(d['name'], topTerms[index]), 'index' : d['index'], 'type' : 'real' } for index, d in enumerate(topicIndex) ]
 		header = [
 			{ 'name' : 'DocID', 'type' : 'string' },
 		]
