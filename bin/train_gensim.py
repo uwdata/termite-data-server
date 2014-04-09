@@ -26,7 +26,7 @@ def TrainGensim( corpus_path, model_path, num_topics, num_passes, is_quiet, forc
 		gensim = GensimLDA( corpus_path, modelPath = model_path, numTopics = num_topics, numPasses = num_passes )
 		gensim.Execute()
 	else:
-		logger.info( '    Already available: %s', model_path )
+		logger.info( '    Already exists: %s', model_path )
 
 	logger.info( '--------------------------------------------------------------------------------' )
 

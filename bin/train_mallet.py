@@ -24,7 +24,7 @@ def TrainMallet( corpus_path, model_path, token_regex, num_topics, num_iters, is
 		lda = MalletLDA( corpus_path, modelPath = model_path, tokenRegex = token_regex, numTopics = num_topics, numIters = num_iters )
 		lda.Execute()
 	else:
-		logger.info( '    Already available: %s', model_path )
+		logger.info( '    Already exists: %s', model_path )
 
 	logger.info( '--------------------------------------------------------------------------------' )
 

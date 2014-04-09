@@ -6,7 +6,7 @@ import logging
 import os.path
 from topic_models.TreeTM import TreeTM
 
-def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is_quiet, force_overwrite ):
+def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is_quiet, force_overwrite, resume_training ):
 	logger = logging.getLogger( 'termite' )
 	logger.addHandler( logging.StreamHandler() )
 	logger.setLevel( logging.INFO if is_quiet else logging.DEBUG )
@@ -25,16 +25,24 @@ def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is
 		treetm.Execute()
 		logger.info( '--------------------------------------------------------------------------------' )
 	else:
-		logger.info( '--------------------------------------------------------------------------------' )
-		logger.info( 'Training an existing interactive topic model...' )
-		logger.info( '      corpus = %s', corpus_path )
-		logger.info( '       model = %s', model_path )
-		logger.info( '       iters = %s', num_iters )
-		logger.info( '--------------------------------------------------------------------------------' )
-		treetm = TreeTM( corpus_path, modelsPath = model_path, resume = True, finalIter = num_iters )
-		treetm.Prepare()
-		treetm.Execute()
-		logger.info( '--------------------------------------------------------------------------------' )
+		if resume_training:
+			logger.info( '--------------------------------------------------------------------------------' )
+			logger.info( 'Training an existing interactive topic model...' )
+			logger.info( '      corpus = %s', corpus_path )
+			logger.info( '       model = %s', model_path )
+			logger.info( '       iters = %s', num_iters )
+			logger.info( '--------------------------------------------------------------------------------' )
+			treetm = TreeTM( corpus_path, modelsPath = model_path, resume = True, finalIter = num_iters )
+			treetm.Prepare()
+			treetm.Execute()
+			logger.info( '--------------------------------------------------------------------------------' )
+		else:
+			logger.info( '--------------------------------------------------------------------------------' )
+			logger.info( 'Training an interactive topic model...' )
+			logger.info( '--------------------------------------------------------------------------------' )
+			logger.info( '    Already exists: %s', model_path )
+			logger.info( '--------------------------------------------------------------------------------' )
+			
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train an interactive topic model.' )
@@ -45,8 +53,9 @@ def main():
 	parser.add_argument( '--token-regex', type = str   , default = '\p{Alpha}{3,}', help = 'Tokenization', dest = 'token_regex' )
 	parser.add_argument( '--quiet'      , const = True , default = False          , help = 'Show fewer debugging messages', action = 'store_const' )
 	parser.add_argument( '--overwrite'  , const = True , default = False          , help = 'Overwrite any existing model', action = 'store_const' )
+	parser.add_argument( '--resume'     , const = True , default = False          , help = 'Resume training', action = 'store_const' )
 	args = parser.parse_args()
-	TrainTreeTM( args.corpus_path, args.model_path, args.token_regex, args.topics, args.iters, args.quiet, args.overwrite )
+	TrainTreeTM( args.corpus_path, args.model_path, args.token_regex, args.topics, args.iters, args.quiet, args.overwrite, args.resume )
 
 if __name__ == '__main__':
 	main()
