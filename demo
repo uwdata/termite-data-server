@@ -33,17 +33,16 @@ function __fetch_nsf1k__ {
 
 function __fetch_poliblogs__ {
 	bin/fetch_poliblogs.sh $DATASET_PATH
+	MODEL_FILENAME=$DATASET_PATH/corpus/poliblogs2008.RData
 	CORPUS_PATH=$DATASET_PATH/corpus/poliblogs2008.txt
 	META_PATH=$DATASET_PATH/corpus/poliblogs2008-meta.txt
-	META_HEADER_PATH=$DATASET_PATH/corpus/poliblogs2008-meta.json
-	MODEL_FILENAME=$DATASET_PATH/corpus/poliblogs2008.RData
 }
 
 function __fetch_fomc__ {
 #	bin/fetch_fomc.sh $DATASET_PATH
+	MODEL_FILENAME=$DATASET_PATH/corpus/fomc.Rdata
 	CORPUS_PATH=$DATASET_PATH/corpus/FOMC2.txt
 	META_PATH=$DATASET_PATH/corpus/FOMC2-meta.txt
-	MODEL_FILENAME=$DATASET_PATH/corpus/fomc.Rdata
 }
 
 function __train_mallet__ {
@@ -57,13 +56,9 @@ function __train_mallet__ {
 
 function __import_mallet__ {
 	echo "# Importing a MALLET LDA topic model..."
-	echo "bin/import_mallet.py $APP_IDENTIFIER $MODEL_PATH"
+	echo "bin/import_mallet.py $APP_IDENTIFIER $MODEL_PATH $CORPUS_PATH $META_PATH"
 	echo
-	bin/import_mallet.py $APP_IDENTIFIER $MODEL_PATH
-	echo
-	echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH"
-	echo
-	bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH
+	bin/import_mallet.py $APP_IDENTIFIER $MODEL_PATH $CORPUS_PATH $META_PATH --overwrite
 	echo
 }
 
@@ -78,13 +73,9 @@ function __train_treetm__ {
 
 function __import_treetm__ {
 	echo "# Importing a TreeTM model..."
-	echo "bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH"
+	echo "bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH $CORPUS_PATH $META_PATH"
 	echo
-#	bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH
-	echo
-	echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH"
-	echo
-#	bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH
+#	bin/import_treetm.py $APP_IDENTIFIER $MODEL_PATH $CORPUS_PATH $META_PATH
 	echo
 }
 
@@ -99,13 +90,9 @@ function __train_stm__ {
 
 function __import_stm__ {
 	echo "# Importing a Structural Topic Model..."
-	echo "bin/import_stm.py $APP_IDENTIFIER $MODEL_FILENAME $META_PATH"
+	echo "bin/import_stm.py $APP_IDENTIFIER $MODEL_FILENAME $CORPUS_PATH $META_PATH"
 	echo
-	bin/import_stm.py $APP_IDENTIFIER $MODEL_FILENAME $META_PATH
-	echo
-	echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH"
-	echo
-	bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH
+	bin/import_stm.py $APP_IDENTIFIER $MODEL_FILENAME $CORPUS_PATH $META_PATH --overwrite
 	echo
 }
 
@@ -120,13 +107,9 @@ function __train_stmt__ {
 
 function __import_stmt__ {
 	echo "# Importing a STMT model..."
-	echo "bin/import_stmt.py $APP_IDENTIFIER $MODEL_PATH"
+	echo "bin/import_stmt.py $APP_IDENTIFIER $MODEL_PATH $CORPUS_PATH $META_PATH"
 	echo
-	bin/import_stmt.py $APP_IDENTIFIER $MODEL_PATH
-	echo
-	echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH"
-	echo
-	bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH
+	bin/import_stmt.py $APP_IDENTIFIER $MODEL_PATH $CORPUS_PATH $META_PATH --overwrite
 	echo
 }
 
@@ -141,13 +124,9 @@ function __train_gensim__ {
 
 function __import_gensim__ {
 	echo "# Importing a gensim LDA topic model..."
-	echo "bin/import_gensim.py $APP_IDENTIFIER $MODEL_PATH/corpus.dict $MODEL_PATH/output.model"
+	echo "bin/import_gensim.py $APP_IDENTIFIER $MODEL_PATH $CORPUS_PATH $META_PATH"
 	echo
-	bin/import_gensim.py $APP_IDENTIFIER $MODEL_PATH/corpus.dict $MODEL_PATH/output.model
-	echo
-	echo "bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH"
-	echo
-	bin/import_corpus.py $APP_IDENTIFIER $CORPUS_PATH $META_PATH $META_HEADER_PATH
+	bin/import_gensim.py $APP_IDENTIFIER $MODEL_PATH $CORPUS_PATH $META_PATH --overwrite
 	echo
 }
 
@@ -160,7 +139,6 @@ then
 		DATASET_PATH=data/demo/$DATASET
 		CORPUS_PATH=
 		META_PATH=
-		META_HEADER_PATH=
 		if [ $# -ge 2 ]
 		then
 			MODEL=$2

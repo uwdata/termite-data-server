@@ -57,37 +57,46 @@ data/demo/nsf146k:
 # Demos
 #   Download and build an LDA model using the InfoVis dataset
 
-demo: apps/infovis_mallet
-
-demos: apps/infovis_mallet apps/infovis_gensim apps/poliblogs_stm
-
-apps/infovis_mallet: web2py tools/mallet data/demo/infovis
+demo:
 	./demo infovis mallet
 
-apps/infovis_gensim: web2py tools/gensim data/demo/infovis
+demos:
+	./demo infovis mallet
 	./demo infovis gensim
-
-apps/poliblogs_stm: web2py tools/stm data/demo/poliblogs
 	./demo poliblogs stm
 
-other-demos:
+all-demos:
 	./demo infovis mallet
 	./demo infovis gensim
+	./demo infovis treetm
 	./demo poliblogs mallet
 	./demo poliblogs gensim
+	./demo poliblogs treetm
 	./demo poliblogs stm
 	./demo fomc mallet
 	./demo fomc gensim
+	./demo fomc treetm
 	./demo fomc stm
 	./demo 20newsgroups mallet
+	./demo 20newsgroups gensim
+	./demo 20newsgroups treetm
+	./demo nsf146k mallet
+	./demo nsf146k gensim
+	./demo nsf146k treetm
+
+other-demos:
 	bin/fetch_nsf146k.sh
 	bin/derive_nsf1k.py
 	./demo nsf1k mallet
+	./demo nsf1k treetm
 	bin/derive_nsf10k.py
 	./demo nsf10k mallet
+	./demo nsf10k treetm
 	bin/derive_nsf25k.py
 	./demo nsf25k mallet
+	./demo nsf25k treetm
 	./demo nsf146k mallet
+	./demo nsf146k treetm
 
 ################################################################################
 # Other utilities
