@@ -2,150 +2,49 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import json
-import math
-from import_abstr import ImportAbstraction
+import logging
+import os
+from importers.CreateApp import CreateApp
+from importers.Corpus import Corpus
+from importers.MalletLDA import MalletLDA
 
-TOPIC_WORD_WEIGHTS = 'topic-word-weights.txt'
-DOC_TOPIC_MIXTURES = 'doc-topic-mixtures.txt'
-
-class ImportMallet( ImportAbstraction ):
+def ImportMalletLDA( app_name, model_path, corpus_path, meta_path, is_quiet, force_overwrite ):
+	logger = logging.getLogger( 'termite' )
+	logger.addHandler( logging.StreamHandler() )
+	logger.setLevel( logging.INFO if is_quiet else logging.DEBUG )
 	
-	def __init__( self, app_name, app_model = 'lda', app_desc = 'LDA Topic Model' ):
-		ImportAbstraction.__init__( self, app_name, app_model, app_desc )
-
-	def ImportLDA( self, model_path, filenameTopicWordWeights, filenameDocTopicMixtures ):
-		termSet, topicSet, termFreqs, topicFreqs, termsAndTopics = self.ExtractTopicWordWeights( model_path, filenameTopicWordWeights )
-		docSet, _, docsAndTopics = self.ExtractDocTopicMixtures( model_path, filenameDocTopicMixtures, len(topicSet) )
-		self.SaveToDisk( termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics )
+	app_path = 'apps/{}'.format( app_name )
+	logger.info( '--------------------------------------------------------------------------------' )
+	logger.info( 'Import a MALLET LDA topic model as a web2py application...' )
+	logger.info( '     app_path = %s', app_path )
+	logger.info( '   model_path = %s', model_path )
+	logger.info( '  corpus_path = %s', corpus_path )
+	logger.info( '    meta_path = %s', meta_path )
+	logger.info( '--------------------------------------------------------------------------------' )
 	
-	def ExtractTopicWordWeights( self, model_path, filename ):
-		print 'Reading topic-term matrix: {}/{}'.format( model_path, filename )
-		termSet = set()
-		topicSet = set()
-		termFreqs = {}
-		topicFreqs = []
-		termsAndTopics = {}
-		filename = '{}/{}'.format( model_path, filename )
-		with open( filename, 'r' ) as f:
-			lines = f.read().decode( 'utf-8' ).splitlines()
-			for line in lines:
-				topic, term, value = line.split( '\t' )
-				topic = int( topic )
-				value = float( value )
-				if topic not in topicSet:
-					topicSet.add( topic )
-					topicFreqs.append( 0.0 )
-				if term not in termSet:
-					termSet.add( term )
-					termFreqs[ term ] = 0.0
-					termsAndTopics[ term ] = []
-				termsAndTopics[ term ].append( value )
-				topicFreqs[ topic ] += value
-				termFreqs[ term ] += value
-		return termSet, topicSet, termFreqs, topicFreqs, termsAndTopics
+	if force_overwrite or not os.path.exists( app_path ):
+		with CreateApp( app_name ) as createApp:
+			importMalletLDA = MalletLDA( createApp.GetPath(), model_path )
+			if force_overwrite or not importMalletLDA.Exists():
+				importMalletLDA.Execute()
+			importCorpus = Corpus( createApp.GetPath(), corpus_path, meta_path )
+			if force_overwrite or not importCorpus.Exists():
+				importCorpus.Execute()
+	else:
+		logger.info( '    Already available: %s', app_path )
 	
-	def ExtractDocTopicMixtures( self, model_path, filename, topicCount ):
-		print 'Reading doc-topic matrix: {}/{}'.format( model_path, filename )
-		docSet = set()
-		topicSet = set()
-		docsAndTopics = {}
-		filename = '{}/{}'.format( model_path, filename )
-		header = None
-		with open( filename, 'r' ) as f:
-			lines = f.read().decode( 'utf-8' ).splitlines()
-			for line in lines:
-				if header is None:
-					header = line
-				else:
-					fields = line.split( '\t' )
-					docID = fields[1]
-					topicKeys = [ int(key) for n, key in enumerate(fields[2:]) if n % 2 == 0 and key != '' ]
-					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n % 2 == 1 and value != '' ]
-					for n in range(len(topicKeys)):
-						topic = topicKeys[n]
-						value = topicValues[n]
-						if topic not in topicSet:
-							topicSet.add( topic )
-						if docID not in docSet:
-							docSet.add( docID )
-							docsAndTopics[ docID ] = [ 0.0 ] * topicCount
-						docsAndTopics[ docID ][ topic ] = value
-		return docSet, topicSet, docsAndTopics
-	
-	def SaveToDisk( self, termSet, docSet, topicSet, termFreqs, topicFreqs, termsAndTopics, docsAndTopics ):
-		print 'Writing data to disk: {}'.format( self.data_path )
-		docs = sorted( docSet )
-		terms = sorted( termSet, key = lambda x : -termFreqs[x] )
-		topics = sorted( topicSet )
-		docIndex = [ None ] * len( docs )
-		termIndex = [ None ] * len( terms )
-		topicIndex = [ None ] * len( topics )
-		for n, term in enumerate( terms ):
-			termIndex[n] = {
-				'text' : term,
-				'freq' : termFreqs[ term ]
-			}
-		for n, doc in enumerate( docs ):
-			docIndex[n] = {
-				'docID' : doc
-			}
-		for n, topic in enumerate( topics ):
-			topicIndex[n] = {
-				'index' : topic,
-				'freq' : topicFreqs[ topic ]
-			}
-		
-		filename = '{}/doc-index.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
-			json.dump( docIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-index.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
-			json.dump( termIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/topic-index.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
-			json.dump( topicIndex, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/term-topic-matrix.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
-			json.dump( termsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/doc-topic-matrix.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
-			json.dump( docsAndTopics, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		
-		self.docs = docs
-		self.terms = terms
-		self.topics = topics
-		self.termsAndTopics = termsAndTopics
-		self.docsAndTopics = docsAndTopics
-
-	def ImportTopicCooccurrence( self ):
-		print 'Computing topic co-occurrence...'
-		topics = self.topics
-		matrix = [ [0.0]*len(topics) for i in range(len(topics)) ]
-		for docID, topicMixture in self.docsAndTopics.iteritems():
-			for i in topics:
-				for j in topics:
-					matrix[i][j] += topicMixture[i] * topicMixture[j]
-		filename = '{}/topic-cooccurrence.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
-			json.dump( matrix, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+	logger.info( '--------------------------------------------------------------------------------' )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
-	parser.add_argument( 'app_name'     , type = str,                               help = 'Web2py application identifier'              )
-	parser.add_argument( 'model_path'   , type = str,                               help = 'MALLET topic model path.'                   )
-	parser.add_argument( '--topic_words', type = str, default = TOPIC_WORD_WEIGHTS, help = 'File containing topic vs. word weights.'    )
-	parser.add_argument( '--doc_topics' , type = str, default = DOC_TOPIC_MIXTURES, help = 'File containing doc vs. topic mixtures.'    )
+	parser.add_argument( 'app_name'     , type = str                     , help = 'Web2py application identifier' )
+	parser.add_argument( 'model_path'   , type = str                     , help = 'Path of a MALLET LDA topic model' )
+	parser.add_argument( 'corpus_path'  , type = str                     , help = 'Path of input text corpus' )
+	parser.add_argument( 'meta_path'    , type = str   , default = None  , help = 'Path of optional corpus metadata', nargs = '?' )
+	parser.add_argument( '--quiet'      , const = True , default = False , help = 'Show fewer debugging messages', action = 'store_const' )
+	parser.add_argument( '--overwrite'  , const = True , default = False , help = 'Overwrite any existing model', action = 'store_const' )
 	args = parser.parse_args()
-	
-	importer = ImportMallet( app_name = args.app_name )
-	if importer.AddAppFolder():
-		importer.ImportLDA( args.model_path, args.topic_words, args.doc_topics )
-		importer.ImportTopicCooccurrence()
-		importer.TransposeMatrices()
-		importer.AddToWeb2py()
-	else:
-		print "    Already available: {}".format( importer.app_path )
+	ImportMalletLDA( args.app_name, args.model_path, args.corpus_path, args.meta_path, args.quiet, args.overwrite )
 
 if __name__ == '__main__':
 	main()

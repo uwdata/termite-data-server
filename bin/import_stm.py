@@ -2,117 +2,49 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import json
-import subprocess
-from import_abstr import ImportAbstraction
+import logging
+import os
+from importers.CreateApp import CreateApp
+from importers.Corpus import Corpus
+from importers.STM import STM
 
-class ImportSTM( ImportAbstraction ):
-	SCRIPT = """# Load an STM model and save its content as Termite Data Server files
-# Load required libraries
-library(stm)
-library(lda)
-
-# Define output filenames
-app.path = "{DATA_PATH}"
-app.path.TermTopicMatrix = "{DATA_PATH}/term-topic-matrix.txt"
-app.path.DocTopicMatrix = "{DATA_PATH}/doc-topic-matrix.txt"
-app.path.TermIndex = "{DATA_PATH}/term-index.json"
-app.path.DocIndex = "{DATA_PATH}/doc-index.json"
-app.path.TopicIndex = "{DATA_PATH}/topic-index.json"
-
-# Load input data
-load( file = "{MODEL_FILENAME}" )
-model = mod.out
-
-meta = read.delim( file = "{META_FILENAME}", quote = "" )
-docIDs = meta["DocID"]
-
-library( jsonlite )
-
-data.DocTopicMatrix = model$theta
-data.TermTopicMatrix = exp( t( model$beta$logbeta[[1]] ) )
-
-# Document Index
-temp.DocCount <- nrow(model$theta)
-temp.DocIDs <- paste( "Document #", 1:temp.DocCount, sep = "" )
-temp.DocIndex <- 1:temp.DocCount
-temp.DocIndexValues <- cbind( temp.DocIndex, docIDs )
-temp.DocIndexHeader <- c( "index", "docID" )
-colnames( temp.DocIndexValues ) <- temp.DocIndexHeader
-data.DocIndexJSON <- toJSON( as.data.frame( temp.DocIndexValues ), pretty = TRUE, digits = 10 )
-write( data.DocIndexJSON, file = app.path.DocIndex )
-
-# Term Index
-temp.TermCount <- nrow( data.TermTopicMatrix )
-temp.TermFreq <- apply( data.TermTopicMatrix, 1, sum )
-temp.TermText <- model$vocab
-temp.TermIndex <- 1:temp.TermCount
-temp.TermIndexValues = cbind( temp.TermIndex, temp.TermFreq, temp.TermText )
-temp.TermIndexHeader = c( "index", "freq", "text" )
-colnames( temp.TermIndexValues ) <- temp.TermIndexHeader
-data.TermIndexJSON <- toJSON( as.data.frame( temp.TermIndexValues ), pretty = TRUE, digits = 10 )
-write( data.TermIndexJSON, file = app.path.TermIndex )
-
-# Topic Index
-temp.TopicCount <- ncol( data.TermTopicMatrix )
-temp.TopicFreq <- apply( data.TermTopicMatrix, 2, sum )
-temp.TopicIndex <- 1:temp.TopicCount
-temp.TopicIndexValues = cbind( temp.TopicIndex, temp.TopicFreq )
-temp.TopicIndexHeader = c( "index", "freq" )
-colnames( temp.TopicIndexValues ) <- temp.TopicIndexHeader
-data.TopicIndexJSON <- toJSON( as.data.frame( temp.TopicIndexValues ), pretty = TRUE, digits = 10 )
-write( data.TopicIndexJSON, file = app.path.TopicIndex )
-
-# Doc-Topic Matrix
-# Tab-separated with no headers. Theta (D by K)
-rownames( data.DocTopicMatrix ) <- temp.DocIDs
-colnames( data.DocTopicMatrix ) <- temp.TopicIndex
-data.DocTopicMatrixJSON <- toJSON( data.DocTopicMatrix, pretty = TRUE, digits = 10 )
-write( data.DocTopicMatrixJSON, file = app.path.DocTopicMatrix )
-
-# Term-Topic Matrix
-# Tab-separated with no headers. Beta (V by K)
-rownames( data.TermTopicMatrix ) <- temp.TermText
-colnames( data.TermTopicMatrix ) <- temp.TopicIndex
-data.TermTopicMatrixJSON <- toJSON( data.TermTopicMatrix, pretty = TRUE, digits = 10 )
-write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
-
-"""
-
-	def __init__( self, app_name, app_model = 'lda', app_desc = 'Structural Topic Model' ):
-		ImportAbstraction.__init__( self, app_name, app_model, app_desc )
-
-	def ImportLDA( self, model_filename, meta_filename ):
-		self.GenerateR( model_filename, meta_filename )
+def ImportSTM( app_name, model_path, corpus_path, meta_path, is_quiet, force_overwrite ):
+	logger = logging.getLogger( 'termite' )
+	logger.addHandler( logging.StreamHandler() )
+	logger.setLevel( logging.INFO if is_quiet else logging.DEBUG )
 	
-	def GenerateR( self, model_filename, meta_filename ):
-		r = ImportSTM.SCRIPT.format( DATA_PATH = self.data_path, MODEL_FILENAME = model_filename, META_FILENAME = meta_filename )
-		script_filename = '{}/import.r'.format( self.data_path )
-		with open( script_filename, 'w' ) as f:
-			f.write( r.encode( 'utf-8' ) )
-		
-		command = [ 'RScript', script_filename ]
-		print ' '.join(command)
-		process = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.PIPE )
-		while process.poll() is None:
-			line = process.stderr.readline()
-			print line[:-1]
+	app_path = 'apps/{}'.format( app_name )
+	logger.info( '--------------------------------------------------------------------------------' )
+	logger.info( 'Import a MALLET LDA topic model as a web2py application...' )
+	logger.info( '     app_path = %s', app_path )
+	logger.info( '   model_path = %s', model_path )
+	logger.info( '  corpus_path = %s', corpus_path )
+	logger.info( '    meta_path = %s', meta_path )
+	logger.info( '--------------------------------------------------------------------------------' )
+	
+	if force_overwrite or not os.path.exists( app_path ):
+		with CreateApp( app_name ) as createApp:
+			importSTM = STM( createApp.GetPath(), model_path, meta_path )
+			if force_overwrite or not importSTM.Exists():
+				importSTM.Execute()
+			importCorpus = Corpus( createApp.GetPath(), corpus_path, meta_path )
+			if force_overwrite or not importCorpus.Exists():
+				importCorpus.Execute()
+	else:
+		logger.info( '    Already available: %s', app_path )
+	
+	logger.info( '--------------------------------------------------------------------------------' )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a STM topic model as a web2py application.' )
-	parser.add_argument( 'app_name'  , type = str, help = 'Web2py application identifier'               )
-	parser.add_argument( 'model'     , type = str, help = 'File containing a STM model (RData)'         )
-	parser.add_argument( 'meta'      , type = str, help = 'File containing metadata (tab-delimited)'    )
+	parser.add_argument( 'app_name'     , type = str                     , help = 'Web2py application identifier' )
+	parser.add_argument( 'model_path'   , type = str                     , help = 'Path of a MALLET LDA topic model' )
+	parser.add_argument( 'corpus_path'  , type = str                     , help = 'Path of input text corpus' )
+	parser.add_argument( 'meta_path'    , type = str   , default = None  , help = 'Path of optional corpus metadata' )
+	parser.add_argument( '--quiet'      , const = True , default = False , help = 'Show fewer debugging messages', action = 'store_const' )
+	parser.add_argument( '--overwrite'  , const = True , default = False , help = 'Overwrite any existing model', action = 'store_const' )
 	args = parser.parse_args()
-	
-	importer = ImportSTM( args.app_name )
-	if importer.AddAppFolder():
-		importer.ImportLDA( args.model, args.meta )
-		importer.ResolveMatrices()
-		importer.TransposeMatrices()
-		importer.AddToWeb2py()
-	else:
-		print "    Already available: {}".format( importer.app_path )
+	ImportSTM( args.app_name, args.model_path, args.corpus_path, args.meta_path, args.quiet, args.overwrite )
 
 if __name__ == '__main__':
 	main()

@@ -1,63 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import json
 
-APPS_ROOT = 'apps'
-WEB2PY_ROOT = 'web2py'
-SUBFOLDERS = [ 'models', 'views', 'controllers', 'static', 'modules' ]
-
-class ImportAbstraction( object ):
+class CommonLDA( object ):
 	
-	def __init__( self, app_name, app_model, app_desc ):
-		self.app_desc = app_desc
-		self.app_name = app_name
-		self.app_model = app_model
-		self.app_path = '{}/{}'.format( APPS_ROOT, app_name )
-		self.data_path = '{}/{}/data/{}'.format( APPS_ROOT, app_name, app_model )
-		self.web2py_path = '{}/applications/{}'.format( WEB2PY_ROOT, app_name )
-		self.database_path = '{}/{}/databases'.format( APPS_ROOT, app_name )
-	
-	def AddAppFolder( self ):
-		if os.path.exists( self.data_path ):
-			return False
+	def __init__( self ):
+		pass
 		
-		print '--------------------------------------------------------------------------------'
-		print 'Import "{}" as a web2py application...'.format( self.app_desc )
-		print '          app = {}'.format( self.app_name )
-		print '        model = {}'.format( self.app_model )
-		print '     app_path = {}'.format( self.app_path )
-		print '    data_path = {}'.format( self.data_path )
-		print 'database_path = {}'.format( self.database_path )
-		print '  web2py_path = {}'.format( self.web2py_path )
-		print '--------------------------------------------------------------------------------'
-		
-		if not os.path.exists( self.app_path ):
-			print 'Creating app folder: {}'.format( self.app_path )
-			os.makedirs( self.app_path )
-		
-		if not os.path.exists( self.database_path ):
-			print 'Creating database subfolder: {}'.format( self.database_path )
-			os.makedirs( self.database_path )
-		
-		for subfolder in SUBFOLDERS:
-			app_subpath = '{}/{}'.format( self.app_path, subfolder )
-			if not os.path.exists( app_subpath ):
-				print 'Linking subfolder: {}'.format( app_subpath )
-				os.system( 'ln -s ../../server_src/{} {}/{}'.format( subfolder, self.app_path, subfolder ) )
-		
-		filename = '{}/__init__.py'.format( self.app_path )
-		if not os.path.exists( filename ):
-			print 'Setting up __init__.py'
-			os.system( 'touch {}'.format( filename ) )
-
-		if not os.path.exists( self.data_path ):
-			print 'Creating data subfolder: {}'.format( self.data_path )
-			os.makedirs( self.data_path )
-
-		return True
-	
 	def ResolveMatrices( self ):
 		"""
 		Generate term-topic and doc-topic matrices (if needed)
@@ -86,14 +36,14 @@ class ImportAbstraction( object ):
 		resolved = self.ResolveMatrix( matrix, [ d['docID'] for d in index ] )
 		with open( resolved_filename, 'w' ) as f:
 			json.dump( resolved, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-	
+
 	def ResolveMatrix( self, matrix, keys ):
 		resolved = {}
 		assert len( matrix ) == len( keys )
 		for i, key in enumerate( keys ):
 			resolved[ key ] = matrix[ i ]
 		return resolved
-			
+		
 	def TransposeMatrices( self ):
 		"""
 		Generate topic-term matrix from term-topic matrix.
@@ -113,7 +63,7 @@ class ImportAbstraction( object ):
 		topicsAndDocs = self.TransposeMatrix( docsAndTopics )
 		with open( transposed_filename, 'w' ) as f:
 			json.dump( topicsAndDocs, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-	
+
 	def TransposeMatrix( self, matrix ):
 		transposed = []
 		for key, values in matrix.iteritems():
@@ -122,9 +72,30 @@ class ImportAbstraction( object ):
 					transposed.append( {} )
 				transposed[ index ][ key ] = value
 		return transposed
+
+	def ComputeTopicCooccurrenceAndCovariance( self ):
+		filename = '{}/doc-topic-matrix.json'.format( self.data_path )
+		with open( filename, 'r' ) as f:
+			docsAndTopics = json.load( f, encoding = 'utf-8' )
+		docCount = len(docsAndTopics)
+		topicCount = max([0] + [len(d) for d in docsAndTopics.itervalues()])
 		
-	def AddToWeb2py( self ):
-		if not os.path.exists( self.web2py_path ):
-			print 'Adding app to web2py server: {}'.format( self.web2py_path )
-			os.system( 'ln -s ../../{} {}'.format( self.app_path, self.web2py_path ) )
-		print '--------------------------------------------------------------------------------'
+		self.logger.info( 'Computing topic cooccurrence...' )
+		matrix = [ [0.0] * topicCount for _ in range(topicCount) ]
+		for docID, topicMixture in docsAndTopics.iteritems():
+			for i in range(topicCount):
+				for j in range(topicCount):
+					matrix[i][j] += topicMixture[i] * topicMixture[j]
+		self.topicCooccurrence = [ [ matrix[i][j] / docCount for j in range(topicCount) ] for i in range(topicCount) ]
+
+		self.logger.info( 'Computing topic covariance...' )
+		normalization = sum( sum(d) for d in matrix )
+		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
+		self.topicCovariance = [ [ matrix[i][j] * normalization for j in range(topicCount) ] for i in range(topicCount) ]
+
+		filename = '{}/topic-cooccurrence.json'.format( self.data_path )
+		with open( filename, 'w' ) as f:
+			json.dump( self.topicCooccurrence, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+		filename = '{}/topic-covariance.json'.format( self.data_path )
+		with open( filename, 'w' ) as f:
+			json.dump( self.topicCovariance, f, encoding = 'utf-8', indent = 2, sort_keys = True )
