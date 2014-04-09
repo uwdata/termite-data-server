@@ -80,19 +80,12 @@ all-demos:
 	./demo 20newsgroups mallet
 	./demo 20newsgroups gensim
 	./demo 20newsgroups treetm
-	./demo nsf146k mallet
-	./demo nsf146k gensim
-	./demo nsf146k treetm
 
 other-demos:
-	bin/fetch_nsf146k.sh
-	bin/derive_nsf1k.py
 	./demo nsf1k mallet
 	./demo nsf1k treetm
-	bin/derive_nsf10k.py
 	./demo nsf10k mallet
 	./demo nsf10k treetm
-	bin/derive_nsf25k.py
 	./demo nsf25k mallet
 	./demo nsf25k treetm
 	./demo nsf146k mallet

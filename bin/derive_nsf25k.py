@@ -2,7 +2,7 @@
 
 import json
 import os
-from corpus.Tokenizer import Tokenizer
+from importers.corpus.Tokenizer import Tokenizer
 
 INPUT_CORPUS = 'data/demo/nsf146k/corpus/nsf146k-src.txt'
 OUTPUT_PATH = 'data/demo/nsf25k/corpus'

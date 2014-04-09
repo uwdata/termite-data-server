@@ -17,17 +17,20 @@ function __fetch_nsf146k__ {
 }
 
 function __fetch_nsf25k__ {
-	bin/fetch_nsf25k.py $DATASET_PATH
+	bin/fetch_nsf146k.sh $DATASET_PATH
+	bin/derive_nsf25k.py $DATASET_PATH
 	CORPUS_PATH=$DATASET_PATH/corpus/nsf25k-src.txt
 }
 
 function __fetch_nsf10k__ {
-	bin/fetch_nsf10k.py $DATASET_PATH
+	bin/fetch_nsf146k.sh $DATASET_PATH
+	bin/derive_nsf10k.py $DATASET_PATH
 	CORPUS_PATH=$DATASET_PATH/corpus/nsf10k-src.txt
 }
 
 function __fetch_nsf1k__ {
-	bin/fetch_nsf1k.py $DATASET_PATH
+	bin/fetch_nsf146k.sh $DATASET_PATH
+	bin/derive_nsf1k.py $DATASET_PATH
 	CORPUS_PATH=$DATASET_PATH/corpus/nsf1k-src.txt
 }
 
