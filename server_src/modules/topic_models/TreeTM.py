@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import os
 import json
+import logging
+import os
 import shutil
 import subprocess
 
@@ -11,9 +12,12 @@ ML_ 100
 CL_ 0.00000000001
 """
 
-GENERATE_VOCAB_COMMANDS = u"""java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.GenerateVocab \\
-	--input {filenameMallet} \\
-	--vocab {filenameVocab}"""
+GENERATE_VOCAB_COMMAND = [
+	"java", "-Xmx8g",
+	"-cp", "{TREETM_PATH}/class:{TREETM_PATH}/lib/*", "cc.mallet.topics.tui.GenerateVocab",
+	"--input", "{filenameMallet}",
+	"--vocab", "{filenameVocab}"
+]
 
 INIT_BASH_SCRIPT = u"""#!/bin/bash
 
@@ -80,6 +84,8 @@ class TreeTM(object):
 	def __init__( self, corpusPath, modelsPath = 'data', tokenRegex = '\p{Alpha}{3,}', resume = False, prevEntryID = None, numTopics = 20, finalIter = 1000, MALLET_PATH = 'tools/mallet', TREETM_PATH = 'tools/treetm' ):
 		self.TREETM_PATH = TREETM_PATH
 		self.MALLET_PATH = MALLET_PATH
+		self.logger = logging.getLogger('termite')
+
 		self.corpusPath = corpusPath
 		self.modelsPath = modelsPath
 		self.tokenRegex = tokenRegex
@@ -97,13 +103,13 @@ class TreeTM(object):
 				self.prevEntryID = prevEntryID
 			self.nextEntryID = nextEntryID
 			self.numTopics = numTopics
-			print 'Training an interactive topic model: [{}][#{}] --> [{}][#{}]'.format( self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
+			self.logger.info( 'Training an interactive topic model: [%s][#%d] --> [%s][#%d]', self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
 		else:
 			nextEntryID, numTopics = self.CreateRunIndexFile( numTopics )
 			self.prevEntryID = -1
 			self.nextEntryID = nextEntryID
 			self.numTopics = numTopics
-			print 'Training an interactive topic model: [{}] --> [{}][#{}]'.format( self.corpusInMallet, self.modelsPath, self.nextEntryID )
+			self.logger.info( 'Training an interactive topic model: [%s] --> [%s][#%d]', self.corpusInMallet, self.modelsPath, self.nextEntryID )
 
 		self.resume = resume
 		self.finalIter = finalIter
@@ -125,11 +131,11 @@ class TreeTM(object):
 		self.filenameExecute = os.path.abspath( '{nextEntryPath}/execute.sh'.format( nextEntryPath = self.nextEntryPath ) )
 		
 		self.HYPER_PARAMS = HYPER_PARAMS
-		self.GENERATE_VOCAB_COMMANDS = GENERATE_VOCAB_COMMANDS.format(
+		self.generateVocabCommand = [ s.format(
 			TREETM_PATH = self.TREETM_PATH, 
 			filenameMallet = self.filenameMallet, 
 			filenameVocab = self.filenameVocab
-		)
+		) for s in GENERATE_VOCAB_COMMAND ]
 		if resume:
 			self.EXECUTE_BASH_SCRIPT = RESUME_BASH_SCRIPT.format(
 				TREETM_PATH = self.TREETM_PATH,
@@ -239,7 +245,10 @@ class TreeTM(object):
 			f.write( self.HYPER_PARAMS.encode('utf-8') )
 
 	def CreateVocabFile( self ):
-		os.system( self.GENERATE_VOCAB_COMMANDS )
+		command = self.generateVocabCommand
+		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
+		while p.poll() is None:
+			self.logger.debug( p.stdout.readline().rstrip('\n') )
 
 	def CreateEntryFolder( self ):
 		if not os.path.exists( self.nextEntryPath ):
@@ -248,9 +257,9 @@ class TreeTM(object):
 	def WriteConstraintsFile( self ):
 		lines = []
 		for mustLink in self.mustLinkConstraints:
-			lines.append( u'MERGE_\t{}'.format(u'\t'.join(term for term in mustLink)) )
+			lines.append( u'MERGE_\t{}'.format( u'\t'.join(term for term in mustLink) ) )
 		for cannotLink in self.cannotLinkConstraints:
-			lines.append( u'SPLIT_\t{}'.format(u'\t'.join(term for term in cannotLink)) )
+			lines.append( u'SPLIT_\t{}'.format( u'\t'.join(term for term in cannotLink) ) )
 		with open( self.filenameConstraints, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
 	
@@ -301,17 +310,17 @@ class TreeTM(object):
 		
 	def CreateModelPath( self ):
 		if not os.path.exists( self.modelsPath ):
-			print 'Creating model folder: {}'.format( self.modelsPath )
+			self.logger.info( 'Creating model folder: %s', self.modelsPath )
 			os.makedirs( self.modelsPath )
 	
 	def CreateEntryFolder( self ):
 		if not os.path.exists( self.nextEntryPath ):
-			print 'Copying model folder: {}'.format( self.nextEntryPath )
+			self.logger.info( 'Copying model folder: %s', self.nextEntryPath )
 			os.makedirs( self.nextEntryPath )
 
 	def CopyEntryFolder( self ):
 		if not os.path.exists( self.nextEntryPath ):
-			print 'Copying model folder: {}'.format( self.nextEntryPath )
+			self.logger.info( 'Copying model folder: %s', self.nextEntryPath )
 			shutil.copytree( self.prevEntryPath, self.nextEntryPath )
 			with open( self.filenameRemoveTermsNew, 'w' ) as f:
 				f.write('')
@@ -319,10 +328,10 @@ class TreeTM(object):
 	def ImportFileOrFolder( self ):
 		mallet_executable = '{}/bin/mallet'.format( self.MALLET_PATH )
 		if os.path.isdir( self.corpusPath ):
-			print 'Importing a folder into MALLET: [{}] --> [{}]'.format( self.corpusPath, self.corpusInMallet ) 
+			self.logger.info( 'Importing a folder into MALLET: [%s] --> [%s]', self.corpusPath, self.corpusInMallet )
 			command = [ mallet_executable, 'import-dir' ]
 		else:
-			print 'Importing a file into MALLET: [{}] --> [{}]'.format( self.corpusPath, self.corpusInMallet )
+			self.logger.info( 'Importing a file into MALLET: [%s] --> [%s]', self.corpusPath, self.corpusInMallet )
 			command = [ mallet_executable, 'import-file' ]
 		command += [
 			'--input', self.corpusPath,
@@ -331,8 +340,13 @@ class TreeTM(object):
 			'--token-regex', self.tokenRegex,
 			'--keep-sequence'
 		]
-		process = subprocess.call( command )
+		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
+		while p.poll() is None:
+			self.logger.debug( p.stdout.readline().rstrip('\n') )
 
 	def Execute( self ):
-		os.system( self.filenameExecute )
+		command = [ self.filenameExecute ]
+		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
+		while p.poll() is None:
+			self.logger.debug( p.stdout.readline().rstrip('\n') )
 		self.WriteRunIndexFile()

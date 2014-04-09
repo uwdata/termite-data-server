@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import glob
-import argparse
-import re
 import logging
+import os
+import re
 from gensim import corpora, models, utils
 from gensim.parsing.preprocessing import STOPWORDS
 
@@ -47,6 +46,8 @@ class GensimLDA( object ):
 	MODEL_FILENAME = 'output.model'
 
 	def __init__( self, corpusPath, modelPath = 'data', numTopics = 20, numPasses = 1 ):
+		self.logger = logging.getLogger('termite')
+		
 		self.corpusPath = corpusPath
 		self.modelPath = modelPath
 		self.numTopics = numTopics
@@ -57,17 +58,16 @@ class GensimLDA( object ):
 		model_filename = '{}/{}'.format( self.modelPath, GensimLDA.MODEL_FILENAME )
 
 		if not os.path.exists( self.modelPath ):
-			print 'Creating model folder: {}'.format( self.modelPath )
+			self.logger.info( 'Creating model folder: %s', self.modelPath )
 			os.makedirs( self.modelPath )
 
 		# Generate gensim objects
-		logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 		corpus = TermiteCorpus( self.corpusPath )
 		corpus.dictionary.filter_extremes( no_above = 0.2 )  # remove words that are too frequent/too infrequent
 		model = models.LdaModel( corpus, id2word = corpus.dictionary, num_topics = self.numTopics, passes = self.numPasses )
 
-		print 'Saving dictionary to disk: {}'.format( dict_filename )
+		self.logger.info( 'Saving dictionary to disk: %s', dict_filename )
 		corpus.dictionary.save( dict_filename )
 
-		print 'Saving model to disk: {}'.format( model_filename )
+		self.logger.info( 'Saving model to disk: %s', model_filename )
 		model.save( model_filename )
