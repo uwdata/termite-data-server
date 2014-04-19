@@ -1,0 +1,29 @@
+{{extend 'template.html'}}
+{{include 'attribute.html'}}
+
+<div class="body">
+	<div class="heading">Request Parameters</div>
+	<div class="params">
+		<div class="param">iterIndex = <input type="text" value="{{=IterIndex}}"></input></div>
+		<div class="param">iterCount = <input type="text" value="{{=IterCount}}"></input></div>
+		<div class="param">mustLinks = <input type="text"></input></div>
+		<div class="param">cannotLinks = <input type="text"></input></div>
+		<div class="param">keepTerms = <input type="text"></input></div>
+		<div class="param">removeTerms = <input type="text"></input></div>	
+		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
+	</div>
+
+	<div class="heading">Server Response
+		<span class="format">(
+			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> 
+		)</span>
+	</div>
+	
+{{if configs['is_text']:}}
+	<div class="content">{{=content}}</div>
+{{pass}}
+{{if configs['is_graph']:}}
+	<div class="content"><div id="view" class="view"></div></div>
+{{pass}}
+</div>

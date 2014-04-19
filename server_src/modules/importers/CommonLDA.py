@@ -44,20 +44,31 @@ class CommonLDA( object ):
 			resolved[ key ] = matrix[ i ]
 		return resolved
 		
-	def TransposeMatrices( self ):
+	def TransposeMatrices( self, subfolder = None ):
 		"""
 		Generate topic-term matrix from term-topic matrix.
 		Generate topic-doc matrix from doc-topic matrix.
 		"""
-		original_filename = '{}/term-topic-matrix.json'.format( self.data_path )
-		transposed_filename = '{}/topic-term-matrix.json'.format( self.data_path )
+		if subfolder is None:
+			original_filename = '{}/term-topic-matrix.json'.format( self.data_path )
+			transposed_filename = '{}/topic-term-matrix.json'.format( self.data_path )
+		else:
+			original_filename = '{}/{}/term-topic-matrix.json'.format( self.data_path, subfolder )
+			transposed_filename = '{}/{}/topic-term-matrix.json'.format( self.data_path, subfolder )
+			
 		with open( original_filename, 'r' ) as f:
 			termsAndTopics = json.load( f, encoding = 'utf-8' )
 		topicsAndTerms = self.TransposeMatrix( termsAndTopics )
 		with open( transposed_filename, 'w' ) as f:
 			json.dump( topicsAndTerms, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		original_filename = '{}/doc-topic-matrix.json'.format( self.data_path )
-		transposed_filename = '{}/topic-doc-matrix.json'.format( self.data_path )
+			
+		if subfolder is None:
+			original_filename = '{}/doc-topic-matrix.json'.format( self.data_path )
+			transposed_filename = '{}/topic-doc-matrix.json'.format( self.data_path )
+		else:
+			original_filename = '{}/{}/doc-topic-matrix.json'.format( self.data_path, subfolder )
+			transposed_filename = '{}/{}/topic-doc-matrix.json'.format( self.data_path, subfolder )
+			
 		with open( original_filename, 'r' ) as f:
 			docsAndTopics = json.load( f, encoding = 'utf-8' )
 		topicsAndDocs = self.TransposeMatrix( docsAndTopics )
@@ -73,9 +84,17 @@ class CommonLDA( object ):
 				transposed[ index ][ key ] = value
 		return transposed
 
-	def ComputeTopicCooccurrenceAndCovariance( self ):
-		filename = '{}/doc-topic-matrix.json'.format( self.data_path )
-		with open( filename, 'r' ) as f:
+	def ComputeTopicCooccurrenceAndCovariance( self, subfolder = None ):
+		if subfolder is None:
+			input_filename = '{}/doc-topic-matrix.json'.format( self.data_path )
+			cooccurrence_filename = '{}/topic-cooccurrence.json'.format( self.data_path )
+			covariance_filename = '{}/topic-covariance.json'.format( self.data_path )
+		else:
+			input_filename = '{}/{}/doc-topic-matrix.json'.format( self.data_path, subfolder )
+			cooccurrence_filename = '{}/{}/topic-cooccurrence.json'.format( self.data_path, subfolder )
+			covariance_filename = '{}/{}/topic-covariance.json'.format( self.data_path, subfolder )
+		
+		with open( input_filename, 'r' ) as f:
 			docsAndTopics = json.load( f, encoding = 'utf-8' )
 		docCount = len(docsAndTopics)
 		topicCount = max([0] + [len(d) for d in docsAndTopics.itervalues()])
@@ -93,9 +112,7 @@ class CommonLDA( object ):
 		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
 		self.topicCovariance = [ [ matrix[i][j] * normalization for j in range(topicCount) ] for i in range(topicCount) ]
 
-		filename = '{}/topic-cooccurrence.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
+		with open( cooccurrence_filename, 'w' ) as f:
 			json.dump( self.topicCooccurrence, f, encoding = 'utf-8', indent = 2, sort_keys = True )
-		filename = '{}/topic-covariance.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
+		with open( covariance_filename, 'w' ) as f:
 			json.dump( self.topicCovariance, f, encoding = 'utf-8', indent = 2, sort_keys = True )

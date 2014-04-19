@@ -103,11 +103,13 @@ class TermiteCore( object ):
 		if model == 'corpus':
 			return [
 				'Document',
+				'Documents',
 				'TextSearch',
 				'TermFreqs',
 				'TermProbs',
 				'TermCoFreqs',
 				'TermCoProbs',
+				'TermDocFreqs',
 				'TermPMI',
 				'TermG2',
 				'TermSentencePMI',

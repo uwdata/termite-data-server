@@ -33,6 +33,16 @@ class Corpus( TermiteCore ):
 				value = self.GetNonNegativeIntegerParam( key, 5 )
 			self.params.update({ key : value })
 
+		if key == 'docOffset':
+			value = self.GetNonNegativeIntegerParam( key, 0 )
+			self.params.update({ key : value })
+		if key == 'docLimit':
+			if self.IsMachineFormat():
+				value = self.GetNonNegativeIntegerParam( key, 100 )
+			else:
+				value = self.GetNonNegativeIntegerParam( key, 5 )
+			self.params.update({ key : value })
+
 		if key == 'docIndex':
 			value = self.GetStringParam( key )
 			self.params.update({ key : value })
@@ -57,9 +67,32 @@ class Corpus( TermiteCore ):
 		# Responses
 		self.content.update({
 			'Document' : document,
-			'DocIndex' : docIndex
+			'Metadata' : corpusHeader
 		})
 		self.table = [ document ]
+		self.header = corpusHeader
+	
+	def LoadDocuments( self ):
+		# Parameters
+		docLimit = self.GetParam('docLimit')
+		docOffset = self.GetParam('docOffset')
+		
+		# Load from disk
+		filename = os.path.join( self.request.folder, 'data/corpus', 'documents-meta.json' )
+		with open( filename ) as f:
+			corpus = json.load( f, encoding = 'utf-8' )
+			corpusHeader = corpus['header']
+			corpusData = corpus['data']
+		allDocIDs = sorted(corpusData.keys())
+		subDocIDs = allDocIDs[docOffset:docOffset+docLimit]
+		documents = [ corpusData[docID] for docID in subDocIDs ]
+			
+		# Responses
+		self.content.update({
+			'Documents' : documents,
+			'Metadata' : corpusHeader
+		})
+		self.table = documents
 		self.header = corpusHeader
 	
 	def LoadTextSearch( self ):

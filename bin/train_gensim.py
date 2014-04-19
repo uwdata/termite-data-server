@@ -3,7 +3,7 @@
 
 import argparse
 import logging
-import os.path
+import os
 from topic_models.GensimLDA import GensimLDA
 
 def TrainGensim( corpus_path, model_path, num_topics, num_passes, is_quiet, force_overwrite ):

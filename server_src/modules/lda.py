@@ -53,7 +53,7 @@ class LDA( TermiteCore ):
 		subTerms = allTerms[termOffset:termOffset+termLimit]
 		table = [ { 'index' : index, 'text' : term['text'] } for index, term in enumerate(subTerms) ]
 		header = [
-			{ 'name' : 'index', 'type' : 'number' },
+			{ 'name' : 'index', 'type' : 'integer' },
 			{ 'name' : 'text', 'type' : 'string' } 
 		]
 		termMaxCount = len(allTerms)
@@ -82,7 +82,7 @@ class LDA( TermiteCore ):
 		subDocs = allDocs[docOffset:docOffset+docLimit]
 		table = [ { 'index' : index, 'docID' : doc['docID'] } for index, doc in enumerate(subDocs) ]
 		header = [
-			{ 'name' : 'index', 'type' : 'number' },
+			{ 'name' : 'index', 'type' : 'integer' },
 			{ 'name' : 'docID', 'type' : 'string' }
 		]
 		docMaxCount = len(allDocs)
@@ -106,7 +106,7 @@ class LDA( TermiteCore ):
 		# Processing
 		table = [ { 'index' : index, 'name' : 'Topic #{}'.format(topic['index']+1) } for index, topic in enumerate(allTopics) ]
 		header = [
-			{ 'name' : 'index', 'type' : 'number' },
+			{ 'name' : 'index', 'type' : 'integer' },
 			{ 'name' : 'name', 'type' : 'string' }
 		]
 		topicCount = len(allTopics)
@@ -139,8 +139,8 @@ class LDA( TermiteCore ):
 		table.sort( key = lambda x : -x['value'] )
 		header = [
 			{ 'name' : 'term', 'type' : 'string' },
-			{ 'name' : 'topic', 'type' : 'number' },
-			{ 'name' : 'value', 'type' : 'number' }
+			{ 'name' : 'topic', 'type' : 'integer' },
+			{ 'name' : 'value', 'type' : 'real' }
 		]
 
 		# Responses
@@ -169,8 +169,8 @@ class LDA( TermiteCore ):
 		table.sort( key = lambda x : -x['value'] )
 		header = [
 			{ 'name' : 'term', 'type' : 'string' },
-			{ 'name' : 'topic', 'type' : 'number' },
-			{ 'name' : 'value', 'type' : 'number' }
+			{ 'name' : 'topic', 'type' : 'integer' },
+			{ 'name' : 'value', 'type' : 'real' }
 		]
 
 		self.content.update({
@@ -198,8 +198,8 @@ class LDA( TermiteCore ):
 		table.sort( key = lambda x : -x['value'] )
 		header = [
 			{ 'name' : 'docID', 'type' : 'string' },
-			{ 'name' : 'topic', 'type' : 'number' },
-			{ 'name' : 'value', 'type' : 'number' }
+			{ 'name' : 'topic', 'type' : 'integer' },
+			{ 'name' : 'value', 'type' : 'real' }
 		]
 		
 		# Responses
@@ -228,8 +228,8 @@ class LDA( TermiteCore ):
 		table.sort( key = lambda x : -x['value'] )
 		header = [
 			{ 'name' : 'docID', 'type' : 'string' },
-			{ 'name' : 'topic', 'type' : 'number' },
-			{ 'name' : 'value', 'type' : 'number' }
+			{ 'name' : 'topic', 'type' : 'integer' },
+			{ 'name' : 'value', 'type' : 'real' }
 		]
 
 		# Responses
@@ -252,9 +252,9 @@ class LDA( TermiteCore ):
 			table += [ { 'firstTopic' : firstTopic, 'secondTopic' : secondTopic, 'value' : value } for secondTopic, value in enumerate(vector) ]
 		table.sort( key = lambda x : -x['value'] )
 		header = [
-			{ 'name' : 'firstTopic', 'type' : 'number' },
-			{ 'name' : 'secondTopic', 'type' : 'number' },
-			{ 'name' : 'value', 'type' : 'number' }
+			{ 'name' : 'firstTopic', 'type' : 'integer' },
+			{ 'name' : 'secondTopic', 'type' : 'integer' },
+			{ 'name' : 'value', 'type' : 'real' }
 		]
 
 		# Responses
@@ -276,9 +276,9 @@ class LDA( TermiteCore ):
 		table = [ { 'firstTopic' : d['firstTopic'], 'secondTopic' : d['secondTopic'], 'value' : d['value'] * normalization } for d in topicCooccurrence ]
 		table.sort( key = lambda x : -x['value'] )
 		header = [
-			{ 'name' : 'firstTopic', 'type' : 'number' },
-			{ 'name' : 'secondTopic', 'type' : 'number' },
-			{ 'name' : 'value', 'type' : 'number' }
+			{ 'name' : 'firstTopic', 'type' : 'integer' },
+			{ 'name' : 'secondTopic', 'type' : 'integer' },
+			{ 'name' : 'value', 'type' : 'real' }
 		]
 		
 		# Responses
@@ -328,8 +328,8 @@ class LDA( TermiteCore ):
 		termCount = len(termIndex)
 		header = [
 			{ 'name' : 'term', 'type' : 'string' },
-			{ 'name' : 'topic', 'type' : 'number' },
-			{ 'name' : 'value', 'type' : 'number' }
+			{ 'name' : 'topic', 'type' : 'integer' },
+			{ 'name' : 'value', 'type' : 'real' }
 		]
 
 		# Responses
@@ -384,8 +384,8 @@ class LDA( TermiteCore ):
 		docCount = len(docIndex)
 		header = [
 			{ 'name' : 'docID', 'type' : 'string' },
-			{ 'name' : 'topic', 'type' : 'number' },
-			{ 'name' : 'value', 'type' : 'number' }
+			{ 'name' : 'topic', 'type' : 'integer' },
+			{ 'name' : 'value', 'type' : 'real' }
 		]
 
 		# Responses

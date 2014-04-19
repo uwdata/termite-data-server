@@ -11,6 +11,11 @@ def Document():
 	corpus.LoadDocument()
 	return corpus.GenerateResponse()
 
+def Documents():
+	corpus = Corpus( request, response )
+	corpus.LoadDocuments()
+	return corpus.GenerateResponse()
+
 def TextSearch():
 	corpus = Corpus( request, response )
 	corpus.LoadTextSearch()

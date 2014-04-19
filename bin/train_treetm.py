@@ -3,7 +3,7 @@
 
 import argparse
 import logging
-import os.path
+import os
 from topic_models.TreeTM import TreeTM
 
 def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is_quiet, force_overwrite, resume_training ):
