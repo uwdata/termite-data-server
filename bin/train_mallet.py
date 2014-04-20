@@ -26,8 +26,6 @@ def TrainMallet( corpus_path, model_path, token_regex, num_topics, num_iters, is
 	else:
 		logger.info( '    Already exists: %s', model_path )
 
-	logger.info( '--------------------------------------------------------------------------------' )
-
 def main():
 	parser = argparse.ArgumentParser( description = 'Train an LDA topic model using MALLET.' )
 	parser.add_argument( 'corpus_path'  , type = str                              , help = 'Input text corpus (as a folder or a file)' )

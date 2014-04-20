@@ -8,7 +8,7 @@ from importers.CreateApp import CreateApp
 from importers.Corpus import Corpus
 from importers.MalletLDA import MalletLDA
 
-def ImportMalletLDA( app_name, model_path, corpus_path, meta_path, is_quiet, force_overwrite ):
+def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )
 	logger.addHandler( logging.StreamHandler() )
 	logger.setLevel( logging.INFO if is_quiet else logging.DEBUG )
@@ -19,7 +19,7 @@ def ImportMalletLDA( app_name, model_path, corpus_path, meta_path, is_quiet, for
 	logger.info( '     app_path = %s', app_path )
 	logger.info( '   model_path = %s', model_path )
 	logger.info( '  corpus_path = %s', corpus_path )
-	logger.info( '    meta_path = %s', meta_path )
+	logger.info( 'database_path = %s', database_path )
 	logger.info( '--------------------------------------------------------------------------------' )
 	
 	if force_overwrite or not os.path.exists( app_path ):
@@ -27,24 +27,22 @@ def ImportMalletLDA( app_name, model_path, corpus_path, meta_path, is_quiet, for
 			importMalletLDA = MalletLDA( createApp.GetPath(), model_path )
 			if force_overwrite or not importMalletLDA.Exists():
 				importMalletLDA.Execute()
-			importCorpus = Corpus( createApp.GetPath(), corpus_path, meta_path )
+			importCorpus = Corpus( createApp.GetPath(), corpus_path, database_path )
 			if force_overwrite or not importCorpus.Exists():
 				importCorpus.Execute()
 	else:
 		logger.info( '    Already available: %s', app_path )
-	
-	logger.info( '--------------------------------------------------------------------------------' )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a MALLET topic model as a web2py application.' )
 	parser.add_argument( 'app_name'     , type = str                     , help = 'Web2py application identifier' )
-	parser.add_argument( 'model_path'   , type = str                     , help = 'Path of a MALLET LDA topic model' )
-	parser.add_argument( 'corpus_path'  , type = str                     , help = 'Path of input text corpus' )
-	parser.add_argument( 'meta_path'    , type = str   , default = None  , help = 'Path of optional corpus metadata', nargs = '?' )
+	parser.add_argument( 'model_path'   , type = str                     , help = 'Output of a MALLET LDA topic model' )
+	parser.add_argument( 'corpus_path'  , type = str                     , help = 'Text corpus as a tab-delimited file' )
+	parser.add_argument( 'database_path', type = str                     , help = 'Text corpus and metadata as a SQLite3 database' )
 	parser.add_argument( '--quiet'      , const = True , default = False , help = 'Show fewer debugging messages', action = 'store_const' )
 	parser.add_argument( '--overwrite'  , const = True , default = False , help = 'Overwrite any existing model', action = 'store_const' )
 	args = parser.parse_args()
-	ImportMalletLDA( args.app_name, args.model_path, args.corpus_path, args.meta_path, args.quiet, args.overwrite )
+	ImportMalletLDA( args.app_name, args.model_path, args.corpus_path, args.database_path, args.quiet, args.overwrite )
 
 if __name__ == '__main__':
 	main()
