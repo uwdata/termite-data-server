@@ -18,9 +18,9 @@ function __setup_corenlp__ {
 	SYMLINK_SUBPATH=$TOOLS_PATH/corenlp
 	SYMLINK=corenlp-3.3.1
 
-	echo "# Setting up Stanford CoreNLP tools..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
+		echo "# Setting up Stanford CoreNLP tools..."
 
 		if [ ! -d "$EXTERNALS_SUBPATH" ]
 		then
@@ -34,8 +34,6 @@ function __setup_corenlp__ {
 				mv $EXTERNALS_SUBPATH/stanford-corenlp-full-2014-01-04/LICENSE.txt $EXTERNALS_SUBPATH/ &&\
 				rmdir $EXTERNALS_SUBPATH/stanford-corenlp-full-2014-01-04
 			echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
-		else
-			echo "    Already downloaded: $EXTERNALS_SUBPATH/stanford-corenlp-full-2014-01-04.zip"
 		fi
 
 		echo "    Creating folder '$TOOLS_SUBPATH'..."
@@ -46,10 +44,12 @@ function __setup_corenlp__ {
 			mv $TOOLS_SUBPATH/stanford-corenlp-full-2014-01-04/* $TOOLS_SUBPATH/ &&\
 			rmdir $TOOLS_SUBPATH/stanford-corenlp-full-2014-01-04 &&\
 			ln -s $SYMLINK $SYMLINK_SUBPATH
+
+		echo "    Available: $TOOLS_SUBPATH"
+		echo
 	else
-		echo "    Already available: $TOOLS_SUBPATH"
+		echo "    Available: $TOOLS_SUBPATH"
 	fi
-	echo
 }
 
 __setup_corenlp__

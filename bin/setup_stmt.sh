@@ -9,8 +9,6 @@ then
 	echo "    Download and set up Stanford Topic Modeling Toolbox."
 	echo "    This script should be run from the root of the git repo."
 	echo
-	echo "    STMT is not downloaded by default."
-	echo
 	exit -1
 fi
 
@@ -20,9 +18,9 @@ function __setup_stmt__ {
 	SYMLINK_SUBPATH=$TOOLS_PATH/stmt
 	SYMLINK=stmt-0.4.0
 
-	echo "# Setting up STMT (Stanford Topic Modeling Toolkit)..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
+		echo "# Setting up STMT (Stanford Topic Modeling Toolkit)..."
 
 		if [ ! -d "$EXTERNALS_SUBPATH" ]
 		then
@@ -34,8 +32,6 @@ function __setup_stmt__ {
 			echo "    Extracting license..."
 			unzip $EXTERNALS_SUBPATH/tmt-0.4.0-src.zip LICENSE -d $EXTERNALS_SUBPATH
 			echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
-		else
-			echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
 		fi
 
 		echo "    Creating folder '$TOOLS_SUBPATH'..."
@@ -44,10 +40,12 @@ function __setup_stmt__ {
 		echo "    Downloading compiled binary..."
 		curl --insecure --location http://nlp.stanford.edu/software/tmt/tmt-0.4/tmt-0.4.0.jar > $TOOLS_SUBPATH/tmt-0.4.0.jar
 		ln -s $SYMLINK $SYMLINK_SUBPATH
+
+		echo "    Available: $TOOLS_SUBPATH"
+		echo
 	else
-		echo "    Already available: $TOOLS_SUBPATH"
+		echo "    Available: $TOOLS_SUBPATH"
 	fi
-	echo
 }
 
 __setup_stmt__

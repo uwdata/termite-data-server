@@ -18,9 +18,9 @@ function __setup_mallet__ {
 	SYMLINK_SUBPATH=$TOOLS_PATH/mallet
 	SYMLINK=mallet-2.0.7
 
-	echo "# Setting up MALLET (MAchine Learning for LanguagE Toolkit)..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
+		echo "# Setting up MALLET (MAchine Learning for LanguagE Toolkit)..."
 
 		if [ ! -d "$EXTERNALS_SUBPATH" ]
 		then
@@ -34,8 +34,6 @@ function __setup_mallet__ {
 				mv mallet-2.0.7/LICENSE $EXTERNALS_SUBPATH &&\
 				rmdir mallet-2.0.7
 			echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
-		else
-			echo "    Already downloaded: $EXTERNALS_SUBPATH/mallet-2.0.7.tar.gz"
 		fi
 
 		echo "    Creating folder '$TOOLS_SUBPATH'..."
@@ -46,10 +44,12 @@ function __setup_mallet__ {
 			mv mallet-2.0.7/* $TOOLS_SUBPATH &&\
 			ln -s $SYMLINK $SYMLINK_SUBPATH &&\
 			rmdir mallet-2.0.7
+
+		echo "    Available: $TOOLS_SUBPATH"
+		echo
 	else
-		echo "    Already available: $TOOLS_SUBPATH"
+		echo "    Available: $TOOLS_SUBPATH"
 	fi
-	echo
 }
 
 __setup_mallet__

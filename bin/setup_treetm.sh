@@ -16,9 +16,9 @@ function __setup_treetm__ {
 	EXTERNALS_SUBPATH=$EXTERNALS_PATH/treetm
 	TOOLS_SUBPATH=$TOOLS_PATH/treetm
 
-	echo "# Setting up TreeTM..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
+		echo "# Setting up interactive topic modeling..."
 
 		if [ ! -f "$EXTERNALS_SUBPATH" ]
 		then
@@ -31,8 +31,6 @@ function __setup_treetm__ {
 			unzip $EXTERNALS_SUBPATH/tree-tm.zip tree-TM/readme.txt -d $EXTERNALS_SUBPATH &&\
 				mv $EXTERNALS_SUBPATH/tree-TM/readme.txt $EXTERNALS_SUBPATH/README &&\
 				rmdir $EXTERNALS_SUBPATH/tree-TM
-		else
-			echo "    Already downloaded: $EXTERNALS_SUBPATH/tree-tm.zip"
 		fi
 		echo
 
@@ -48,10 +46,12 @@ function __setup_treetm__ {
 		cd $TOOLS_SUBPATH &&\
 			mkdir class &&\
 			javac -cp class:lib/* src/cc/mallet/topics/*/*.java -d class
+
+		echo "    Available: $TOOLS_SUBPATH"
+		echo
 	else
-		echo "    Already available: $TOOLS_SUBPATH"
+		echo "    Available: $TOOLS_SUBPATH"
 	fi
-	echo
 }
 
 __setup_treetm__

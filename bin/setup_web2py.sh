@@ -79,10 +79,12 @@ function __setup_web2py__ {
 			ln -s ../$APPS_PATH/ $WEB2PY_PATH/applications
 			ln -s ../$WEB2PY_PATH/applications-original/admin/ $APPS_PATH/admin
 		fi
+
+		echo "    Available: $WEB2PY_PATH"
+		echo
 	else
 		echo "    Already available: $WEB2PY_PATH"
 	fi
-	echo
 }
 
 __setup_web2py__

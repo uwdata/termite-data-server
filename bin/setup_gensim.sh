@@ -9,10 +9,8 @@ then
 	echo "    Download and set up gensim."
 	echo "    This script should be run from the root of the git repo."
 	echo
-	echo "    Gensim is not downloaded by default."
-	echo "    This script assumes that easy_install is available,"
-	echo "    and that SciPy and NumPy are already installed."
-	echo "    Running this script requires root access."
+	echo "    Requires: easy_install, scipy, numpy"
+	echo "    Running this script requires root access"
 	echo
 	exit -1
 fi
@@ -23,9 +21,9 @@ function __setup_gensim__ {
 	SYMLINK_SUBPATH=$TOOLS_PATH/gensim
 	SYMLINK=gensim-0.8.9
 
-	echo "# Setting up gensim..."
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
+		echo "# Setting up gensim..."
 
 		if [ ! -d "$EXTERNALS_SUBPATH" ]
 		then
@@ -39,8 +37,6 @@ function __setup_gensim__ {
 				mv gensim-0.8.9/README.rst $EXTERNALS_SUBPATH &&\
 				rmdir gensim-0.8.9
 			echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
-		else
-			echo "    Already downloaded: $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz"
 		fi
 		
 		echo "    Creating folder '$TOOLS_SUBPATH'..."
@@ -67,10 +63,12 @@ function __setup_gensim__ {
 		sudo rm -rf gensim.egg-info/
 		echo "sudo rm -rf dist/"
 		sudo rm -rf dist/
+
+		echo "    Available: $TOOLS_SUBPATH"
+		echo
 	else
-		echo "    Already available: $TOOLS_SUBPATH"
+		echo "    Available: $TOOLS_SUBPATH"
 	fi
-	echo
 }
 
 __setup_gensim__
