@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
 import logging
 import os
+import sqlite3
 import subprocess
 from CommonLDA import CommonLDA
 
@@ -17,15 +19,11 @@ app.path = "{DATA_PATH}"
 app.path.TermTopicMatrix = "{DATA_PATH}/term-topic-matrix.txt"
 app.path.DocTopicMatrix = "{DATA_PATH}/doc-topic-matrix.txt"
 app.path.TermIndex = "{DATA_PATH}/term-index.json"
-app.path.DocIndex = "{DATA_PATH}/doc-index.json"
 app.path.TopicIndex = "{DATA_PATH}/topic-index.json"
 
 # Load input data
 load( file = "{MODEL_FILENAME}" )
 model = mod.out
-
-meta = read.delim( file = "{META_FILENAME}", quote = "" )
-docIDs = meta["DocID"]
 
 library( jsonlite )
 
@@ -34,13 +32,13 @@ data.TermTopicMatrix = exp( t( model$beta$logbeta[[1]] ) )
 
 # Document Index
 temp.DocCount <- nrow(model$theta)
-temp.DocIDs <- paste( "Document #", 1:temp.DocCount, sep = "" )
+#temp.DocIDs <- paste( "Document #", 1:temp.DocCount, sep = "" )
 temp.DocIndex <- 1:temp.DocCount
-temp.DocIndexValues <- cbind( temp.DocIndex, docIDs )
-temp.DocIndexHeader <- c( "index", "docID" )
-colnames( temp.DocIndexValues ) <- temp.DocIndexHeader
-data.DocIndexJSON <- toJSON( as.data.frame( temp.DocIndexValues ), pretty = TRUE, digits = 10 )
-write( data.DocIndexJSON, file = app.path.DocIndex )
+#temp.DocIndexValues <- cbind( temp.DocIndex, docIDs )
+#temp.DocIndexHeader <- c( "index", "docID" )
+#colnames( temp.DocIndexValues ) <- temp.DocIndexHeader
+#data.DocIndexJSON <- toJSON( as.data.frame( temp.DocIndexValues ), pretty = TRUE, digits = 10 )
+#write( data.DocIndexJSON, file = app.path.DocIndex )
 
 # Term Index
 temp.TermCount <- nrow( data.TermTopicMatrix )
@@ -65,7 +63,7 @@ write( data.TopicIndexJSON, file = app.path.TopicIndex )
 
 # Doc-Topic Matrix
 # Tab-separated with no headers. Theta (D by K)
-rownames( data.DocTopicMatrix ) <- temp.DocIDs
+rownames( data.DocTopicMatrix ) <- temp.DocIndex
 colnames( data.DocTopicMatrix ) <- temp.TopicIndex
 data.DocTopicMatrixJSON <- toJSON( data.DocTopicMatrix, pretty = TRUE, digits = 10 )
 write( data.DocTopicMatrixJSON, file = app.path.DocTopicMatrix )
@@ -79,13 +77,13 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 
 """
 
-	def __init__( self, app_path, model_path, meta_path ):
+	def __init__( self, app_path, model_path, database_path ):
 		self.logger = logging.getLogger('termite')
 
 		self.app_path = app_path
 		self.data_path = '{}/data/lda'.format( self.app_path )
-		self.model_path = model_path
-		self.meta_path = meta_path
+		self.model_path = '{}/stm.RData'.format( model_path )
+		self.database_path = database_path
 		self.script_filename = '{}/import.r'.format( self.data_path )
 	
 	def Exists( self ):
@@ -96,13 +94,30 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 			os.makedirs( self.data_path )
 		
 		self.logger.info( 'Generating R script: %s', self.script_filename )
-		r = STM.SCRIPT.format( DATA_PATH = self.data_path, MODEL_FILENAME = self.model_path, META_FILENAME = self.meta_path )
+		r = STM.SCRIPT.format( DATA_PATH = self.data_path, MODEL_FILENAME = self.model_path )
 		with open( self.script_filename, 'w' ) as f:
 			f.write( r.encode( 'utf-8' ) )
 			
 		self.logger.info( 'Executing R script: %s', self.script_filename )
 		command = [ 'RScript', self.script_filename ]
 		self.RunCommand( command )
+		
+		self.logger.info( 'Generating doc-index.json' )
+		conn = sqlite3.connect(self.database_path)
+		cursor = conn.cursor()
+		cursor.execute('select doc_index, doc_id from docs order by doc_index')
+		doc_index = []
+		for record in cursor:
+			doc_index.append({
+				'index' : record[0],
+				'docID' : record[1]
+			})
+		cursor.close()
+		conn.close()
+		
+		filename = '{}/doc-index.json'.format(self.data_path)
+		with open(filename, 'w') as f:
+			json.dump(doc_index, f, encoding='utf-8', indent=2, sort_keys=True)
 
 		self.ResolveMatrices()
 		self.TransposeMatrices()

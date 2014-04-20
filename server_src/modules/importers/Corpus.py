@@ -5,6 +5,7 @@ import json
 import logging
 import math
 import os
+import shutil
 from collections import Counter
 from corpus.CorpusReader import CorpusReader
 from corpus.MetaReader import MetaReader
@@ -14,14 +15,14 @@ class Corpus( object ):
 	
 	DEFAULT_STOPWORDS = 'tools/mallet/stoplists/en.txt'
 
-	def __init__( self, app_path, corpus_path, meta_path, minFreq = 5, minDocFreq = 2, maxVocabCount = 1000, STOPWORDS = None ):
+	def __init__( self, app_path, corpus_path, database_path, minFreq = 5, minDocFreq = 2, maxVocabCount = 1000, STOPWORDS = None ):
 		self.stopwords = self.LoadStopwords( STOPWORDS if STOPWORDS is not None else Corpus.DEFAULT_STOPWORDS)
 		self.logger = logging.getLogger('termite')
 
 		self.app_path = app_path
 		self.data_path = '{}/data/corpus'.format( self.app_path )
 		self.corpus_path = corpus_path
-		self.meta_path = meta_path
+		self.database_path = database_path
 		
 		self.minFreq = minFreq
 		self.minDocFreq = minDocFreq
@@ -45,31 +46,9 @@ class Corpus( object ):
 		self.ImportSentenceStats()
 	
 	def ImportMetadata( self ):
-		metaData = None
-		metaHeader = None
-		
-		if self.meta_path is None:
-			self.logger.info( 'Reading text corpus: %s', self.corpus_path )
-			reader = MetaReader( self.corpus_path, stopwords = self.stopwords, fromCorpus = True )
-		else:
-			self.logger.info( 'Reading document metadata: %s', self.meta_path )
-			reader = MetaReader( self.meta_path, stopwords = self.stopwords, fromCorpus = False )
-		metaData = { docID : docMeta for docID, docMeta in reader.Load() }
-		metaHeader = reader.header
-		
-		for header in metaHeader:
-			if header['type'] == 'integer':
-				for d in metaData.itervalues():
-					d[header['name']] = int(d[header['name']])
-			if header['type'] == 'real':
-				for d in metaData.itervalues():
-					d[header['name']] = float(d[header['name']])
-		
-		self.logger.info( 'Writing document metadata: %s', self.data_path )
-		filename = '{}/documents-meta.json'.format( self.data_path )
-		with open( filename, 'w' ) as f:
-			data = { "header" : metaHeader, "data" : metaData }
-			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+		source = self.database_path
+		target = '{}/databases/corpus.db'.format(self.app_path)
+		shutil.copy(source, target)
 	
 	def ImportDocumentStats( self ):
 		corpus = None
