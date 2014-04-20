@@ -109,3 +109,4 @@ utils/corenlp/StreamingSentenceSplitter.jar:
 
 clean:
 	rm -rf externals
+	rm -rf tools
