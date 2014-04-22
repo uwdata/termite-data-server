@@ -7,6 +7,7 @@ sys.path.append("web2py")
 import argparse
 import logging
 import os
+import shutil
 from models.LDA_DB import LDA_DB
 from modules.apps.CreateApp import CreateApp
 from modules.readers.TreeTMReader import TreeTMReader
@@ -27,8 +28,18 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 	
 	if force_overwrite or not os.path.exists( app_path ):
 		with CreateApp( app_name ) as app:
+			app_model_path = '{}/treetm'.format( app.GetDataPath() )
+			app_corpus_path = '{}/corpus.txt'.format( app.GetDataPath() )
+			app_database_path = '{}/corpus.db'.format( app.GetDataPath() )
+			logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
+			shutil.copytree( model_path, app_model_path )
+			logger.info( 'Copying [%s] --> [%s]', corpus_path, app_corpus_path )
+			shutil.copy( corpus_path, app_corpus_path )
+			logger.info( 'Copying [%s] --> [%s]', database_path, app_database_path )
+			shutil.copy( database_path, app_database_path )
+
 			with LDA_DB( app.GetDatabasePath() ) as lda_db:
-				reader = TreeTMReader( model_path, lda_db )
+				reader = TreeTMReader( app_model_path, lda_db )
 				reader.Execute()
 #			with TreeTMReader( database_path ) as reader:
 #				reader.Execute()

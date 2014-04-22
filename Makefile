@@ -45,18 +45,23 @@ tools/stmt:
 #   Download and build an LDA model using the InfoVis dataset
 
 demo:
-	./demo.py infovis mallet --overwrite
+	./demo.py infovis mallet
 
 demos:
-	./demo.py infovis mallet --overwrite
-	./demo.py infovis gensim --overwrite
-	./demo.py poliblogs stm --overwrite
-	./demo.py infovis treetm --overwrite
+	./demo.py infovis gensim
+	./demo.py poliblogs stm
+	./demo.py infovis treetm
 
 all-demos:
 	./demo.py infovis mallet
 	./demo.py infovis gensim
 	./demo.py infovis treetm
+	./demo.py nsf1k mallet
+	./demo.py nsf1k treetm
+	./demo.py nsf10k mallet
+	./demo.py nsf10k treetm
+	./demo.py nsf25k mallet
+	./demo.py nsf25k treetm
 	./demo.py poliblogs mallet
 	./demo.py poliblogs gensim
 	./demo.py poliblogs treetm
@@ -68,14 +73,6 @@ all-demos:
 	./demo.py 20newsgroups mallet
 	./demo.py 20newsgroups gensim
 	./demo.py 20newsgroups treetm
-
-other-demos:
-	./demo.py nsf1k mallet
-	./demo.py nsf1k treetm
-	./demo.py nsf10k mallet
-	./demo.py nsf10k treetm
-	./demo.py nsf25k mallet
-	./demo.py nsf25k treetm
 	./demo.py nsf146k mallet
 	./demo.py nsf146k treetm
 
