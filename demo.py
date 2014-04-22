@@ -5,7 +5,7 @@ import argparse
 import subprocess
 
 DEFAULT_DATASET = 'infovis'
-DATASETS = [ DEFAULT_DATASET, '20newsgroups', 'nsf146k', 'nsf25k', 'nsf10k', 'nsf1k', 'poliblogs', 'fomc' ]
+DATASETS = [ DEFAULT_DATASET, '20newsgroups', 'nsfgrants', 'nsf25k', 'nsf10k', 'nsf1k', 'poliblogs', 'fomc' ]
 
 DEFAULT_MODEL = 'mallet'
 MODELS = [ DEFAULT_MODEL, 'treetm', 'stmt', 'stm', 'gensim' ]
@@ -13,7 +13,9 @@ MODELS = [ DEFAULT_MODEL, 'treetm', 'stmt', 'stm', 'gensim' ]
 def Shell(command):
 	p = subprocess.Popen(command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
 	while p.poll() is None:
-		print p.stdout.readline().rstrip('\n')
+		line = p.stdout.readline().rstrip('\n')
+		if len(line) > 0:
+			print line
 
 def Demonstrate(dataset, model, is_quiet, force_overwrite):
 	database_filename = 'data/demo/{}/corpus/corpus.db'.format(dataset)

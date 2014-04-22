@@ -25,24 +25,27 @@ web2py:
 
 tools: tools/mallet tools/treetm tools/stm tools/gensim tools/stmt tools/corenlp
 
-tools/mallet: utils
-	bin/setup_mallet.sh
-
-tools/treetm:
-	bin/setup_treetm.sh
-
-tools/stm:
-	bin/setup_stm.sh
+tools/corenlp: utils
+	bin/setup_corenlp.sh
 
 tools/gensim:
 	bin/setup_gensim.sh
 
+tools/mallet: utils
+	bin/setup_mallet.sh
+
 tools/stmt:
 	bin/setup_stmt.sh
 
+tools/stm:
+	bin/setup_stm.sh
+
+tools/treetm:
+	bin/setup_treetm.sh
+
 ################################################################################
 # Demos
-#   Download and build an LDA model using the InfoVis dataset
+#   Download and build an LDA model using a provided dataset
 
 demo:
 	./demo.py infovis mallet
@@ -64,17 +67,13 @@ all-demos:
 	./demo.py nsf25k treetm
 	./demo.py poliblogs mallet
 	./demo.py poliblogs gensim
-	./demo.py poliblogs treetm
 	./demo.py poliblogs stm
 	./demo.py fomc mallet
 	./demo.py fomc gensim
-	./demo.py fomc treetm
 	./demo.py fomc stm
 	./demo.py 20newsgroups mallet
 	./demo.py 20newsgroups gensim
-	./demo.py 20newsgroups treetm
-	./demo.py nsf146k mallet
-	./demo.py nsf146k treetm
+	./demo.py nsfgrants mallet
 
 ################################################################################
 # Other utilities

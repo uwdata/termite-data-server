@@ -24,6 +24,8 @@ def TrainSTM( corpus_path, model_path, is_quiet, force_overwrite ):
 			os.makedirs(model_path)
 		logger.info( '    Copying [%s] --> [%s]', source_filename, target_filename )
 		shutil.copy(source_filename, target_filename)
+	else:
+		logger.info( '    Already exists: %s', model_path )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train a structural topic model.' )
