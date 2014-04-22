@@ -4,7 +4,7 @@
 import argparse
 import logging
 import os
-from topic_models.TreeTM import TreeTM
+from modules.topic_models.TreeTM import BuildLDA, RefineLDA
 
 def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is_quiet, force_overwrite, resume_training ):
 	logger = logging.getLogger( 'termite' )
@@ -20,29 +20,22 @@ def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is
 		logger.info( '      topics = %s', num_topics )
 		logger.info( '       iters = %s', num_iters )
 		logger.info( '--------------------------------------------------------------------------------' )
-		treetm = TreeTM( corpus_path, modelsPath = model_path, tokenRegex = token_regex, resume = False, numTopics = num_topics, finalIter = num_iters )
-		treetm.Prepare()
-		treetm.Execute()
-		logger.info( '--------------------------------------------------------------------------------' )
+		lda = BuildLDA( corpus_path, model_path, tokenRegex = token_regex, numTopics = num_topics, numIters = num_iters )
+		lda.Execute()
 	else:
 		if resume_training:
 			logger.info( '--------------------------------------------------------------------------------' )
 			logger.info( 'Training an existing interactive topic model...' )
-			logger.info( '      corpus = %s', corpus_path )
 			logger.info( '       model = %s', model_path )
 			logger.info( '       iters = %s', num_iters )
 			logger.info( '--------------------------------------------------------------------------------' )
-			treetm = TreeTM( corpus_path, modelsPath = model_path, resume = True, finalIter = num_iters )
-			treetm.Prepare()
-			treetm.Execute()
-			logger.info( '--------------------------------------------------------------------------------' )
+			lda = RefineLDA( model_path, numIters = num_iters )
+			lda.Execute()
 		else:
 			logger.info( '--------------------------------------------------------------------------------' )
 			logger.info( 'Training an interactive topic model...' )
 			logger.info( '--------------------------------------------------------------------------------' )
 			logger.info( '    Already exists: %s', model_path )
-			logger.info( '--------------------------------------------------------------------------------' )
-			
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train an interactive topic model.' )

@@ -11,7 +11,7 @@
 #   Build all utilities
 #   Build all demos
 
-all: web2py tools/mallet utils demo
+all: web2py tools utils demo
 
 ################################################################################
 # Web framework
@@ -22,6 +22,8 @@ web2py:
 ################################################################################
 # Topic modeling tools
 #   mallet, treetm, stm, gensim, stmt
+
+tools: tools/mallet tools/treetm tools/stm tools/gensim tools/stmt tools/corenlp
 
 tools/mallet: utils
 	bin/setup_mallet.sh
@@ -39,57 +41,43 @@ tools/stmt:
 	bin/setup_stmt.sh
 
 ################################################################################
-# Datasets
-
-data/demo/20newsgroups:
-	bin/fetch_20newsgroups.sh
-
-data/demo/infovis:
-	bin/fetch_infovis.sh
-
-data/demo/poliblogs:
-	bin/fetch_poliblogs.sh
-
-data/demo/nsf146k:
-	bin/fetch_nsf146k.sh
-
-################################################################################
 # Demos
 #   Download and build an LDA model using the InfoVis dataset
 
 demo:
-	./demo infovis mallet
+	./demo.py infovis mallet --overwrite
 
 demos:
-	./demo infovis mallet
-	./demo infovis gensim
-	./demo poliblogs stm
+	./demo.py infovis mallet --overwrite
+	./demo.py infovis gensim --overwrite
+	./demo.py poliblogs stm --overwrite
+	./demo.py infovis treetm --overwrite
 
 all-demos:
-	./demo infovis mallet
-	./demo infovis gensim
-	./demo infovis treetm
-	./demo poliblogs mallet
-	./demo poliblogs gensim
-	./demo poliblogs treetm
-	./demo poliblogs stm
-	./demo fomc mallet
-	./demo fomc gensim
-	./demo fomc treetm
-	./demo fomc stm
-	./demo 20newsgroups mallet
-	./demo 20newsgroups gensim
-	./demo 20newsgroups treetm
+	./demo.py infovis mallet
+	./demo.py infovis gensim
+	./demo.py infovis treetm
+	./demo.py poliblogs mallet
+	./demo.py poliblogs gensim
+	./demo.py poliblogs treetm
+	./demo.py poliblogs stm
+	./demo.py fomc mallet
+	./demo.py fomc gensim
+	./demo.py fomc treetm
+	./demo.py fomc stm
+	./demo.py 20newsgroups mallet
+	./demo.py 20newsgroups gensim
+	./demo.py 20newsgroups treetm
 
 other-demos:
-	./demo nsf1k mallet
-	./demo nsf1k treetm
-	./demo nsf10k mallet
-	./demo nsf10k treetm
-	./demo nsf25k mallet
-	./demo nsf25k treetm
-	./demo nsf146k mallet
-	./demo nsf146k treetm
+	./demo.py nsf1k mallet
+	./demo.py nsf1k treetm
+	./demo.py nsf10k mallet
+	./demo.py nsf10k treetm
+	./demo.py nsf25k mallet
+	./demo.py nsf25k treetm
+	./demo.py nsf146k mallet
+	./demo.py nsf146k treetm
 
 ################################################################################
 # Other utilities

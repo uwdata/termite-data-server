@@ -5,66 +5,133 @@ import logging
 import os
 import subprocess
 
-class MalletLDA(object):
-	def __init__( self, corpusPath, modelPath = 'data', tokenRegex = '\p{Alpha}{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
-		self.MALLET_PATH = MALLET_PATH
-		self.logger = logging.getLogger('termite')
-		
+class BuildMultipleLDAs(object):
+	"""
+	corpusPath = A single tab-delimited file containing the corpus (one document per line, two columns containing docID and docContent, without headers)
+	modelPath = Folder for storing all output files
+	numModels = Number of models
+	tokenRegex, numTopics, numIters = Other parameters
+	"""
+	def __init__( self, corpusPath, modelPath, numModels = 50, tokenRegex = '\p{Alpha}{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
+		self.corpusPath = corpusPath
+		self.modelPath = modelPath
+		self.numModels = numModels
+		self.tokenRegex = tokenRegex
+		self.numTopics = numTopics
+		self.numIters = numIters
+	
+	def Execute( self ):
+		with ImportMalletCorpus( self.corpusPath, self.modelPath ) as importer:
+			importer.ImportFileOrFolder( self.tokenRegex )
+		for index in range( self.numModels ):
+			modelSubPath = '{}/model_{:03d}'.format( self.modelPath, index )
+			with TrainMalletLDA( self.modelPath, modelSubPath ) as builder:
+				builder.TrainTopics( self.numTopics, self.numIters )
+
+class BuildLDA(object):
+	"""
+	corpusPath = A single tab-delimited file containing the corpus (one document per line, two columns containing docID and docContent, without headers)
+	modelPath = Folder for storing all output files
+	tokenRegex, numTopics, numIters = Other parameters
+	"""
+	def __init__( self, corpusPath, modelPath, tokenRegex = '\p{Alpha}{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
 		self.corpusPath = corpusPath
 		self.modelPath = modelPath
 		self.tokenRegex = tokenRegex
 		self.numTopics = numTopics
 		self.numIters = numIters
-		self.corpusInMallet = '{}/corpus.mallet'.format( self.modelPath )
-		self.outputModel = '{}/output.model'.format( self.modelPath )
+	
+	def Execute( self ):
+		with ImportMalletCorpus( self.corpusPath, self.modelPath ) as importer:
+			importer.ImportFileOrFolder( self.tokenRegex )
+		with TrainMalletLDA( self.modelPath, self.modelPath ) as builder:
+			builder.TrainTopics( self.numTopics, self.numIters )
+
+class ImportMalletCorpus(object):
+	def __init__( self, inputPath, corpusPath, MALLET_PATH = 'tools/mallet' ):
+		self.logger = logging.getLogger('termite')
+		self.malletExecutable =  '{}/bin/mallet'.format( MALLET_PATH )
+		self.inputPath = inputPath
+		self.corpusPath = corpusPath
+		self.corpusInMallet = '{}/corpus.mallet'.format( self.corpusPath )
+
+	def Shell( self, command ):
+		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
+		while p.poll() is None:
+			line = p.stdout.readline().rstrip('\n')
+			if len(line) > 0:
+				self.logger.debug( line )
+	
+	def __enter__( self ):
+		return self
+	
+	def __exit__( self, type, value, traceback ):
+		pass
+
+	def ImportFileOrFolder( self, tokenRegex = None, removeStopwords = True, stoplistFile = None, keepSequence = True ):
+		if not os.path.exists( self.corpusPath ):
+			os.makedirs( self.corpusPath )
+
+		if os.path.isdir( self.inputPath ):
+			self.logger.info( 'Importing a folder into MALLET: [%s] --> [%s]', self.inputPath, self.corpusInMallet ) 
+			command = [ self.malletExecutable, 'import-dir' ]
+		else:
+			self.logger.info( 'Importing a file into MALLET: [%s] --> [%s]', self.inputPath, self.corpusInMallet )
+			command = [ self.malletExecutable, 'import-file' ]
+		command += [ '--input', self.inputPath ]
+		command += [ '--output', self.corpusInMallet ]
+		if removeStopwords:
+			command += [ '--remove-stopwords' ]
+		if stoplistFile is not None:
+			command += [ '--stoplist-file', stoplistFile ]
+		if tokenRegex is not None:
+			command += [ '--token-regex', tokenRegex ]
+		if keepSequence:
+			command += [ '--keep-sequence' ]
+		self.Shell( command )
+	
+class TrainMalletLDA(object):
+	def __init__( self, corpusPath, modelPath, MALLET_PATH = 'tools/mallet' ):
+		self.logger = logging.getLogger('termite')
+		self.malletExecutable =  '{}/bin/mallet'.format( MALLET_PATH )
+		self.corpusPath = corpusPath
+		self.corpusInMallet = '{}/corpus.mallet'.format( self.corpusPath )
+		self.modelPath = modelPath
+		self.outputModel = '{}/lda.mallet'.format( self.modelPath )
 		self.outputTopicKeys = '{}/output-topic-keys.txt'.format( self.modelPath )
 		self.outputTopicWordWeights = '{}/topic-word-weights.txt'.format( self.modelPath )
 		self.outputDocTopicMixtures = '{}/doc-topic-mixtures.txt'.format( self.modelPath )
 		self.outputWordTopicCounts = '{}/word-topic-counts.txt'.format( self.modelPath )
 
-	def CreateModelPath( self ):
-		if not os.path.exists( self.modelPath ):
-			self.logger.info( 'Creating model folder: %s', self.modelPath )
-			os.makedirs( self.modelPath )
-
-	def ImportFileOrFolder( self ):
-		mallet_executable = '{}/bin/mallet'.format( self.MALLET_PATH )
-		if os.path.isdir( self.corpusPath ):
-			self.logger.info( 'Importing a folder into MALLET: [%s] --> [%s]', self.corpusPath, self.corpusInMallet ) 
-			command = [ mallet_executable, 'import-dir' ]
-		else:
-			self.logger.info( 'Importing a file into MALLET: [%s] --> [%s]', self.corpusPath, self.corpusInMallet )
-			command = [ mallet_executable, 'import-file' ]
-		command += [
-			'--input', self.corpusPath,
-			'--output', self.corpusInMallet,
-			'--remove-stopwords',
-			'--token-regex', self.tokenRegex,
-			'--keep-sequence'
-		]
+	def Shell( self, command ):
 		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
 		while p.poll() is None:
-			self.logger.debug( p.stdout.readline().rstrip('\n') )
-	
-	def TrainTopics( self ):
-		mallet_executable = '{}/bin/mallet'.format( self.MALLET_PATH )
+			line = p.stdout.readline().rstrip('\n')
+			if len(line) > 0:
+				self.logger.debug( line )
+
+	def __enter__( self ):
+		return self
+
+	def __exit__( self, type, value, traceback ):
+		pass
+
+	def TrainTopics( self, numTopics = None, numIters = None ):
+		if not os.path.exists( self.modelPath ):
+			os.makedirs( self.modelPath )
+
 		self.logger.info( 'Training an LDA model in MALLET: [%s] --> [%s]', self.corpusInMallet, self.outputModel )
 		command = [
-			mallet_executable, 'train-topics',
+			self.malletExecutable, 'train-topics',
 			'--input', self.corpusInMallet,
 			'--output-model', self.outputModel,
 			'--output-topic-keys', self.outputTopicKeys,
 			'--topic-word-weights-file', self.outputTopicWordWeights,
 			'--output-doc-topics', self.outputDocTopicMixtures,
-			'--word-topic-counts-file', self.outputWordTopicCounts,
-			'--num-topics', str(self.numTopics),
-			'--num-iterations', str(self.numIters)
+			'--word-topic-counts-file', self.outputWordTopicCounts
 		]
-		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
-		while p.poll() is None:
-			self.logger.debug( p.stdout.readline().rstrip('\n') )
-		
-	def Execute( self ):
-		self.CreateModelPath()
-		self.ImportFileOrFolder()
-		self.TrainTopics()
+		if numTopics is not None:
+			command += [ '--num-topics', str(numTopics) ]
+		if numIters is not None:
+			command += [ '--num-iterations', str(numIters) ]
+		self.Shell( command )

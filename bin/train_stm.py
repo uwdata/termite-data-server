@@ -10,7 +10,7 @@ def TrainSTM( corpus_path, model_path, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )
 	logger.addHandler( logging.StreamHandler() )
 	logger.setLevel( logging.INFO if is_quiet else logging.DEBUG )
-
+	
 	logger.info( '--------------------------------------------------------------------------------' )
 	logger.info( 'Copying pre-computed STM models (saved as RData with variable "mod.out")' )
 	logger.info( '      corpus = %s', corpus_path )
@@ -24,7 +24,7 @@ def TrainSTM( corpus_path, model_path, is_quiet, force_overwrite ):
 			os.makedirs(model_path)
 		logger.info( '    Copying [%s] --> [%s]', source_filename, target_filename )
 		shutil.copy(source_filename, target_filename)
-	
+
 def main():
 	parser = argparse.ArgumentParser( description = 'Train a structural topic model.' )
 	parser.add_argument( 'corpus_path'  , type = str , help = 'Input corpus path' )

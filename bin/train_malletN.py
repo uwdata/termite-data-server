@@ -4,7 +4,7 @@
 import argparse
 import logging
 import os
-from topic_models.MalletLDAs import MalletLDAs
+from modules.topic_models.MalletLDA import BuildMultipleLDAs
 
 def TrainMalletN( corpus_path, model_path, token_regex, num_topics, num_iters, num_models, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )
@@ -20,14 +20,12 @@ def TrainMalletN( corpus_path, model_path, token_regex, num_topics, num_iters, n
 	logger.info( '       iters = %s', num_iters )
 	logger.info( '      models = %s', num_models )
 	logger.info( '--------------------------------------------------------------------------------' )
-
+	
 	if force_overwrite or not os.path.exists( model_path ):
-		ldas = MalletLDAs( corpus_path, modelPath = model_path, tokenRegex = token_regex, numTopics = num_topics, numIters = num_iters, numModels = num_models )
+		ldas = BuildMultipleLDAs( corpus_path, model_path, tokenRegex = token_regex, numTopics = num_topics, numIters = num_iters, numModels = num_models )
 		ldas.Execute()
 	else:
 		logger.info( '    Already exists: %s', model_path )
-
-	logger.info( '--------------------------------------------------------------------------------' )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train an LDA topic model using MALLET.' )

@@ -1,10 +1,45 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import json
 import logging
 import os
 import shutil
 import subprocess
+
+class RefineLDA(object):
+	"""
+	corpusPath = A single tab-delimited file containing the corpus (one document per line, two columns containing docID and docContent, without headers)
+	modelPath = Folder for storing all output files
+	numIters = Other parameters
+	"""
+	def __init__( self, modelPath, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
+		self.corpusPath = None
+		self.modelPath = modelPath
+		self.numIters = numIters
+	
+	def Execute( self ):
+		with TreeTM( self.corpusPath, self.modelPath, resume = True, finalIter = self.numIters ) as treeTM:
+			treeTM.Prepare()
+			treeTM.Execute()
+	
+class BuildLDA(object):
+	"""
+	corpusPath = A single tab-delimited file containing the corpus (one document per line, two columns containing docID and docContent, without headers)
+	modelPath = Folder for storing all output files
+	tokenRegex, numTopics, numIters = Other parameters
+	"""
+	def __init__( self, corpusPath, modelPath, tokenRegex = '\p{Alpha}{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
+		self.corpusPath = corpusPath
+		self.modelPath = modelPath
+		self.tokenRegex = tokenRegex
+		self.numTopics = numTopics
+		self.numIters = numIters
+	
+	def Execute( self ):
+		with TreeTM( self.corpusPath, self.modelPath, resume = False, tokenRegex = self.tokenRegex, numTopics = self.numTopics, finalIter = self.numIters ) as treeTM:
+			treeTM.Prepare()
+			treeTM.Execute()
 
 HYPER_PARAMS = u"""DEFAULT_ 0.01
 NL_ 0.01
@@ -81,7 +116,7 @@ java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vec
 """
 
 class TreeTM(object):
-	def __init__( self, corpusPath, modelsPath = 'data', tokenRegex = '\p{Alpha}{3,}', resume = False, prevEntryID = None, numTopics = 20, finalIter = 1000, MALLET_PATH = 'tools/mallet', TREETM_PATH = 'tools/treetm' ):
+	def __init__( self, corpusPath, modelsPath, tokenRegex = '\p{Alpha}{3,}', resume = False, prevEntryID = None, numTopics = 20, finalIter = 1000, MALLET_PATH = 'tools/mallet', TREETM_PATH = 'tools/treetm' ):
 		self.TREETM_PATH = TREETM_PATH
 		self.MALLET_PATH = MALLET_PATH
 		self.logger = logging.getLogger('termite')
@@ -103,13 +138,13 @@ class TreeTM(object):
 				self.prevEntryID = prevEntryID
 			self.nextEntryID = nextEntryID
 			self.numTopics = numTopics
-			self.logger.info( 'Training an interactive topic model: [%s][#%d] --> [%s][#%d]', self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
+			self.logger.info( 'Training an existing interactive topic model: [%s][#%d] --> [%s][#%d]', self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
 		else:
 			nextEntryID, numTopics = self.CreateRunIndexFile( numTopics )
 			self.prevEntryID = -1
 			self.nextEntryID = nextEntryID
 			self.numTopics = numTopics
-			self.logger.info( 'Training an interactive topic model: [%s] --> [%s][#%d]', self.corpusInMallet, self.modelsPath, self.nextEntryID )
+			self.logger.info( 'Training a new interactive topic model: [%s] --> [%s][#%d]', self.corpusInMallet, self.modelsPath, self.nextEntryID )
 
 		self.resume = resume
 		self.finalIter = finalIter
@@ -173,6 +208,13 @@ class TreeTM(object):
 		self.keepTerms = {}
 		self.removeTermsAll = frozenset()
 		self.removeTermsNew = frozenset()
+
+	def __enter__( self ):
+		return self
+
+	def __exit__( self, type, value, traceback ):
+		pass
+
 
 ################################################################################
 # Setters (public methods)
@@ -315,12 +357,12 @@ class TreeTM(object):
 	
 	def CreateEntryFolder( self ):
 		if not os.path.exists( self.nextEntryPath ):
-			self.logger.info( 'Copying model folder: %s', self.nextEntryPath )
+			self.logger.info( 'Creating entry folder: %s', self.nextEntryPath )
 			os.makedirs( self.nextEntryPath )
 
 	def CopyEntryFolder( self ):
 		if not os.path.exists( self.nextEntryPath ):
-			self.logger.info( 'Copying model folder: %s', self.nextEntryPath )
+			self.logger.info( 'Copying entry folder: %s', self.nextEntryPath )
 			shutil.copytree( self.prevEntryPath, self.nextEntryPath )
 			with open( self.filenameRemoveTermsNew, 'w' ) as f:
 				f.write('')
