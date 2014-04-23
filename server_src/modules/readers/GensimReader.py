@@ -41,7 +41,7 @@ class GensimReader():
 			term = self.dictionary[index]
 			termTable.append({
 				'term_index' : index,
-				'text' : term
+				'term_text' : term
 			})
 			termLookup[term] = index
 		for doc, _ in enumerate(docsAndFreqsTopics):
@@ -51,9 +51,9 @@ class GensimReader():
 		for topic, freqsTerms in enumerate(topicsAndFreqsTerms):
 			topicTable.append({
 				'topic_index' : topic,
-				'freq' : sum( freq for freq, term in freqsTerms ),
-				'desc' : u', '.join( term for freq, term in freqsTerms[:5] ),
-				'top_terms' : [ term for freq, term in freqsTerms[:20] ]
+				'topic_freq' : sum( freq for freq, term in freqsTerms ),
+				'topic_desc' : u', '.join( term for freq, term in freqsTerms[:5] ),
+				'topic_top_terms' : [ term for freq, term in freqsTerms[:20] ]
 			})
 		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
 		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)

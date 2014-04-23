@@ -7,6 +7,9 @@ import os
 import sqlite3
 import sys
 
+sys.path.append("web2py")
+from models.Corpus_DB import Corpus_DB
+
 def ImportFolder(corpus_folder):
 	filenames = glob.glob(corpus_folder)
 	for filename in sorted(filenames):
@@ -37,10 +40,6 @@ def ReadFromStdin():
 			doc_content = values[1]
 		yield doc_id, doc_content
 
-def InitFieldsTable(conn):
-	with conn:
-		conn.execute('create table if not exists fields (field_index integer primary key autoincrement, field_name text unique)')
-	
 def UpdateFieldsTable(fields, conn, cursor):
 	records = [[field] for field in fields]
 	with conn:
@@ -52,10 +51,6 @@ def UpdateFieldsTable(fields, conn, cursor):
 		field_indexes[field_name] = field_index
 	return field_indexes
 
-def InitDocsTable(conn):
-	with conn:
-		conn.execute('create table if not exists docs (doc_index integer primary key autoincrement, doc_id text unique)')
-	
 def UpdateDocsTable(doc_id, conn, cursor):
 	with conn:
 		conn.execute('insert or ignore into docs(doc_id) values (?)', [doc_id])
@@ -64,17 +59,12 @@ def UpdateDocsTable(doc_id, conn, cursor):
 	doc_index = record[0]
 	return doc_index
 
-def InitCorpusTable(conn):
-	with conn:
-		conn.execute('create table if not exists corpus (rowid integer primary key autoincrement, doc_index integer, field_index integer, value blob)')
-		conn.execute('create unique index if not exists doc_field on corpus (doc_index, field_index)')
-
 def UpdateCorpusTable(doc_index, fields, values, field_indexes, conn, cursor):
 	records = [ [doc_index, field_indexes[field], values[index]] for index, field in enumerate(fields) ]
 	with conn:
 		conn.executemany('insert or ignore into corpus(doc_index, field_index, value) values (?, ?, ?)', records)
 
-def CreateDatabase(corpus_filename_or_folder, database_filename):
+def CreateDatabase(corpus_filename_or_folder, database_path):
 	if corpus_filename_or_folder is not None:
 		if os.path.isfile(corpus_filename_or_folder):
 			corpus_iterator = ImportFile(corpus_filename_or_folder)
@@ -82,25 +72,24 @@ def CreateDatabase(corpus_filename_or_folder, database_filename):
 			corpus_iterator = ImportFolder(corpus_filename_or_folder)
 	else:
 		corpus_iterator = ReadFromStdin()
-
-	conn = sqlite3.connect(database_filename)
-	InitCorpusTable(conn)
-	InitFieldsTable(conn)
-	InitDocsTable(conn)
-	cursor = conn.cursor()
+		
+	database_filename = '{}/{}'.format(database_path, Corpus_DB.FILENAME)
+	with Corpus_DB(database_path, forceCommit=True) as _:
+		print 'Importing into database at {}'.format(database_filename)
 	
+	conn = sqlite3.connect(database_filename)
+	cursor = conn.cursor()
 	fields = ['doc_id', 'doc_content']
 	field_indexes = UpdateFieldsTable(fields, conn, cursor)
 	for doc_id, doc_content in corpus_iterator:
 		doc_index = UpdateDocsTable(doc_id, conn, cursor)
 		UpdateCorpusTable(doc_index, fields, [doc_id, doc_content], field_indexes, conn, cursor)
-		
 	cursor.close()
 	conn.close()
 	
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a TSV file or a folder into a SQLite3 Database.' )
-	parser.add_argument( 'database', type = str, help = 'Output database filename' )
+	parser.add_argument( 'database', type = str, help = 'Output database path' )
 	parser.add_argument( 'corpus'  , type = str, help = 'Input corpus (filename or folder path)', nargs = '?', default = None )
 	args = parser.parse_args()
 	CreateDatabase(args.corpus, args.database)

@@ -1,16 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
-sys.path.append("web2py")
-
 import argparse
 import logging
 import os
 import shutil
-from models.LDA_DB import LDA_DB
+import sys
 from modules.apps.CreateApp import CreateApp
+from modules.apps.ComputeCorpusStats import ComputeCorpusStats
+from modules.apps.ComputeLDAStats import ComputeLDAStats
 from modules.readers.STMReader import STMReader
+
+sys.path.append("web2py")
+from models.Corpus_DB import Corpus_DB
+from models.CorpusStats_DB import CorpusStats_DB
+from models.LDA_DB import LDA_DB
+from models.LDAStats_DB import LDAStats_DB
 
 def ImportSTM( app_name, model_path, corpus_path, database_path, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )
@@ -30,19 +35,25 @@ def ImportSTM( app_name, model_path, corpus_path, database_path, is_quiet, force
 		with CreateApp( app_name ) as app:
 			app_model_path = '{}/stm'.format( app.GetDataPath() )
 			app_corpus_path = '{}/corpus.txt'.format( app.GetDataPath() )
-			app_database_path = '{}/corpus.db'.format( app.GetDataPath() )
+			app_database_path = '{}/corpus.db'.format( app.GetDatabasePath() )
 			logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
 			shutil.copytree( model_path, app_model_path )
 			logger.info( 'Copying [%s] --> [%s]', corpus_path, app_corpus_path )
 			shutil.copy( corpus_path, app_corpus_path )
 			logger.info( 'Copying [%s] --> [%s]', database_path, app_database_path )
 			shutil.copy( database_path, app_database_path )
-
-			with LDA_DB( app.GetDatabasePath() ) as lda_db:
+			
+			db_path = app.GetDatabasePath()
+			with LDA_DB(db_path) as lda_db:
 				reader = STMReader( app_model_path, lda_db )
 				reader.Execute()
-#			with MalletReader( database_path ) as reader:
-#				reader.Execute()
+				with LDAStats_DB(db_path) as ldaStats_db:
+					computer = ComputeLDAStats( lda_db, ldaStats_db )
+					computer.Execute()
+			with Corpus_DB(db_path) as corpus_db:
+				with CorpusStats_DB(db_path) as corpusStats_db:
+					computer = ComputeCorpusStats( corpus_db, corpusStats_db )
+					computer.Execute()
 	else:
 		logger.info( '    Already available: %s', app_path )
 

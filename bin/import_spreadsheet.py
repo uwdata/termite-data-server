@@ -6,7 +6,8 @@ import os
 import sqlite3
 import sys
 
-from import_corpus import InitCorpusTable, InitFieldsTable, InitDocsTable
+sys.path.append("web2py")
+from models.Corpus_DB import Corpus_DB
 from import_corpus import UpdateCorpusTable, UpdateFieldsTable, UpdateDocsTable
 
 DOC_ID = 'doc_id'
@@ -26,18 +27,18 @@ def ReadFromStdin():
 		values = line.decode('utf-8', 'ignore').rstrip('\n').split('\t')
 		yield values
 
-def CreateDatabase(corpus_filename, database_filename):
+def CreateDatabase(corpus_filename, database_path):
 	if corpus_filename is not None:
 		spreadsheet_iterator = ImportSpreadsheet(corpus_filename)
 	else:
 		spreadsheet_iterator = ReadFromStdin()
-
+	
+	database_filename = '{}/{}'.format(database_path, Corpus_DB.FILENAME)
+	with Corpus_DB(database_path, forceCommit=True) as _:
+		print 'Importing into database at {}'.format(database_filename)
+	
 	conn = sqlite3.connect(database_filename)
-	InitCorpusTable(conn)
-	InitFieldsTable(conn)
-	InitDocsTable(conn)
 	cursor = conn.cursor()
-
 	fields = None
 	for values in spreadsheet_iterator:
 		if fields is None:
@@ -63,14 +64,13 @@ def CreateDatabase(corpus_filename, database_filename):
 		else:
 			doc_id = values[field_doc_id]
 			doc_index = UpdateDocsTable(doc_id, conn, cursor)
-			UpdateCorpusTable(doc_index, fields, values, field_indexes, conn, cursor)
-			
+			UpdateCorpusTable(doc_index, fields, values, field_indexes, conn, cursor)		
 	cursor.close()
 	conn.close()
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a spreadsheet into a SQLite3 Database.' )
-	parser.add_argument( 'database', type = str, help = 'Output database filename' )
+	parser.add_argument( 'database', type = str, help = 'Output database path' )
 	parser.add_argument( 'corpus'  , type = str, help = 'Input spreadsheet filename', nargs = '?', default = None )
 	args = parser.parse_args()
 	CreateDatabase(args.corpus, args.database)

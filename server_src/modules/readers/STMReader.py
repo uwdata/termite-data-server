@@ -134,7 +134,7 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 			index = int(termObject['index'])
 			termTable.append({
 				'term_index' : index,
-				'text' : text
+				'term_text' : text
 			})
 		for docObject in self.docIndex:
 			index = int(docObject['index'])
@@ -146,9 +146,9 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 			freq = float(topicObject['freq'])
 			topicTable.append({
 				'topic_index' : index,
-				'freq' : freq,
-				'desc' : u', '.join(termTable[d]['text'] for d in self.topTerms[topic][:5]),
-				'top_terms' : [termTable[d]['text'] for d in self.topTerms[topic][:20]]
+				'topic_freq' : freq,
+				'topic_desc' : u', '.join(termTable[d]['text'] for d in self.topTerms[topic][:5]),
+				'topic_top_terms' : [termTable[d]['text'] for d in self.topTerms[topic][:20]]
 			})
 		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
 		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)

@@ -108,7 +108,7 @@ class TreeTMReader():
 		for index, term in enumerate(termList):
 			termTable.append({
 				'term_index' : index,
-				'text' : term
+				'term_text' : term
 			})
 		for index, docId in enumerate(docList):
 			docTable.append({
@@ -118,9 +118,9 @@ class TreeTMReader():
 		for index, topic in enumerate(topicList):
 			topicTable.append({
 				'topic_index' : index,
-				'freq' : self.topicFreqs[ topic ],
-				'desc' : u', '.join( self.topTerms[topic][:5] ),
-				'top_terms' : self.topTerms[topic][:20]
+				'topic_freq' : self.topicFreqs[ topic ],
+				'topic_desc' : u', '.join( self.topTerms[topic][:5] ),
+				'topic_top_terms' : self.topTerms[topic][:20]
 			})
 		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
 		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)
