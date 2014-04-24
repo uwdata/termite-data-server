@@ -41,25 +41,22 @@ def ReadFromStdin():
 		yield doc_id, doc_content
 
 def UpdateFieldsTable(fields, conn, cursor):
-	records = [[field] for field in fields]
+	records = [[index, field] for index, field in enumerate(fields)]
 	with conn:
-		conn.executemany('insert or ignore into fields(field_name) values (?)', records)
-	cursor.execute('select field_name, field_index from fields')
+		conn.executemany('insert or ignore into fields(field_index, field_name) values (?, ?)', records)
+	cursor.execute('select field_index, field_name from fields')
 	field_indexes = {}
 	for record in cursor:
-		field_name, field_index = record
+		field_index, field_name = record
 		field_indexes[field_name] = field_index
 	return field_indexes
 
-def UpdateDocsTable(doc_id, conn, cursor):
+def UpdateDocsTable(doc_index, doc_id, conn):
+	record = [doc_index, doc_id]
 	with conn:
-		conn.execute('insert or ignore into docs(doc_id) values (?)', [doc_id])
-	cursor.execute('select doc_index from docs where doc_id = ?', [doc_id])
-	record = cursor.fetchone()
-	doc_index = record[0]
-	return doc_index
+		conn.execute('insert or ignore into docs(doc_index, doc_id) values (?, ?)', record)
 
-def UpdateCorpusTable(doc_index, fields, values, field_indexes, conn, cursor):
+def UpdateCorpusTable(doc_index, fields, values, field_indexes, conn):
 	records = [ [doc_index, field_indexes[field], values[index]] for index, field in enumerate(fields) ]
 	with conn:
 		conn.executemany('insert or ignore into corpus(doc_index, field_index, value) values (?, ?, ?)', records)
@@ -74,23 +71,23 @@ def CreateDatabase(corpus_filename_or_folder, database_path):
 		corpus_iterator = ReadFromStdin()
 		
 	database_filename = '{}/{}'.format(database_path, Corpus_DB.FILENAME)
-	with Corpus_DB(database_path, forceCommit=True) as _:
+	with Corpus_DB(database_path, isInit=True) as _:
 		print 'Importing into database at {}'.format(database_filename)
 	
 	conn = sqlite3.connect(database_filename)
 	cursor = conn.cursor()
 	fields = ['doc_id', 'doc_content']
 	field_indexes = UpdateFieldsTable(fields, conn, cursor)
-	for doc_id, doc_content in corpus_iterator:
-		doc_index = UpdateDocsTable(doc_id, conn, cursor)
-		UpdateCorpusTable(doc_index, fields, [doc_id, doc_content], field_indexes, conn, cursor)
+	for doc_index, (doc_id, doc_content) in enumerate(corpus_iterator):
+		UpdateDocsTable(doc_index, doc_id, conn)
+		UpdateCorpusTable(doc_index, fields, [doc_id, doc_content], field_indexes, conn)
 	cursor.close()
 	conn.close()
 	
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a TSV file or a folder into a SQLite3 Database.' )
-	parser.add_argument( 'database', type = str, help = 'Output database path' )
-	parser.add_argument( 'corpus'  , type = str, help = 'Input corpus (filename or folder path)', nargs = '?', default = None )
+	parser.add_argument( 'database', type = str, help = 'Output database folder, containing a file "corpus.db"' )
+	parser.add_argument( 'corpus'  , type = str, help = 'Input corpus filename or folder', nargs = '?', default = None )
 	args = parser.parse_args()
 	CreateDatabase(args.corpus, args.database)
 

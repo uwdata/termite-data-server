@@ -9,7 +9,7 @@ mallet_helpers/CorpusWriter.class: lib mallet_helpers/CorpusWriter.java
 	javac -cp .:lib/mallet.jar:lib/mallet-deps.jar mallet_helpers/CorpusWriter.java
 
 CorpusWriter.jar: mallet_helpers/CorpusWriter.class
-	jar cfm CorpusWriter.jar Manifest.txt mallet_helpers/CorpusWriter.class
+	jar cfm CorpusWriter.jar Manifest.CorpusWriter.txt mallet_helpers/CorpusWriter.class
 
 clean:
 	rm -rf lib

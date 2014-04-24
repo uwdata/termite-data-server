@@ -11,3 +11,6 @@ then
 	echo
 	exit -1
 fi
+
+touch $EXTERNALS_PATH/stm
+touch $TOOLS_PATH/stm

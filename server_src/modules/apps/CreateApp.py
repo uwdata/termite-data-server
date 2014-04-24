@@ -23,7 +23,7 @@ class CreateApp( object ):
 			self.logger.warning( 'Disallowed application name: %s --> %s', appName, self.appName )
 		else:
 			self.appName = appName
-		self.appTempPath = '{}/{}'.format( self.APPS_ROOT, self.GetTimestamp() )
+		self.appTempPath = '{}/temp_{}'.format( self.APPS_ROOT, self.GetTimestamp() )
 		self.appFinalPath = '{}/{}'.format( self.APPS_ROOT, self.appName )
 	
 	def RunCommand( self, command ):
@@ -34,7 +34,8 @@ class CreateApp( object ):
 				self.logger.debug( line )
 	
 	def GetTimestamp( self ):
-		return datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+		formatter = '%Y%m%d_%H%M%S_%f_{:04d}'.format(random.randint(0,9999))
+		return datetime.now().strftime(formatter)
 	
 	def GetPath( self ):
 		return self.appTempPath

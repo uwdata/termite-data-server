@@ -34,13 +34,13 @@ def CreateDatabase(corpus_filename, database_path):
 		spreadsheet_iterator = ReadFromStdin()
 	
 	database_filename = '{}/{}'.format(database_path, Corpus_DB.FILENAME)
-	with Corpus_DB(database_path, forceCommit=True) as _:
+	with Corpus_DB(database_path, isInit=True) as _:
 		print 'Importing into database at {}'.format(database_filename)
 	
 	conn = sqlite3.connect(database_filename)
 	cursor = conn.cursor()
 	fields = None
-	for values in spreadsheet_iterator:
+	for row_index, values in enumerate(spreadsheet_iterator):
 		if fields is None:
 			fields = []
 			for field in values:
@@ -62,15 +62,16 @@ def CreateDatabase(corpus_filename, database_path):
 				sys.stderr.write('Missing field: doc_content\n')
 				sys.exit(-1)
 		else:
+			doc_index = row_index-1
 			doc_id = values[field_doc_id]
-			doc_index = UpdateDocsTable(doc_id, conn, cursor)
-			UpdateCorpusTable(doc_index, fields, values, field_indexes, conn, cursor)		
+			UpdateDocsTable(doc_index, doc_id, conn)
+			UpdateCorpusTable(doc_index, fields, values, field_indexes, conn)	
 	cursor.close()
 	conn.close()
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a spreadsheet into a SQLite3 Database.' )
-	parser.add_argument( 'database', type = str, help = 'Output database path' )
+	parser.add_argument( 'database', type = str, help = 'Output database folder, containing a file "corpus.db"' )
 	parser.add_argument( 'corpus'  , type = str, help = 'Input spreadsheet filename', nargs = '?', default = None )
 	args = parser.parse_args()
 	CreateDatabase(args.corpus, args.database)

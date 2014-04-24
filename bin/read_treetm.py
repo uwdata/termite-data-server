@@ -9,6 +9,7 @@ import sys
 from modules.apps.CreateApp import CreateApp
 from modules.apps.ComputeCorpusStats import ComputeCorpusStats
 from modules.apps.ComputeLDAStats import ComputeLDAStats
+from modules.apps.SplitSentences import SplitSentences
 from modules.readers.TreeTMReader import TreeTMReader
 
 sys.path.append("web2py")
@@ -23,25 +24,34 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 	logger.setLevel( logging.INFO if is_quiet else logging.DEBUG )
 	
 	app_path = 'apps/{}'.format( app_name )
+	corpus_filename = '{}/corpus.txt'.format( corpus_path )
+	database_filename = '{}/corpus.db'.format( database_path )
 	logger.info( '--------------------------------------------------------------------------------' )
 	logger.info( 'Import an ITM topic model as a web2py application...' )
-	logger.info( '     app_path = %s', app_path )
-	logger.info( '   model_path = %s', model_path )
-	logger.info( '  corpus_path = %s', corpus_path )
-	logger.info( 'database_path = %s', database_path )
+	logger.info( '           app_name = %s', app_name )
+	logger.info( '           app_path = %s', app_path )
+	logger.info( '         model_path = %s', model_path )
+	logger.info( '    corpus_filename = %s', corpus_filename )
+	logger.info( '  database_filename = %s', database_filename )
 	logger.info( '--------------------------------------------------------------------------------' )
 	
 	if force_overwrite or not os.path.exists( app_path ):
-		with CreateApp( app_name ) as app:
+		with CreateApp(app_name) as app:
 			app_model_path = '{}/treetm'.format( app.GetDataPath() )
-			app_corpus_path = '{}/corpus.txt'.format( app.GetDataPath() )
-			app_database_path = '{}/corpus.db'.format( app.GetDatabasePath() )
+			app_corpus_filename = '{}/corpus.txt'.format( app.GetDataPath() )
+			app_sentences_filename = '{}/sentences.txt'.format( app.GetDataPath() )
+			app_database_filename = '{}/corpus.db'.format( app.GetDataPath() )
+			app_db_filename = '{}/corpus.db'.format( app.GetDatabasePath() )
 			logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
 			shutil.copytree( model_path, app_model_path )
-			logger.info( 'Copying [%s] --> [%s]', corpus_path, app_corpus_path )
-			shutil.copy( corpus_path, app_corpus_path )
-			logger.info( 'Copying [%s] --> [%s]', database_path, app_database_path )
-			shutil.copy( database_path, app_database_path )
+			logger.info( 'Copying [%s] --> [%s]', corpus_filename, app_corpus_filename )
+			shutil.copy( corpus_filename, app_corpus_filename )
+			logger.info( 'Extracting [%s] --> [%s]', corpus_filename, app_sentences_filename )
+			SplitSentences( corpus_filename, app_sentences_filename )
+			logger.info( 'Copying [%s] --> [%s]', database_filename, app_database_filename )
+			shutil.copy( database_filename, app_database_filename )
+			logger.info( 'Copying [%s] --> [%s]', database_filename, app_db_filename )
+			shutil.copy( database_filename, app_db_filename )
 			
 			db_path = app.GetDatabasePath()
 			with LDA_DB(db_path, isInit=True) as lda_db:
@@ -50,19 +60,18 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 				with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
 					computer = ComputeLDAStats( lda_db, ldaStats_db )
 					computer.Execute()
-			with Corpus_DB(db_path) as corpus_db:
 				with CorpusStats_DB(db_path, isInit=True) as corpusStats_db:
-					computer = ComputeCorpusStats( corpus_db, corpusStats_db )
+					computer = ComputeCorpusStats( lda_db, corpusStats_db, app_corpus_filename, app_sentences_filename )
 					computer.Execute()
 	else:
 		logger.info( '    Already available: %s', app_path )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a ITM topic model as a web2py application.' )
-	parser.add_argument( 'app_name'     , type = str                     , help = 'Web2py application identifier' )
-	parser.add_argument( 'model_path'   , type = str                     , help = 'Output of a ITM topic model' )
-	parser.add_argument( 'corpus_path'  , type = str                     , help = 'Text corpus as a tab-delimited file' )
-	parser.add_argument( 'database_path', type = str                     , help = 'Text corpus and metadata as a SQLite3 database' )
+	parser.add_argument( 'app_name'     , type = str , help = 'Web2py application identifier' )
+	parser.add_argument( 'model_path'   , type = str , help = 'A folder containing ITM topic model output' )
+	parser.add_argument( 'corpus_path'  , type = str , help = 'A folder containing a text corpus as a tab-delimited file named "corpus.txt"' )
+	parser.add_argument( 'database_path', type = str , help = 'A folder containing a text corpus and its metadata as a SQLite3 database named "corpus.db"' )
 	parser.add_argument( '--quiet'      , const = True , default = False , help = 'Show fewer debugging messages', action = 'store_const' )
 	parser.add_argument( '--overwrite'  , const = True , default = False , help = 'Overwrite any existing model', action = 'store_const' )
 	args = parser.parse_args()

@@ -11,7 +11,7 @@
 #   Build all utilities
 #   Build all demos
 
-all: web2py tools utils demo
+all: web2py tools utils
 
 ################################################################################
 # Web framework
@@ -78,16 +78,13 @@ all-demos:
 ################################################################################
 # Other utilities
 
-utils: utils/mallet/CorpusWriter.jar utils/corenlp/SentenceSplitter.jar utils/corenlp/StreamingSentenceSplitter.jar
+utils: utils/mallet/CorpusWriter.jar utils/corenlp/SentenceSplitter.jar
 
 utils/mallet/CorpusWriter.jar:
 	$(MAKE) -C utils/mallet
 
 utils/corenlp/SentenceSplitter.jar:
-	$(MAKE) -C utils/corenlp SentenceSplitter.jar
-
-utils/corenlp/StreamingSentenceSplitter.jar:
-	$(MAKE) -C utils/corenlp StreamingSentenceSplitter.jar
+	$(MAKE) -C utils/corenlp
 
 ################################################################################
 

@@ -34,7 +34,7 @@ then
 	echo "    Uncompressing..."
 	unzip -q $DOWNLOAD_PATH/$DEMO.zip -d $CORPUS_PATH
 	echo "    Extracting corpus.txt from corpus.db..."
-	bin/extract_corpus.py $CORPUS_PATH $CORPUS_PATH/corpus.txt
+	bin/export_corpus.py $CORPUS_PATH $CORPUS_PATH
 	
 	echo "    Corpus available: $CORPUS_PATH"
 	echo

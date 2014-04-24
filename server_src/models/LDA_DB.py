@@ -7,34 +7,38 @@ class LDA_DB():
 	FILENAME = 'lda.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	
-	def __init__(self, path = None, forceCommit = False):
-		self.forceCommit = forceCommit
-		self.lazyTables = not forceCommit
+	def __init__(self, path = None, isInit = False):
+		self.isInit = isInit
+		self.isLazy = not isInit
 		if path is not None:
-			self.db = DAL( LDA_DB.CONNECTION, lazy_tables = self.lazyTables, folder = path )
+			self.db = DAL( LDA_DB.CONNECTION, lazy_tables = self.isLazy, folder = path )
 		else:
-			self.db = DAL( LDA_DB.CONNECTION, lazy_tables = self.lazyTables )
+			self.db = DAL( LDA_DB.CONNECTION, lazy_tables = self.isLazy )
 	
 	def DefineTables(self):
 		self.db.define_table( 'terms',
-			Field( 'term_index', 'integer', required = True, unique = True ),
-			Field( 'term_text', 'string', required = True, unique = True )
+			Field( 'term_index', 'integer', required = True, unique = True, default = -1 ),
+			Field( 'term_text', 'string', required = True, unique = True ),
+			redefine = False
 		)
 		self.db.define_table( 'docs',
-			Field( 'doc_index', 'integer', required = True, unique = True )
+			Field( 'doc_index', 'integer', required = True, unique = True, default = -1 ),
+			redefine = False
 		)
 		self.db.define_table( 'topics',
-			Field( 'topic_index', 'integer', required = True, unique = True ),
-			Field( 'topic_freq', 'double' ),
-			Field( 'topic_desc', 'string' ),
-			Field( 'topic_top_terms', 'list:string' )
+			Field( 'topic_index', 'integer', required = True, unique = True, default = -1 ),
+			Field( 'topic_freq', 'double', required = True ),
+			Field( 'topic_desc', 'string', required = True ),
+			Field( 'topic_top_terms', 'list:string', required = True ),
+			redefine = False
 		)
 		self.db.executesql( 'CREATE INDEX IF NOT EXISTS topics_freq ON topics (topic_freq);' )
 		
 		self.db.define_table( 'term_topic_matrix',
-			Field( 'term_index', 'integer', required = True ),
-			Field( 'topic_index', 'integer', required = True ),
-			Field( 'value', 'double', required = True )
+			Field( 'term_index', 'integer', required = True, default = -1 ),
+			Field( 'topic_index', 'integer', required = True, default = -1 ),
+			Field( 'value', 'double', required = True ),
+			redefine = False
 		)
 		self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS term_topic_indexes ON term_topic_matrix (term_index, topic_index);' )
 		self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_topic_values     ON term_topic_matrix (value);' )
@@ -42,9 +46,10 @@ class LDA_DB():
 		self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_topic_topicindex ON term_topic_matrix (topic_index);' )
 		
 		self.db.define_table( 'doc_topic_matrix',
-			Field( 'doc_index', 'integer', required = True ),
-			Field( 'topic_index', 'integer', required = True ),
-			Field( 'value', 'double', required = True )
+			Field( 'doc_index', 'integer', required = True, default = -1 ),
+			Field( 'topic_index', 'integer', required = True, default = -1 ),
+			Field( 'value', 'double', required = True ),
+			redefine = False
 		)
 		self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS doc_topic_indexes ON doc_topic_matrix (doc_index, topic_index);' )
 		self.db.executesql( 'CREATE INDEX IF NOT EXISTS doc_topic_values     ON doc_topic_matrix (value);' )

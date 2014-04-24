@@ -18,8 +18,8 @@ def Shell(command):
 			print line
 
 def Demonstrate(dataset, model, is_quiet, force_overwrite):
-	database_filename = 'data/demo/{}/corpus/corpus.db'.format(dataset)
-	corpus_filename = 'data/demo/{}/corpus/corpus.txt'.format(dataset)
+	database_folder = 'data/demo/{}/corpus'.format(dataset)
+	corpus_folder = 'data/demo/{}/corpus'.format(dataset)
 	model_folder = 'data/demo/{}/model-{}'.format(dataset, model)
 	app_name = '{}_{}'.format(dataset, model)
 
@@ -29,23 +29,17 @@ def Demonstrate(dataset, model, is_quiet, force_overwrite):
 	
 	def PrepareModel():
 		executable = 'bin/setup_{}.sh'.format(model)
-		Shell([executable])
+		command = [executable]
+		Shell(command)
 	
 	def PrepareOthers():
 		executable = 'bin/setup_corenlp.sh'
-		Shell([executable])
-	
-	def ExtractCorpus():
-		executable = 'bin/export_corpus.py'
-		Shell([executable, database_filename, corpus_filename])
+		command = [executable]
+		Shell(command)
 	
 	def TrainModel():
 		executable = 'bin/train_{}.py'.format(model)
-		if model == 'stm':
-			corpus_folder = 'data/demo/{}/corpus'.format(dataset)
-			command = [executable, corpus_folder, model_folder]
-		else:
-			command = [executable, corpus_filename, model_folder]
+		command = [executable, corpus_folder, model_folder]
 		if is_quiet:
 			command.append('--quiet')
 		if force_overwrite:
@@ -54,7 +48,7 @@ def Demonstrate(dataset, model, is_quiet, force_overwrite):
 
 	def ImportModel():
 		executable = 'bin/read_{}.py'.format(model)
-		command = [executable, app_name, model_folder, corpus_filename, database_filename]
+		command = [executable, app_name, model_folder, corpus_folder, database_folder]
 		if is_quiet:
 			command.append('--quiet')
 		if force_overwrite:
@@ -63,16 +57,15 @@ def Demonstrate(dataset, model, is_quiet, force_overwrite):
 
 	print '--------------------------------------------------------------------------------'
 	print 'Build a topic model ({}) using a demo dataset ({})'.format(model, dataset)
-	print 'database = {}'.format(database_filename)
-	print '  corpus = {}'.format(corpus_filename)
-	print '   model = {}'.format(model_folder)
-	print '     app = {}'.format(app_name)
+	print '  database = {}'.format(database_folder)
+	print '    corpus = {}'.format(corpus_folder)
+	print '     model = {}'.format(model_folder)
+	print '       app = {}'.format(app_name)
 	print '--------------------------------------------------------------------------------'
 	
 	PrepareDataset()
 	PrepareModel()
 	PrepareOthers()
-	ExtractCorpus()
 	TrainModel()
 	ImportModel()
 	

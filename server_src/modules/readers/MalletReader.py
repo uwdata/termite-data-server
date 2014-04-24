@@ -112,9 +112,9 @@ class MalletReader():
 				'topic_desc' : u', '.join( self.topTerms[topic][:5] ),
 				'topic_top_terms' : self.topTerms[topic][:30]
 			})
-		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
-		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)
-		topicIndexes = self.ldaDB.db.topics.bulk_insert(topicTable)
+		self.ldaDB.db.terms.bulk_insert(termTable)
+		self.ldaDB.db.docs.bulk_insert(docTable)
+		self.ldaDB.db.topics.bulk_insert(topicTable)
 
 		termTopicMatrix = []
 		docTopicMatrix = []
