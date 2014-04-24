@@ -60,8 +60,9 @@ def ImportGensimLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 				with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
 					computer = ComputeLDAStats( lda_db, ldaStats_db )
 					computer.Execute()
+			with Corpus_DB(db_path) as corpus_db:
 				with CorpusStats_DB(db_path, isInit=True) as corpusStats_db:
-					computer = ComputeCorpusStats( lda_db, corpusStats_db, app_corpus_filename, app_sentences_filename )
+					computer = ComputeCorpusStats( corpus_db, corpusStats_db, app_corpus_filename, app_sentences_filename )
 					computer.Execute()
 	else:
 		logger.info( '    Already available: %s', app_path )
