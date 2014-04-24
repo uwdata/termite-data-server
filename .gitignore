@@ -4,8 +4,13 @@
 *.py~
 *.pyc
 *.sh~
-/apps/*/errors/
-/apps/*/sessions/
+/*_src/cron/
+/*_src/databases/
+/*_src/errors/
+/*_src/languages/
+/*_src/private/
+/*_src/sessions/
+/*_src/uploads/
 /externals/
 /data/
 /tools/
