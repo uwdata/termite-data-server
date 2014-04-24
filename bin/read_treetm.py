@@ -24,7 +24,7 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 	
 	app_path = 'apps/{}'.format( app_name )
 	logger.info( '--------------------------------------------------------------------------------' )
-	logger.info( 'Import a ITM topic model as a web2py application...' )
+	logger.info( 'Import an ITM topic model as a web2py application...' )
 	logger.info( '     app_path = %s', app_path )
 	logger.info( '   model_path = %s', model_path )
 	logger.info( '  corpus_path = %s', corpus_path )
@@ -44,14 +44,14 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 			shutil.copy( database_path, app_database_path )
 			
 			db_path = app.GetDatabasePath()
-			with LDA_DB(db_path) as lda_db:
+			with LDA_DB(db_path, isInit=True) as lda_db:
 				reader = TreeTMReader( app_model_path, lda_db )
 				reader.Execute()
-				with LDAStats_DB(db_path) as ldaStats_db:
+				with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
 					computer = ComputeLDAStats( lda_db, ldaStats_db )
 					computer.Execute()
 			with Corpus_DB(db_path) as corpus_db:
-				with CorpusStats_DB(db_path) as corpusStats_db:
+				with CorpusStats_DB(db_path, isInit=True) as corpusStats_db:
 					computer = ComputeCorpusStats( corpus_db, corpusStats_db )
 					computer.Execute()
 	else:

@@ -24,15 +24,14 @@ def TrainGensim( corpus_path, model_path, token_regex, num_topics, num_passes, i
 	logger.info( '--------------------------------------------------------------------------------' )
 	
 	if force_overwrite or not os.path.exists( model_path ):
-		lda = BuildLDA( corpus_path, modelPath = model_path, numTopics = num_topics, numPasses = num_passes )
-		lda.Execute()
+		BuildLDA( corpus_path, modelPath = model_path, tokenRegex = token_regex, numTopics = num_topics, numPasses = num_passes )
 	else:
 		logger.info( '    Already exists: %s', model_path )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train an LDA topic model using gensim.' )
-	parser.add_argument( 'corpus_path'  , type = str                        , help = 'Input text corpus' )
-	parser.add_argument( 'model_path'   , type = str                        , help = 'Output model' )
+	parser.add_argument( 'corpus_path'  , type = str                        , help = 'Input corpus filename' )
+	parser.add_argument( 'model_path'   , type = str                        , help = 'Output model path' )
 	parser.add_argument( '--token-regex', type = str   , default = r'\w{3,}', help = 'Tokenization', dest = 'token_regex' )
 	parser.add_argument( '--topics'     , type = int   , default = 20       , help = 'Number of topics' )
 	parser.add_argument( '--passes'     , type = int   , default = 1        , help = 'Training passes' )

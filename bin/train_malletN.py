@@ -22,14 +22,13 @@ def TrainMalletN( corpus_path, model_path, token_regex, num_topics, num_iters, n
 	logger.info( '--------------------------------------------------------------------------------' )
 	
 	if force_overwrite or not os.path.exists( model_path ):
-		ldas = BuildMultipleLDAs( corpus_path, model_path, tokenRegex = token_regex, numTopics = num_topics, numIters = num_iters, numModels = num_models )
-		ldas.Execute()
+		BuildMultipleLDAs( corpus_path, model_path, tokenRegex = token_regex, numTopics = num_topics, numIters = num_iters, numModels = num_models )
 	else:
 		logger.info( '    Already exists: %s', model_path )
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train an LDA topic model using MALLET.' )
-	parser.add_argument( 'corpus_path'  , type = str                              , help = 'Input text corpus (as a folder or a file)' )
+	parser.add_argument( 'corpus_path'  , type = str                              , help = 'Input corpus filename' )
 	parser.add_argument( 'model_path'   , type = str                              , help = 'Output model path' )
 	parser.add_argument( '--topics'     , type = int   , default = 20             , help = 'Number of topics' )
 	parser.add_argument( '--iters'      , type = int   , default = 1000           , help = 'Number of iterations' )

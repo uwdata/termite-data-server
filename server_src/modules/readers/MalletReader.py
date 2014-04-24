@@ -4,13 +4,20 @@
 import logging
 
 class MalletReader():
+	"""
+	modelPath = a model folder containing files topic-word-weights.txt and doc-topic-mixtures.txt
+	LDA_DB = a SQLite3 database
+	"""
+	
 	THRESHOLD = 0.01
+	TOPIC_WORD_WEIGHTS_FILENAME = 'topic-word-weights.txt'
+	DOC_TOPIC_MIXTURES_FILENAME = 'doc-topic-mixtures.txt'
 	
 	def __init__( self, modelPath, LDA_DB ):
 		self.logger = logging.getLogger('termite')
 		self.modelPath = modelPath
-		self.modelTopicWordWeights = '{}/topic-word-weights.txt'.format( self.modelPath )
-		self.modelDocTopicMixtures = '{}/doc-topic-mixtures.txt'.format( self.modelPath )
+		self.modelTopicWordWeights = '{}/{}'.format( self.modelPath, MalletReader.TOPIC_WORD_WEIGHTS_FILENAME )
+		self.modelDocTopicMixtures = '{}/{}'.format( self.modelPath, MalletReader.DOC_TOPIC_MIXTURES_FILENAME )
 		self.ldaDB = LDA_DB
 	
 	def Execute(self):
@@ -103,7 +110,7 @@ class MalletReader():
 				'topic_index' : index,
 				'topic_freq' : self.topicFreqs[ topic ],
 				'topic_desc' : u', '.join( self.topTerms[topic][:5] ),
-				'topic_top_terms' : self.topTerms[topic][:20]
+				'topic_top_terms' : self.topTerms[topic][:30]
 			})
 		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
 		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)

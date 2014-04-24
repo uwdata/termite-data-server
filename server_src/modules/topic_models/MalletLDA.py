@@ -12,21 +12,13 @@ class BuildMultipleLDAs(object):
 	numModels = Number of models
 	tokenRegex, numTopics, numIters = Other parameters
 	"""
-	def __init__( self, corpusPath, modelPath, numModels = 50, tokenRegex = '\p{Alpha}{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
-		self.corpusPath = corpusPath
-		self.modelPath = modelPath
-		self.numModels = numModels
-		self.tokenRegex = tokenRegex
-		self.numTopics = numTopics
-		self.numIters = numIters
-	
-	def Execute( self ):
-		with ImportMalletCorpus( self.corpusPath, self.modelPath ) as importer:
-			importer.ImportFileOrFolder( self.tokenRegex )
-		for index in range( self.numModels ):
-			modelSubPath = '{}/model_{:03d}'.format( self.modelPath, index )
-			with TrainMalletLDA( self.modelPath, modelSubPath ) as builder:
-				builder.TrainTopics( self.numTopics, self.numIters )
+	def __init__( self, corpusPath, modelPath, numModels = 50, tokenRegex = r'\w{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
+		with ImportMalletCorpus( corpusPath, modelPath ) as importer:
+			importer.ImportFileOrFolder( tokenRegex )
+		for index in range( numModels ):
+			modelSubPath = '{}/model_{:03d}'.format( modelPath, index )
+			with TrainMalletLDA( modelPath, modelSubPath ) as builder:
+				builder.TrainTopics( numTopics, numIters )
 
 class BuildLDA(object):
 	"""
@@ -34,18 +26,11 @@ class BuildLDA(object):
 	modelPath = Folder for storing all output files
 	tokenRegex, numTopics, numIters = Other parameters
 	"""
-	def __init__( self, corpusPath, modelPath, tokenRegex = '\p{Alpha}{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
-		self.corpusPath = corpusPath
-		self.modelPath = modelPath
-		self.tokenRegex = tokenRegex
-		self.numTopics = numTopics
-		self.numIters = numIters
-	
-	def Execute( self ):
-		with ImportMalletCorpus( self.corpusPath, self.modelPath ) as importer:
-			importer.ImportFileOrFolder( self.tokenRegex )
-		with TrainMalletLDA( self.modelPath, self.modelPath ) as builder:
-			builder.TrainTopics( self.numTopics, self.numIters )
+	def __init__( self, corpusPath, modelPath, tokenRegex = r'\w{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
+		with ImportMalletCorpus( corpusPath, modelPath ) as importer:
+			importer.ImportFileOrFolder( tokenRegex )
+		with TrainMalletLDA( modelPath, modelPath ) as builder:
+			builder.TrainTopics( numTopics, numIters )
 
 class ImportMalletCorpus(object):
 	def __init__( self, inputPath, corpusPath, MALLET_PATH = 'tools/mallet' ):

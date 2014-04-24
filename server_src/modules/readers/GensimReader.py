@@ -5,6 +5,11 @@ import logging
 from gensim import corpora, models
 
 class GensimReader():
+	"""
+	modelPath = a model folder containing files dictionary.gensim, corpus.gensim, and lda.gensim
+	LDA_DB = a SQLite3 database
+	"""
+	
 	DICTIONARY_FILENAME = 'dictionary.gensim'
 	CORPUS_FILENAME = 'corpus.gensim'
 	MODEL_FILENAME = 'lda.gensim'
@@ -31,7 +36,7 @@ class GensimReader():
 	
 	def SaveToDB( self ):
 		topicsAndFreqsTerms = self.model.show_topics( topics = -1, topn = len(self.dictionary), formatted = False )
-		docsAndFreqsTopics = self.corpus
+		docsAndDocBOWs = self.corpus
 
 		termTable = []
 		docTable = []
@@ -44,7 +49,7 @@ class GensimReader():
 				'term_text' : term
 			})
 			termLookup[term] = index
-		for doc, _ in enumerate(docsAndFreqsTopics):
+		for doc, _ in enumerate(docsAndDocBOWs):
 			docTable.append({
 				'doc_index' : doc
 			})
@@ -53,7 +58,7 @@ class GensimReader():
 				'topic_index' : topic,
 				'topic_freq' : sum( freq for freq, term in freqsTerms ),
 				'topic_desc' : u', '.join( term for freq, term in freqsTerms[:5] ),
-				'topic_top_terms' : [ term for freq, term in freqsTerms[:20] ]
+				'topic_top_terms' : [ term for freq, term in freqsTerms[:30] ]
 			})
 		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
 		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)
@@ -61,19 +66,20 @@ class GensimReader():
 
 		termTopicMatrix = []
 		docTopicMatrix = []
-		for topic, freqsTerms in enumerate(topicsAndFreqsTerms):
+		for topicIndex, freqsTerms in enumerate(topicsAndFreqsTerms):
 			for freq, term in freqsTerms:
 				termTopicMatrix.append({
 					'term_index' : termLookup[term],
-				 	'topic_index' : topic,
+				 	'topic_index' : topicIndex,
 					'value' : freq
 				})
-		for docIndex, freqsTopics in enumerate(docsAndFreqsTopics):
-			for freq, topic in freqsTopics:
+		for docIndex, docBOW in enumerate(docsAndDocBOWs):
+			topicsProbs = self.model[docBOW]
+			for topicIndex, prob in topicsProbs:
 				docTopicMatrix.append({
 					'doc_index' : docIndex,
-					'topic_index' : topic,
-					'value' : freq
+					'topic_index' : topicIndex,
+					'value' : prob
 				})
 		termTopicMatrix.sort( key = lambda x : -x['value'] )
 		docTopicMatrix.sort( key = lambda x : -x['value'] )

@@ -5,15 +5,23 @@ import logging
 import os
 
 class TreeTMReader():
+	"""
+	modelPath = a model folder containing files corpus.voc, model.topic-words, and model.docs
+	LDA_DB = a SQLite3 database
+	"""
+	
 	THRESHOLD = 0.01
+	CORPUS_VOCAB_FILENAME = 'corpus.voc'
+	TOPIC_WORDS_FILENAME = 'model.topic-words'
+	DOC_TOPICS_FILENAME = 'model.docs'
 	
 	def __init__( self, modelPath, LDA_DB ):
 		self.logger = logging.getLogger('termite')
 		self.modelPath = modelPath
 		self.entryPath = self.GetLatestEntry()
-		self.modelVocab = '{}/corpus.voc'.format( self.modelPath )
-		self.entryTopicWordWeights = '{}/model.topic-words'.format( self.entryPath )
-		self.entryDocTopicMixtures = '{}/model.docs'.format( self.entryPath )
+		self.corpusVocab = '{}/{}'.format( self.modelPath, TreeTMReader.CORPUS_VOCAB_FILENAME )
+		self.entryTopicWordWeights = '{}/{}'.format( self.entryPath, TreeTMReader.TOPIC_WORDS_FILENAME )
+		self.entryDocTopicMixtures = '{}/{}'.format( self.entryPath, TreeTMReader.DOC_TOPICS_FILENAME )
 		self.ldaDB = LDA_DB
 
 	def Execute(self):
@@ -31,8 +39,8 @@ class TreeTMReader():
 		return entries[-1]
 
 	def ReadVocabFile( self ):
-		self.logger.info( 'Reading vocbuary: %s', self.modelVocab )
-		with open( self.modelVocab ) as f:
+		self.logger.info( 'Reading vocbuary: %s', self.corpusVocab )
+		with open( self.corpusVocab ) as f:
 			self.termList = [ line.decode('utf-8', 'ignore').rstrip('\n').split('\t')[1] for line in f ]
 		self.termLookup = { term : index for index, term in enumerate(self.termList) }
 
@@ -120,7 +128,7 @@ class TreeTMReader():
 				'topic_index' : index,
 				'topic_freq' : self.topicFreqs[ topic ],
 				'topic_desc' : u', '.join( self.topTerms[topic][:5] ),
-				'topic_top_terms' : self.topTerms[topic][:20]
+				'topic_top_terms' : self.topTerms[topic][:30]
 			})
 		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
 		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)

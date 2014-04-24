@@ -32,7 +32,7 @@ def ImportGensimLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 	logger.info( '--------------------------------------------------------------------------------' )
 	
 	if force_overwrite or not os.path.exists( app_path ):
-		with CreateApp( app_name ) as app:
+		with CreateApp(app_name) as app:
 			app_model_path = '{}/gensim-lda'.format( app.GetDataPath() )
 			app_corpus_path = '{}/corpus.txt'.format( app.GetDataPath() )
 			app_database_path = '{}/corpus.db'.format( app.GetDatabasePath() )
@@ -44,14 +44,14 @@ def ImportGensimLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 			shutil.copy( database_path, app_database_path )
 			
 			db_path = app.GetDatabasePath()
-			with LDA_DB(db_path) as lda_db:
+			with LDA_DB(db_path, isInit=True) as lda_db:
 				reader = GensimReader( app_model_path, lda_db )
 				reader.Execute()
-				with LDAStats_DB(db_path) as ldaStats_db:
+				with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
 					computer = ComputeLDAStats( lda_db, ldaStats_db )
 					computer.Execute()
 			with Corpus_DB(db_path) as corpus_db:
-				with CorpusStats_DB(db_path) as corpusStats_db:
+				with CorpusStats_DB(db_path, isInit=True) as corpusStats_db:
 					computer = ComputeCorpusStats( corpus_db, corpusStats_db )
 					computer.Execute()
 	else:

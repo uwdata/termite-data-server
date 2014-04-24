@@ -9,18 +9,26 @@ import subprocess
 
 class RefineLDA(object):
 	"""
-	corpusPath = A single tab-delimited file containing the corpus (one document per line, two columns containing docID and docContent, without headers)
 	modelPath = Folder for storing all output files
 	numIters = Other parameters
+	mustLinkConstraints = a list of lists of words
+	cannotLinkConstraints = a list of lists of words
+	keepTerms = a dict where the keys are topic indexes and the values are a list of words
+	removeTerms = a list of words
 	"""
-	def __init__( self, modelPath, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
-		self.corpusPath = None
-		self.modelPath = modelPath
-		self.numIters = numIters
-	
-	def Execute( self ):
-		with TreeTM( self.corpusPath, self.modelPath, resume = True, finalIter = self.numIters ) as treeTM:
-			treeTM.Prepare()
+	def __init__( self, modelPath, numIters = 1000, prevEntry = None,
+			mustLinks = None, cannotLinks = None, keepTerms = None, removeTerms = None,
+			MALLET_PATH = 'tools/mallet' ):
+		with TreeTM( modelsPath = modelPath, resume = True, finalIter = numIters, prevEntryID = prevEntry ) as treeTM:
+			treeTM.ResumeTraining()
+			if mustLinks is not None:
+				treeTM.SetMustLinkConstraints( mustLinks )
+			if cannotLinks is not None:
+				treeTM.SetCannotLinkConstraints( cannotLinks )
+			if keepTerms is not None:
+				treeTM.SetKeepTerms( keepTerms )
+			if removeTerms is not None:
+				treeTM.SetRemoveTerms( removeTerms )
 			treeTM.Execute()
 	
 class BuildLDA(object):
@@ -28,17 +36,24 @@ class BuildLDA(object):
 	corpusPath = A single tab-delimited file containing the corpus (one document per line, two columns containing docID and docContent, without headers)
 	modelPath = Folder for storing all output files
 	tokenRegex, numTopics, numIters = Other parameters
+	mustLinkConstraints = a list of lists of words
+	cannotLinkConstraints = a list of lists of words
+	keepTerms = a dict where the keys are topic indexes and the values are a list of words
+	removeTerms = a list of words
 	"""
-	def __init__( self, corpusPath, modelPath, tokenRegex = '\p{Alpha}{3,}', numTopics = 20, numIters = 1000, MALLET_PATH = 'tools/mallet' ):
-		self.corpusPath = corpusPath
-		self.modelPath = modelPath
-		self.tokenRegex = tokenRegex
-		self.numTopics = numTopics
-		self.numIters = numIters
-	
-	def Execute( self ):
-		with TreeTM( self.corpusPath, self.modelPath, resume = False, tokenRegex = self.tokenRegex, numTopics = self.numTopics, finalIter = self.numIters ) as treeTM:
-			treeTM.Prepare()
+	def __init__( self, corpusPath, modelPath, tokenRegex = r'\w{3,}', numTopics = 20, numIters = 1000,
+			mustLinks = None, cannotLinks = None, keepTerms = None, removeTerms = None,
+			MALLET_PATH = 'tools/mallet' ):
+		with TreeTM( corpusPath = corpusPath, modelsPath = modelPath, resume = False, tokenRegex = tokenRegex, numTopics = numTopics, finalIter = numIters ) as treeTM:
+			treeTM.StartTraining()
+			if mustLinks is not None:
+				treeTM.SetMustLinkConstraints( mustLinks )
+			if cannotLinks is not None:
+				treeTM.SetCannotLinkConstraints( cannotLinks )
+			if keepTerms is not None:
+				treeTM.SetKeepTerms( keepTerms )
+			if removeTerms is not None:
+				treeTM.SetRemoveTerms( removeTerms )
 			treeTM.Execute()
 
 HYPER_PARAMS = u"""DEFAULT_ 0.01
@@ -116,14 +131,23 @@ java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vec
 """
 
 class TreeTM(object):
-	def __init__( self, corpusPath, modelsPath, tokenRegex = '\p{Alpha}{3,}', resume = False, prevEntryID = None, numTopics = 20, finalIter = 1000, MALLET_PATH = 'tools/mallet', TREETM_PATH = 'tools/treetm' ):
+	def __init__( self, corpusPath = None, modelsPath = None, tokenRegex = None, resume = False, prevEntryID = None, numTopics = None, finalIter = None, MALLET_PATH = 'tools/mallet', TREETM_PATH = 'tools/treetm' ):
+		self.logger = logging.getLogger('termite')
 		self.TREETM_PATH = TREETM_PATH
 		self.MALLET_PATH = MALLET_PATH
-		self.logger = logging.getLogger('termite')
+		
+		if resume:
+			assert modelsPath is not None
+			assert finalIter is not None
+		else:
+			assert corpusPath is not None
+			assert modelsPath is not None
+			assert tokenRegex is not None
+			assert finalIter is not None
+			assert numTopics is not None
 
 		self.corpusPath = corpusPath
 		self.modelsPath = modelsPath
-		self.tokenRegex = tokenRegex
 		self.corpusInMallet = '{}/corpus.mallet'.format( self.modelsPath )
 		self.filenameIndex       = '{modelsPath}/index.json'.format( modelsPath = self.modelsPath )
 		self.filenameMallet      = '{modelsPath}/corpus.mallet'.format( modelsPath = self.modelsPath )
@@ -138,13 +162,14 @@ class TreeTM(object):
 				self.prevEntryID = prevEntryID
 			self.nextEntryID = nextEntryID
 			self.numTopics = numTopics
-			self.logger.info( 'Training an existing interactive topic model: [%s][#%d] --> [%s][#%d]', self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
+			self.logger.info( 'Training an existing interactive topic model: [%s][entry-%06d] --> [%s][entry-%06d]', self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
 		else:
 			nextEntryID, numTopics = self.CreateRunIndexFile( numTopics )
 			self.prevEntryID = -1
 			self.nextEntryID = nextEntryID
 			self.numTopics = numTopics
-			self.logger.info( 'Training a new interactive topic model: [%s] --> [%s][#%d]', self.corpusInMallet, self.modelsPath, self.nextEntryID )
+			self.tokenRegex = tokenRegex
+			self.logger.info( 'Training a new interactive topic model: [%s] --> [%s][entry-%06d]', self.corpusInMallet, self.modelsPath, self.nextEntryID )
 
 		self.resume = resume
 		self.finalIter = finalIter
@@ -162,10 +187,9 @@ class TreeTM(object):
 		self.filenameRemoveTermsAll      = '{nextEntryPath}/removed.all'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameWN                  = '{nextEntryPath}/corpus.wn'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameInferencer          = '{nextEntryPath}/inferencer'.format( nextEntryPath = self.nextEntryPath )
+		self.filenameExecute = '{nextEntryPath}/execute.sh'.format( nextEntryPath = self.nextEntryPath )
 		
-		self.filenameExecute = os.path.abspath( '{nextEntryPath}/execute.sh'.format( nextEntryPath = self.nextEntryPath ) )
-		
-		self.HYPER_PARAMS = HYPER_PARAMS
+		self.hyperParameters = HYPER_PARAMS
 		self.generateVocabCommand = [ s.format(
 			TREETM_PATH = self.TREETM_PATH, 
 			filenameMallet = self.filenameMallet, 
@@ -284,13 +308,11 @@ class TreeTM(object):
 	
 	def CreateHyperparamsFile( self ):
 		with open( self.filenameHyperparams, 'w' ) as f:
-			f.write( self.HYPER_PARAMS.encode('utf-8') )
+			f.write( self.hyperParameters.encode('utf-8') )
 
 	def CreateVocabFile( self ):
 		command = self.generateVocabCommand
-		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
-		while p.poll() is None:
-			self.logger.debug( p.stdout.readline().rstrip('\n') )
+		self.Shell( command )
 
 	def CreateEntryFolder( self ):
 		if not os.path.exists( self.nextEntryPath ):
@@ -335,21 +357,6 @@ class TreeTM(object):
 ################################################################################
 # Steps in Training a TreeTM
 
-	def Prepare( self ):
-		if not self.resume:
-			self.CreateEntryFolder()
-			self.ImportFileOrFolder()
-			self.CreateHyperparamsFile()
-			self.CreateVocabFile()
-		else:
-			self.CopyEntryFolder()
-		self.CreateEntryFolder()
-		self.WriteStatesFile()
-		self.WriteConstraintsFile()
-		self.WriteKeepTermsFile()
-		self.WriteRemoveTermsFiles()
-		self.WriteExecuteBashScript()
-		
 	def CreateModelPath( self ):
 		if not os.path.exists( self.modelsPath ):
 			self.logger.info( 'Creating model folder: %s', self.modelsPath )
@@ -382,13 +389,35 @@ class TreeTM(object):
 			'--token-regex', self.tokenRegex,
 			'--keep-sequence'
 		]
+		self.Shell( command )
+	
+	def Shell( self, command ):
 		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
 		while p.poll() is None:
 			self.logger.debug( p.stdout.readline().rstrip('\n') )
+	
+	def StartTraining( self ):
+		assert not self.resume
+		self.CreateEntryFolder()
+		self.ImportFileOrFolder()
+		self.CreateHyperparamsFile()
+		self.CreateVocabFile()
+		self.Prepare()
+	
+	def ResumeTraining( self ):
+		assert self.resume
+		self.CopyEntryFolder()
+		self.Prepare()
 
+	def Prepare( self ):
+		self.CreateEntryFolder()
+		self.WriteStatesFile()
+		self.WriteConstraintsFile()
+		self.WriteKeepTermsFile()
+		self.WriteRemoveTermsFiles()
+		self.WriteExecuteBashScript()
+	
 	def Execute( self ):
 		command = [ self.filenameExecute ]
-		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
-		while p.poll() is None:
-			self.logger.debug( p.stdout.readline().rstrip('\n') )
+		self.Shell( command )
 		self.WriteRunIndexFile()

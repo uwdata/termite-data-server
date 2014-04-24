@@ -7,7 +7,13 @@ import os
 import subprocess
 
 class STMReader():
+	"""
+	modelPath = a model folder containing an R datafile stm.RData
+	LDA_DB = a SQLite3 database
+	"""
+	
 	THRESHOLD = 1e-5
+	RDATA_FILENAME = 'stm.RData'
 	
 	SCRIPT = """# Load an STM model and save its content as Termite Data Server files
 # Load required libraries
@@ -80,7 +86,7 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 	def __init__( self, modelPath, LDA_DB ):
 		self.logger = logging.getLogger('termite')
 		self.modelPath = modelPath
-		self.modelRData = '{}/stm.RData'.format( self.modelPath )
+		self.modelRData = '{}/{}'.format( self.modelPath, STMReader.RDATA_FILENAME )
 		self.modelScript = '{}/import.r'.format( self.modelPath )
 		self.ldaTermTopicMatrix = '{}/term-topic-matrix.txt'.format( self.modelPath )
 		self.ldaDocTopicMatrix = '{}/doc-topic-matrix.txt'.format( self.modelPath )
@@ -123,7 +129,7 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 		self.topTerms = []
 		for topic in range(self.topicCount):
 			topTerms = [ { 'index' : termIndex, 'freq' : d[topic] } for termIndex, d in enumerate(self.termTopicMatrix) ]
-			self.topTerms.append( [ d['index'] for d in sorted( topTerms, key = lambda x : -x['freq'] ) ][:20] )
+			self.topTerms.append( [ d['index'] for d in sorted( topTerms, key = lambda x : -x['freq'] ) ] )
 			
 	def SaveToDB( self ):
 		termTable = []
@@ -147,8 +153,8 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 			topicTable.append({
 				'topic_index' : index,
 				'topic_freq' : freq,
-				'topic_desc' : u', '.join(termTable[d]['text'] for d in self.topTerms[topic][:5]),
-				'topic_top_terms' : [termTable[d]['text'] for d in self.topTerms[topic][:20]]
+				'topic_desc' : u', '.join(termTable[d]['term_text'] for d in self.topTerms[topic][:5]),
+				'topic_top_terms' : [termTable[d]['term_text'] for d in self.topTerms[topic][:30]]
 			})
 		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
 		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)

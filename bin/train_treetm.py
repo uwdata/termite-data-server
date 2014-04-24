@@ -20,8 +20,7 @@ def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is
 		logger.info( '      topics = %s', num_topics )
 		logger.info( '       iters = %s', num_iters )
 		logger.info( '--------------------------------------------------------------------------------' )
-		lda = BuildLDA( corpus_path, model_path, tokenRegex = token_regex, numTopics = num_topics, numIters = num_iters )
-		lda.Execute()
+		BuildLDA( corpus_path, model_path, tokenRegex = token_regex, numTopics = num_topics, numIters = num_iters )
 	else:
 		if resume_training:
 			logger.info( '--------------------------------------------------------------------------------' )
@@ -29,8 +28,7 @@ def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is
 			logger.info( '       model = %s', model_path )
 			logger.info( '       iters = %s', num_iters )
 			logger.info( '--------------------------------------------------------------------------------' )
-			lda = RefineLDA( model_path, numIters = num_iters )
-			lda.Execute()
+			RefineLDA( model_path, numIters = num_iters )
 		else:
 			logger.info( '--------------------------------------------------------------------------------' )
 			logger.info( 'Training an interactive topic model...' )
@@ -39,7 +37,7 @@ def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Train an interactive topic model.' )
-	parser.add_argument( 'corpus_path'  , type = str                              , help = 'Input text corpus (as a folder or a file)' )
+	parser.add_argument( 'corpus_path'  , type = str                              , help = 'Input corpus filename' )
 	parser.add_argument( 'model_path'   , type = str                              , help = 'Output model path' )
 	parser.add_argument( '--topics'     , type = int   , default = 20             , help = 'Number of topics' )
 	parser.add_argument( '--iters'      , type = int   , default = 1000           , help = 'Number of iterations' )
