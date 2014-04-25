@@ -3,15 +3,21 @@
 
 import sys
 sys.path.append("web2py")
-from models import *
+sys.path.append("bin/modules")
 
 import argparse
 import logging
 import os
 import shutil
+
+from modules.db.Corpus_DB import Corpus_DB
+from modules.db.CorpusStats_DB import CorpusStats_DB
+from modules.db.LDA_DB import LDA_DB
+from modules.db.LDAStats_DB import LDAStats_DB
+from modules.db.ComputeCorpusStats import ComputeCorpusStats
+from modules.db.ComputeLDAStats import ComputeLDAStats
+
 from modules.apps.CreateApp import CreateApp
-from modules.apps.ComputeCorpusStats import ComputeCorpusStats
-from modules.apps.ComputeLDAStats import ComputeLDAStats
 from modules.apps.SplitSentences import SplitSentences
 from modules.readers.TreeTMReader import TreeTMReader
 
@@ -34,38 +40,48 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 	
 	if force_overwrite or not os.path.exists( app_path ):
 		with CreateApp(app_name) as app:
-			app_corpus_filename = '{}/corpus.txt'.format( app.GetDataPath() )
-			logger.info( 'Copying [%s] --> [%s]', corpus_filename, app_corpus_filename )
-			shutil.copy( corpus_filename, app_corpus_filename )
-			
+			# Create a copy of the original corpus
 			app_database_filename = '{}/corpus.db'.format( app.GetDataPath() )
 			logger.info( 'Copying [%s] --> [%s]', database_filename, app_database_filename )
 			shutil.copy( database_filename, app_database_filename )
 			
+			# Import corpus (models/corpus.db, data/corpus.txt, data/sentences.txt)
+			app_corpus_filename = '{}/corpus.txt'.format( app.GetDataPath() )
+			logger.info( 'Copying [%s] --> [%s]', corpus_filename, app_corpus_filename )
+			shutil.copy( corpus_filename, app_corpus_filename )
 			app_sentences_filename = '{}/sentences.txt'.format( app.GetDataPath() )
 			logger.info( 'Extracting [%s] --> [%s]', corpus_filename, app_sentences_filename )
 			SplitSentences( corpus_filename, app_sentences_filename )
-			
 			app_db_filename = '{}/corpus.db'.format( app.GetDatabasePath() )
 			logger.info( 'Copying [%s] --> [%s]', database_filename, app_db_filename )
 			shutil.copy( database_filename, app_db_filename )
 			
+			# Compute derived-statistics about the corpus
+			db_path = app.GetDatabasePath()
 			with Corpus_DB(db_path) as corpus_db:
 				with CorpusStats_DB(db_path, isInit=True) as corpusStats_db:
 					computer = ComputeCorpusStats( corpus_db, corpusStats_db, app_corpus_filename, app_sentences_filename )
 					computer.Execute()
+					
+				# Mark 'corpus' as available
+				corpus_db.AddModel('corpus', 'Text corpus')
 			
-			app_model_path = '{}/treetm'.format( app.GetDataPath() )
-			logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
-			shutil.copytree( model_path, app_model_path )
+				# Import model
+				app_model_path = '{}/treetm'.format( app.GetDataPath() )
+				logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
+				shutil.copytree( model_path, app_model_path )
 			
-			db_path = app.GetDatabasePath()
-			with LDA_DB(db_path, isInit=True) as lda_db:
-				reader = TreeTMReader( app_model_path, lda_db )
-				reader.Execute()
-				with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
-					computer = ComputeLDAStats( lda_db, ldaStats_db )
-					computer.Execute()
+				# Compute derived-statistics about the model
+				with LDA_DB(db_path, isInit=True) as lda_db:
+					reader = TreeTMReader( app_model_path, lda_db )
+					reader.Execute()
+					with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
+						computer = ComputeLDAStats( lda_db, ldaStats_db )
+						computer.Execute()
+				
+				# Mark 'lda' as available
+				corpus_db.AddModel('lda', 'ITM topic model')
+				
 	else:
 		logger.info( '    Already available: %s', app_path )
 

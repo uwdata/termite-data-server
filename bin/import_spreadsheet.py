@@ -3,9 +3,11 @@
 
 import sys
 sys.path.append("web2py")
-from models import *
+sys.path.append("bin/modules")
 
 import argparse
+
+from modules.db.Corpus_DB import Corpus_DB
 
 def ImportSpreadsheet(spreadsheet_filename, database_path, id_key, content_key, is_csv):
 	database_filename = '{}/corpus.db'.format(database_path)

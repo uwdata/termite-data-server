@@ -3,19 +3,22 @@
 
 import sys
 sys.path.append("web2py")
-from models import *
+sys.path.append("bin/modules")
 
 import argparse
 import os
 
+from modules.db.Corpus_DB import Corpus_DB
+
 def ImportCorpus(corpus_filename_or_folder, database_path):
 	database_filename = '{}/corpus.db'.format(database_path)
-	print 'Importing file [{}] into database [{}]'.format(corpus_filename_or_folder, database_filename)
 	
 	with Corpus_DB(database_path, isInit=True) as corpusDB:
 		if os.path.isfile(corpus_filename_or_folder):
+			print 'Importing file [{}] into database [{}]'.format(corpus_filename_or_folder, database_filename)
 			corpusDB.ImportFromFile(corpus_filename_or_folder)
 		else:
+			print 'Importing folder [{}] into database [{}]'.format(corpus_filename_or_folder, database_filename)
 			corpusDB.ImportFromFolder(corpus_filename_or_folder)
 
 def main():
