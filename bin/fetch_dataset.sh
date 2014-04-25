@@ -1,8 +1,10 @@
 #!/bin/bash
 
-if [ $# -lt 1 ]
+if [ ! -d "server_src" ] || [ $# -lt 1 ]
 then
-	echo "Usage: $0 dataset"
+	echo "Usage: bin/fetch_dataset.sh"
+	echo "    Download a demonstration dataset."
+	echo "    This script should be run from the root of the git repo."
 	exit -1
 fi
 
@@ -34,7 +36,7 @@ then
 	echo "    Uncompressing..."
 	unzip -q $DOWNLOAD_PATH/$DEMO.zip -d $CORPUS_PATH
 	echo "    Extracting corpus.txt from corpus.db..."
-	bin/export_corpus.py $CORPUS_PATH $CORPUS_PATH
+	bin/export_corpus.py $CORPUS_PATH $CORPUS_PATH/corpus.txt
 	
 	echo "    Corpus available: $CORPUS_PATH"
 	echo

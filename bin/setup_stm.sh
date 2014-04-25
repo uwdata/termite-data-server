@@ -3,7 +3,7 @@
 EXTERNALS_PATH=externals
 TOOLS_PATH=tools
 
-if [ ! -d "server_src" ] || [ ! -d "landing_src" ]
+if [ ! -d "server_src" ]
 then
 	echo "Usage: bin/setup_stm.sh"
 	echo "    Download and set up Structural Topic Models."
