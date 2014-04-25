@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from core import TermiteCore
+from core.HomeCore import HomeCore
 
 def index():
-	core = TermiteCore( request, response )
+	core = HomeCore(request, response)
 	return core.GenerateResponse()

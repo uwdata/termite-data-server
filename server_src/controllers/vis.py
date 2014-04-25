@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 
-from core import TermiteCore
 from vis.GroupInABox import GroupInABox as GroupInABoxModel
 from vis.CovariateChart import CovariateChart as CovariateChartModel
 
 def index():
-	core = TermiteCore( request, response )
+	core = TermiteCore()
 	return core.GenerateResponse()
 
 def GroupInABox():
-	gib = GroupInABoxModel( request, response )
+	gib = GroupInABoxModel()
 	gib.LoadTopTermsPerTopic()
 	gib.LoadTopicCovariance()
 	gib.LoadTermFreqs()
@@ -20,7 +19,7 @@ def GroupInABox():
 	return gib.GenerateResponse()
 
 def CovariateChart():
-	chart = CovariateChartModel( request, response )
+	chart = CovariateChartModel()
 	chart.LoadDocTopicMatrix()
 	chart.LoadTopicTopTerms()
 	return chart.GenerateResponse()

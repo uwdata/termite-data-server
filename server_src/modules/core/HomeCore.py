@@ -4,8 +4,10 @@ import os
 import json
 import urllib
 import cStringIO
+from utils.UnicodeIO import UnicodeReader, UnicodeWriter
+from db.Corpus_DB import Corpus_DB
 
-class TermiteCore( object ):
+class HomeCore( object ):
 	def __init__( self, request, response ):
 		self.request = request
 		self.response = response
@@ -19,6 +21,12 @@ class TermiteCore( object ):
 # Server, Dataset, Model, and Attribute
 
 	EXCLUDED_FOLDERS = frozenset( [ 'admin', 'examples', 'welcome', 'init', 'data' ] )
+	def IsExcluded( self, folder ):
+		if folder in HomeCore.EXCLUDED_FOLDERS:
+			return True
+		if folder[:5] == 'temp_':
+			return True
+		return False
 
 	def GetServer( self ):
 		return self.request.env['HTTP_HOST']
@@ -50,7 +58,7 @@ class TermiteCore( object ):
 		folders = []
 		applications_path = '{}/applications'.format( self.request.env['applications_parent'] )
 		for folder in os.listdir( applications_path ):
-			if folder not in TermiteCore.EXCLUDED_FOLDERS:
+			if not self.IsExcluded(folder):
 				applications_subpath = '{}/{}'.format( applications_path, folder )
 				if os.path.isdir( applications_subpath ):
 					folders.append( folder )
@@ -58,19 +66,16 @@ class TermiteCore( object ):
 		return folders
 	
 	def GetModels( self, dataset ):
-		if dataset in TermiteCore.EXCLUDED_FOLDERS:
+		if self.IsExcluded(dataset):
 			return None
 		folders = [ 'vis', 'charts' ]
-		app_data_path = '{}/data'.format( self.request.folder )
-		for folder in os.listdir( app_data_path ):
-			app_data_subpath = '{}/{}'.format( app_data_path, folder )
-			if os.path.isdir( app_data_subpath ):
-				folders.append( folder )
+		with Corpus_DB() as corpus_db:
+			folders += corpus_db.GetModels()
 		folders = sorted( folders )
 		return folders
 	
 	def GetAttributes( self, dataset, model ):
-		if dataset in TermiteCore.EXCLUDED_FOLDERS:
+		if self.IsExcluded(dataset):
 			return None
 		if model == 'default':
 			return None
@@ -82,9 +87,7 @@ class TermiteCore( object ):
 				'TermTopicMatrix',
 				'DocTopicMatrix',
 				'TopicCooccurrence',
-				'TopicCovariance',
-				'TopTerms',
-				'TopDocs'
+				'TopicCovariance'
 			]
 		if model == 'itm':
 			return [

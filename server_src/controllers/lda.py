@@ -1,52 +1,66 @@
 #!/usr/bin/env python
 
-from lda import LDA
+from core.LDACore import LDACore
+from db.LDA_DB import LDA_DB
+from db.LDAStats_DB import LDAStats_DB
 
 def index():
-	lda = LDA( request, response )
-	return lda.GenerateResponse()
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+	return core.GenerateResponse()
 
 def TermIndex():
-	lda = LDA( request, response )
-	lda.LoadTermIndex()
-	return lda.GenerateResponse()
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadTermIndex()
+	return core.GenerateResponse()
 
 def DocIndex():
-	lda = LDA( request, response )
-	lda.LoadDocIndex()
-	return lda.GenerateResponse()
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadDocIndex()
+	return core.GenerateResponse()
 
 def TopicIndex():
-	lda = LDA( request, response )
-	lda.LoadTopicIndex()
-	return lda.GenerateResponse()
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadTopicIndex()
+	return core.GenerateResponse()
 
 def TermTopicMatrix():
-	lda = LDA( request, response )
-	lda.LoadTermTopicMatrix()
-	return lda.GenerateResponse()
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadTermIndex()
+			core.LoadTopicIndex()
+			core.LoadTermTopicMatrix()
+	return core.GenerateResponse()
 
 def DocTopicMatrix():
-	lda = LDA( request, response )
-	lda.LoadDocTopicMatrix()
-	return lda.GenerateResponse()
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadDocIndex()
+			core.LoadTopicIndex()
+			core.LoadDocTopicMatrix()
+	return core.GenerateResponse()
 
 def TopicCooccurrence():
-	lda = LDA( request, response )
-	lda.LoadTopicCooccurrence()
-	return lda.GenerateResponse()
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadTopicIndex()
+			core.LoadTopicCooccurrence()
+	return core.GenerateResponse()
 
 def TopicCovariance():
-	lda = LDA( request, response )
-	lda.LoadTopicCovariance()
-	return lda.GenerateResponse()
-
-def TopTerms():
-	lda = LDA( request, response )
-	lda.LoadTopTerms()
-	return lda.GenerateResponse()
-
-def TopDocs():
-	lda = LDA( request, response )
-	lda.LoadTopDocs()
-	return lda.GenerateResponse()
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadTopicIndex()
+			core.LoadTopicCovariance()
+	return core.GenerateResponse()

@@ -4,6 +4,7 @@
 import glob
 import re
 from gluon.sql import DAL, Field
+from utils.UnicodeIO import UnicodeReader, UnicodeWriter
 
 class Corpus_DB():
 	FILENAME = 'corpus.db'
@@ -295,7 +296,17 @@ class Corpus_DB():
 	def AddModel(self, model_key, model_desc):
 		model = self.db( self.db.models.model_key == model_key ).select().first()
 		if model:
-			return False
+			self.db.update_record( model_desc = model_desc )
 		else:
-			self.db.insert( model_key = model_key, model_desc = model_desc )
-			return True
+			self.db.models.insert( model_key = model_key, model_desc = model_desc )
+
+	def GetModels(self):
+		models = self.db( self.db.models ).select( self.db.models.model_key )
+		return [ model.model_key for model in models ]
+	
+	def GetModelDescription(self, model_key):
+		model = self.db( self.db.models.model_key == model_key ).select().first()
+		if model:
+			return model.model_desc
+		else:
+			return None
