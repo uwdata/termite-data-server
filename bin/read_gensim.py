@@ -1,22 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+sys.path.append("web2py")
+from models import *
+
 import argparse
 import logging
 import os
 import shutil
-import sys
 from modules.apps.CreateApp import CreateApp
 from modules.apps.ComputeCorpusStats import ComputeCorpusStats
 from modules.apps.ComputeLDAStats import ComputeLDAStats
 from modules.apps.SplitSentences import SplitSentences
 from modules.readers.GensimReader import GensimReader
-
-sys.path.append("web2py")
-from models.Corpus_DB import Corpus_DB
-from models.CorpusStats_DB import CorpusStats_DB
-from models.LDA_DB import LDA_DB
-from models.LDAStats_DB import LDAStats_DB
 
 def ImportGensimLDA( app_name, model_path, corpus_path, database_path, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )
@@ -37,21 +34,30 @@ def ImportGensimLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 	
 	if force_overwrite or not os.path.exists( app_path ):
 		with CreateApp(app_name) as app:
-			app_model_path = '{}/gensim-lda'.format( app.GetDataPath() )
 			app_corpus_filename = '{}/corpus.txt'.format( app.GetDataPath() )
-			app_sentences_filename = '{}/sentences.txt'.format( app.GetDataPath() )
-			app_database_filename = '{}/corpus.db'.format( app.GetDataPath() )
-			app_db_filename = '{}/corpus.db'.format( app.GetDatabasePath() )
-			logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
-			shutil.copytree( model_path, app_model_path )
 			logger.info( 'Copying [%s] --> [%s]', corpus_filename, app_corpus_filename )
 			shutil.copy( corpus_filename, app_corpus_filename )
-			logger.info( 'Extracting [%s] --> [%s]', corpus_filename, app_sentences_filename )
-			SplitSentences( corpus_filename, app_sentences_filename )
+			
+			app_database_filename = '{}/corpus.db'.format( app.GetDataPath() )
 			logger.info( 'Copying [%s] --> [%s]', database_filename, app_database_filename )
 			shutil.copy( database_filename, app_database_filename )
+			
+			app_sentences_filename = '{}/sentences.txt'.format( app.GetDataPath() )
+			logger.info( 'Extracting [%s] --> [%s]', corpus_filename, app_sentences_filename )
+			SplitSentences( corpus_filename, app_sentences_filename )
+			
+			app_db_filename = '{}/corpus.db'.format( app.GetDatabasePath() )
 			logger.info( 'Copying [%s] --> [%s]', database_filename, app_db_filename )
 			shutil.copy( database_filename, app_db_filename )
+			
+			with Corpus_DB(db_path) as corpus_db:
+				with CorpusStats_DB(db_path, isInit=True) as corpusStats_db:
+					computer = ComputeCorpusStats( corpus_db, corpusStats_db, app_corpus_filename, app_sentences_filename )
+					computer.Execute()
+			
+			app_model_path = '{}/gensim-lda'.format( app.GetDataPath() )
+			logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
+			shutil.copytree( model_path, app_model_path )
 			
 			db_path = app.GetDatabasePath()
 			with LDA_DB(db_path, isInit=True) as lda_db:
@@ -60,15 +66,11 @@ def ImportGensimLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 				with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
 					computer = ComputeLDAStats( lda_db, ldaStats_db )
 					computer.Execute()
-			with Corpus_DB(db_path) as corpus_db:
-				with CorpusStats_DB(db_path, isInit=True) as corpusStats_db:
-					computer = ComputeCorpusStats( corpus_db, corpusStats_db, app_corpus_filename, app_sentences_filename )
-					computer.Execute()
 	else:
 		logger.info( '    Already available: %s', app_path )
 
 def main():
-	parser = argparse.ArgumentParser( description = 'Import a Gensim topic model as a web2py application.' )
+	parser = argparse.ArgumentParser( description = 'Import a gensim topic model as a web2py application.' )
 	parser.add_argument( 'app_name'     , type = str , help = 'Web2py application identifier' )
 	parser.add_argument( 'model_path'   , type = str , help = 'A folder containing gensim LDA topic model output' )
 	parser.add_argument( 'corpus_path'  , type = str , help = 'A folder containing a text corpus as a tab-delimited file named "corpus.txt"' )
