@@ -53,14 +53,16 @@ class ComputeLDAStats():
 		data = []
 		for i, row in enumerate(matrix):
 			for j, value in enumerate(row):
-				data.append({ 'first_topic_index' : i, 'second_topic_index' : j, 'value' : value })
+				data.append({ 'first_topic_index' : i, 'second_topic_index' : j, 'value' : value, 'rank' : 0 })
 		self.topicCooccurrences = data
 		self.topicCooccurrences.sort( key = lambda x : -x['value'] )
+		for rank, d in enumerate(self.topicCooccurrences):
+			d['rank'] = rank+1
 
 		self.logger.info( '    Computing topic covariance...' )
 		normalization = sum( d['value'] for d in data )
 		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
-		self.topicCovariance = [{ 'first_topic_index' : d['first_topic_index'], 'second_topic_index' : d['second_topic_index'], 'value' : d['value'] * normalization } for d in data]
+		self.topicCovariance = [{ 'first_topic_index' : d['first_topic_index'], 'second_topic_index' : d['second_topic_index'], 'value' : d['value'] * normalization, 'rank' : d['rank'] } for d in data]
 
 	def WriteTopicCooccurrence( self ):
 		self.logger.debug( '    Saving topic_cooccurrences...' )

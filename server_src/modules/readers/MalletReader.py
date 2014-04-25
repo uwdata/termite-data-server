@@ -115,7 +115,7 @@ class MalletReader():
 		self.ldaDB.db.terms.bulk_insert(termTable)
 		self.ldaDB.db.docs.bulk_insert(docTable)
 		self.ldaDB.db.topics.bulk_insert(topicTable)
-
+		
 		termTopicMatrix = []
 		docTopicMatrix = []
 		for term in self.termsAndTopics:
@@ -124,7 +124,8 @@ class MalletReader():
 					termTopicMatrix.append({
 						'term_index' : termLookup[term],
 					 	'topic_index' : topic,
-						'value' : value
+						'value' : value,
+						'rank' : 0
 					})
 		for docId in self.docsAndTopics:
 			for topic, value in enumerate(self.docsAndTopics[docId]):
@@ -132,9 +133,14 @@ class MalletReader():
 					docTopicMatrix.append({
 						'doc_index' : docLookup[docId],
 					 	'topic_index' : topic,
-						'value' : value
+						'value' : value,
+						'rank' : 0
 					})
 		termTopicMatrix.sort( key = lambda x : -x['value'] )
 		docTopicMatrix.sort( key = lambda x : -x['value'] )
+		for rank, d in enumerate(termTopicMatrix):
+			d['rank'] = rank+1
+		for rank, d in enumerate(docTopicMatrix):
+			d['rank'] = rank+1
 		self.ldaDB.db.term_topic_matrix.bulk_insert(termTopicMatrix)
 		self.ldaDB.db.doc_topic_matrix.bulk_insert(docTopicMatrix)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import csv, codecs, cStringIO
-
 class UTF8Recoder:
     """
     Iterator that reads an encoded stream and reencodes the input to UTF-8

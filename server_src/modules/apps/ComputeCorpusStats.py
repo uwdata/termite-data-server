@@ -10,18 +10,19 @@ class ComputeCorpusStats():
 	
 	DEFAULT_STOPWORDS = 'tools/mallet/stoplists/en.txt'
 	
-	def __init__( self, corpusDB, corpusStatsDB, corpusFilename, sentencesFilename, tokenRegex = r'\w{3,}', minFreq = 5, minDocFreq = 2, maxTermCount = 2500, maxCoTermCount = 25000, STOPWORDS = None ):
+	def __init__( self, corpusDB, corpusStatsDB, corpusFilename, sentencesFilename, STOPWORDS = None ):
 		self.logger = logging.getLogger('termite')
 		self.corpusDB = corpusDB
 		self.corpusStatsDB = corpusStatsDB
 		self.corpusFilename = corpusFilename
 		self.sentencesFilename = sentencesFilename
-		self.tokenRegex = re.compile(tokenRegex)
 		
-		self.minFreq = minFreq
-		self.minDocFreq = minDocFreq
-		self.maxTermCount = maxTermCount
-		self.maxCoTermCount = maxCoTermCount
+		self.tokenRegexStr = corpusDB.GetOption('token_regex')
+		self.tokenRegex = re.compile(self.tokenRegexStr)
+		self.minFreq = int(corpusDB.GetOption('min_freq'))
+		self.minDocFreq = int(corpusDB.GetOption('min_doc_freq'))
+		self.maxTermCount = int(corpusDB.GetOption('max_term_count'))
+		self.maxCoTermCount = int(corpusDB.GetOption('max_co_term_count'))
 		self.stopwords = self.LoadStopwords( STOPWORDS if STOPWORDS is not None else ComputeCorpusStats.DEFAULT_STOPWORDS )
 	
 	def Execute( self ):
@@ -53,8 +54,10 @@ class ComputeCorpusStats():
 		data = []
 		for term, index in self.termLookup.iteritems():
 			if term in stats:
-				data.append({ 'term_index' : index, 'value' : stats[term] })
+				data.append({ 'term_index' : index, 'value' : stats[term], 'rank' : 0 })
 		data.sort( key = lambda x : -x['value'] )
+		for rank, d in enumerate(data):
+			d['rank'] = rank+1
 		return data
 	
 	def UnfoldCoStats( self, coStats ):
@@ -63,8 +66,10 @@ class ComputeCorpusStats():
 			first_term_index = self.termLookup[first_term]
 			for second_term, value in stats.iteritems():
 				second_term_index = self.termLookup[second_term]
-				data.append({ 'first_term_index' : first_term_index, 'second_term_index' : second_term_index, 'value' : value })
+				data.append({ 'first_term_index' : first_term_index, 'second_term_index' : second_term_index, 'value' : value, 'rank' : 0 })
 		data.sort( key = lambda x : -x['value'] )
+		for rank, d in enumerate(data):
+			d['rank'] = rank+1
 		return data[:self.maxCoTermCount]
 	
 	def ComputeAndSaveDocumentLevelStatistics( self ):

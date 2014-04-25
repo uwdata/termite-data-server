@@ -67,21 +67,27 @@ class GensimReader():
 		termTopicMatrix = []
 		docTopicMatrix = []
 		for topicIndex, freqsTerms in enumerate(topicsAndFreqsTerms):
-			for freq, term in freqsTerms:
+			for value, term in freqsTerms:
 				termTopicMatrix.append({
 					'term_index' : termLookup[term],
 				 	'topic_index' : topicIndex,
-					'value' : freq
+					'value' : value,
+					'rank' : 0
 				})
 		for docIndex, docBOW in enumerate(docsAndDocBOWs):
 			topicsProbs = self.model[docBOW]
-			for topicIndex, prob in topicsProbs:
+			for topicIndex, value in topicsProbs:
 				docTopicMatrix.append({
 					'doc_index' : docIndex,
 					'topic_index' : topicIndex,
-					'value' : prob
+					'value' : value,
+					'rank' : 0
 				})
 		termTopicMatrix.sort( key = lambda x : -x['value'] )
 		docTopicMatrix.sort( key = lambda x : -x['value'] )
+		for rank, d in enumerate(termTopicMatrix):
+			d['rank'] = rank+1
+		for rank, d in enumerate(docTopicMatrix):
+			d['rank'] = rank+1
 		self.ldaDB.db.term_topic_matrix.bulk_insert(termTopicMatrix)
 		self.ldaDB.db.doc_topic_matrix.bulk_insert(docTopicMatrix)

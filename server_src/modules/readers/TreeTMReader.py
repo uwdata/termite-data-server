@@ -130,9 +130,9 @@ class TreeTMReader():
 				'topic_desc' : u', '.join( self.topTerms[topic][:5] ),
 				'topic_top_terms' : self.topTerms[topic][:30]
 			})
-		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
-		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)
-		topicIndexes = self.ldaDB.db.topics.bulk_insert(topicTable)
+		self.ldaDB.db.terms.bulk_insert(termTable)
+		self.ldaDB.db.docs.bulk_insert(docTable)
+		self.ldaDB.db.topics.bulk_insert(topicTable)
 
 		termTopicMatrix = []
 		docTopicMatrix = []
@@ -142,7 +142,8 @@ class TreeTMReader():
 					termTopicMatrix.append({
 						'term_index' : termLookup[term],
 					 	'topic_index' : topic,
-						'value' : value
+						'value' : value,
+						'rank' : 0
 					})
 		for docId in self.docsAndTopics:
 			for topic, value in enumerate(self.docsAndTopics[docId]):
@@ -150,9 +151,14 @@ class TreeTMReader():
 					docTopicMatrix.append({
 						'doc_index' : docLookup[docId],
 					 	'topic_index' : topic,
-						'value' : value
+						'value' : value,
+						'rank' : 0
 					})
 		termTopicMatrix.sort( key = lambda x : -x['value'] )
 		docTopicMatrix.sort( key = lambda x : -x['value'] )
+		for rank, d in enumerate(termTopicMatrix):
+			d['rank'] = rank+1
+		for rank, d in enumerate(docTopicMatrix):
+			d['rank'] = rank+1
 		self.ldaDB.db.term_topic_matrix.bulk_insert(termTopicMatrix)
 		self.ldaDB.db.doc_topic_matrix.bulk_insert(docTopicMatrix)

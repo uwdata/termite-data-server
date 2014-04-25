@@ -100,6 +100,13 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 		self.ReadFromDisk()
 		self.GetTopTerms()
 		self.SaveToDB()
+
+	def RunCommand( self, command ):
+		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
+		while p.poll() is None:
+			line = p.stdout.readline().rstrip('\n')
+			if len(line) > 0:
+				self.logger.debug( line )
 	
 	def WriteToDisk( self ):
 		self.logger.info( 'Generating R script: %s', self.modelScript )
@@ -156,37 +163,35 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 				'topic_desc' : u', '.join(termTable[d]['term_text'] for d in self.topTerms[topic][:5]),
 				'topic_top_terms' : [termTable[d]['term_text'] for d in self.topTerms[topic][:30]]
 			})
-		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
-		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)
-		topicIndexes = self.ldaDB.db.topics.bulk_insert(topicTable)
+		self.ldaDB.db.terms.bulk_insert(termTable)
+		self.ldaDB.db.docs.bulk_insert(docTable)
+		self.ldaDB.db.topics.bulk_insert(topicTable)
 
 		termTopicMatrix = []
 		docTopicMatrix = []
 		for term, topicFreqs in enumerate(self.termTopicMatrix):
-			for topic, freq in enumerate(topicFreqs):
-				if freq > STMReader.THRESHOLD:
+			for topic, value in enumerate(topicFreqs):
+				if value > STMReader.THRESHOLD:
 					termTopicMatrix.append({
 						'term_index' : term,
 					 	'topic_index' : topic,
-						'value' : freq
+						'value' : value,
+						'rank' : 0
 					})
 		for doc, topicFreqs in enumerate(self.docTopicMatrix):
-			for topic, freq in enumerate(topicFreqs):
-				if freq > STMReader.THRESHOLD:
+			for topic, value in enumerate(topicFreqs):
+				if value > STMReader.THRESHOLD:
 					docTopicMatrix.append({
 						'doc_index' : doc,
 					 	'topic_index' : topic,
-						'value' : freq
+						'value' : value,
+						'rank' : 0
 					})
 		termTopicMatrix.sort( key = lambda x : -x['value'] )
 		docTopicMatrix.sort( key = lambda x : -x['value'] )
+		for rank, d in enumerate(termTopicMatrix):
+			d['rank'] = rank+1
+		for rank, d in enumerate(docTopicMatrix):
+			d['rank'] = rank+1
 		self.ldaDB.db.term_topic_matrix.bulk_insert(termTopicMatrix)
 		self.ldaDB.db.doc_topic_matrix.bulk_insert(docTopicMatrix)
-		
-	def RunCommand( self, command ):
-		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
-		while p.poll() is None:
-			line = p.stdout.readline().rstrip('\n')
-			if len(line) > 0:
-				self.logger.debug( line )
-

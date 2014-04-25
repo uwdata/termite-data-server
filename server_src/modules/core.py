@@ -4,7 +4,6 @@ import os
 import json
 import urllib
 import cStringIO
-from utils.UnicodeWriter import UnicodeWriter
 
 class TermiteCore( object ):
 	def __init__( self, request, response ):
@@ -19,7 +18,7 @@ class TermiteCore( object ):
 ################################################################################		
 # Server, Dataset, Model, and Attribute
 
-	EXCLUDED_FOLDERS = frozenset( [ 'admin', 'examples', 'welcome', 'init' ] )
+	EXCLUDED_FOLDERS = frozenset( [ 'admin', 'examples', 'welcome', 'init', 'data' ] )
 
 	def GetServer( self ):
 		return self.request.env['HTTP_HOST']
