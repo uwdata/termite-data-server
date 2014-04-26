@@ -1,0 +1,17 @@
+{{extend 'template.html'}}
+{{include 'model.html'}}
+
+<div class="body">
+	<div class="heading">Server Response
+		<span class="format">(
+			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
+			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
+			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
+			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> | 
+			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
+		)</span>
+	</div>
+
+	<div class="content">{{=content}}</div>
+</div>

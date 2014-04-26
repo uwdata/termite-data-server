@@ -1,0 +1,53 @@
+{{extend 'template.html'}}
+{{include 'attribute.html'}}
+{{import json}}
+
+<script type="text/javascript">
+var onSubmitParams = function() {
+	var query = {{WriteJSON({ key : request.vars[key] for key in request.vars })}}
+	var keys = [ "docId" ];
+	keys.forEach( function(key) {
+		var value = $("."+key).val();
+		if ( value.length > 0 ) {
+			var text = value.replace( /[\n\r\f]+/g, ";" ).replace( /[ ]+/g, ":" );
+			query[key] = text;
+		}
+	});
+	var queryString = []
+	for ( var key in query ) {
+		var value = query[key];
+		queryString.push( key + "=" + escape(value) );
+	}
+	if ( queryString.length > 0 )
+		queryString = "?" + queryString.join("&");
+	else
+		queryString = "";
+	window.location.href = "http://{{=configs['server']}}/{{=configs['dataset']}}/{{=configs['model']}}/{{=configs['attribute']}}" + queryString;
+};
+</script>
+
+<div class="body">
+	<div class="heading">Request Parameters</div>
+	<div class="params">
+		<div class="param">docId = 
+			<input type="text" class="docId" value="{{=params['docId']}}" style="width:150px"/> <input type="button" value="Refresh" onclick="onSubmitParams()" />
+		</div>
+		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
+	</div>
+
+	<div class="heading">Server Response
+		<span class="format">(
+			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
+			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
+			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
+			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> 
+		)</span>
+	</div>
+
+{{if configs['is_text']:}}
+	<div class="content">{{=content}}</div>
+{{pass}}
+{{if configs['is_graph']:}}
+	<div class="content"><div id="view" class="view"></div></div>
+{{pass}}
+</div>

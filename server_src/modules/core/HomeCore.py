@@ -106,18 +106,19 @@ class HomeCore( object ):
 			]
 		if model == 'corpus':
 			return [
-				'Document',
-				'Documents',
-				'TextSearch',
+				'DocumentByIndex',
+				'DocumentById',
+				'SearchDocuments',
 				'TermFreqs',
 				'TermProbs',
 				'TermCoFreqs',
 				'TermCoProbs',
-				'TermDocFreqs',
 				'TermPMI',
 				'TermG2',
-				'TermSentencePMI',
-				'TermSentenceG2'
+				'SentenceCoFreqs',
+				'SentenceCoProbs',
+				'SentencePMI',
+				'SentenceG2'
 			]
 		if model == 'charts':
 			return [
