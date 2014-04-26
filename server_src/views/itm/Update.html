@@ -1,15 +1,51 @@
 {{extend 'template.html'}}
 {{include 'attribute.html'}}
 
+<script type="text/javascript">
+var onSubmitParams = function() {
+	var query = {{WriteJSON({ key : request.vars[key] for key in request.vars })}}
+	var keys = [ "iters", "mustLinks", "cannotLinks", "keepTerms", "removeTerms" ];
+	keys.forEach( function(key) {
+		var value = $("."+key).val();
+		if ( value.length > 0 ) {
+			var text = value.replace( /[\n\r\f]+/g, ";" ).replace( /[ ]+/g, ":" );
+			query[key] = text;
+		}
+	});
+	var queryString = []
+	for ( var key in query ) {
+		var value = query[key];
+		queryString.push( key + "=" + escape(value) );
+	}
+	if ( queryString.length > 0 )
+		queryString = "?" + queryString.join("&");
+	else
+		queryString = "";
+	window.location.href = "http://{{=configs['server']}}/{{=configs['dataset']}}/{{=configs['model']}}/{{=configs['attribute']}}" + queryString;
+};
+</script>
+
 <div class="body">
 	<div class="heading">Request Parameters</div>
 	<div class="params">
-		<div class="param">iterIndex = <input type="text" value="{{=IterIndex}}"></input></div>
-		<div class="param">iterCount = <input type="text" value="{{=IterCount}}"></input></div>
-		<div class="param">mustLinks = <input type="text"></input></div>
-		<div class="param">cannotLinks = <input type="text"></input></div>
-		<div class="param">keepTerms = <input type="text"></input></div>
-		<div class="param">removeTerms = <input type="text"></input></div>	
+		<div class="param">iters = <input type="text" class="iters" value="{{=params['iters']+50}}"></input>
+			<span style="color: #999">(a non-negative integer)</span>
+		</div>
+		<div class="param">mustLinks = <input type="text" class="mustLinks" value="{{=params['mustLinks']}}"></input> 
+			<span style="color: #999">(a list of list of words)</span>
+		</div>
+		<div class="param">cannotLinks = <input type="text" class="cannotLinks" value="{{=params['cannotLinks']}}"></input> 
+			<span style="color: #999">(a list of list of words)</span>
+		</div>
+		<div class="param">keepTerms = <input type="text" class="keepTerms" value="{{=params['keepTerms']}}"></input> 
+			<span style="color: #999">(a dict with integer keys and a list of words as values)</span>
+		</div>
+		<div class="param">removeTerms = <input type="text" class="removeTerms" value="{{=params['removeTerms']}}"></input> 
+			<span style="color: #999">(a list of words)</span>
+		</div>	
+		<div class="param">
+			<input type="button" value="Update Model" onclick="onSubmitParams()" />
+		</div>
 		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
 	</div>
 

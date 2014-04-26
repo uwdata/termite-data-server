@@ -81,6 +81,7 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 				
 				# Mark 'lda' as available
 				corpus_db.AddModel('lda', 'ITM topic model')
+				corpus_db.AddModel('itm', 'interactive topic modeling')
 				
 	else:
 		logger.info( '    Already available: %s', app_path )

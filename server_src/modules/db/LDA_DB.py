@@ -7,20 +7,30 @@ class LDA_DB():
 	FILENAME = 'lda.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	
-	def __init__(self, path = None, isInit = False):
+	def __init__(self, path = None, isInit = False, isReset = False):
 		self.isInit = isInit
+		self.isReset = isReset
 		if path is not None:
 			self.db = DAL( LDA_DB.CONNECTION, lazy_tables = not self.isInit, migrate = self.isInit, folder = path )
 		else:
 			self.db = DAL( LDA_DB.CONNECTION, lazy_tables = not self.isInit, migrate = self.isInit )
 
 	def __enter__(self):
+		if self.isReset:
+			self.Reset()
 		self.DefineDimensionTables()
 		self.DefineMatrixTables()
 		return self
 	
 	def __exit__(self, type, value, traceback):
 		self.db.commit()
+	
+	def Reset(self):
+		self.db.executesql( 'DELETE FROM terms;' )
+		self.db.executesql( 'DELETE FROM docs;' )
+		self.db.executesql( 'DELETE FROM topics;' )
+		self.db.executesql( 'DELETE FROM term_topic_matrix;' )
+		self.db.executesql( 'DELETE FROM doc_topic_matrix;' )
 	
 	def DefineDimensionTables(self):
 		self.db.define_table( 'terms',

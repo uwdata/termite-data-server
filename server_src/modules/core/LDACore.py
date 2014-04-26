@@ -72,34 +72,48 @@ class LDACore(HomeCore):
 	
 	def LoadTermTopicMatrix(self):
 		term_limits = self.GetTermLimits()
-		table = self.db.term_topic_matrix
+		matrix = self.db.term_topic_matrix
 		ref = self.db.terms
-		inner_join = ( table.term_index == ref.term_index )
-		where = ( term_limits[0] <= table.term_index ) & ( table.term_index < term_limits[1] )
-		rows = self.db( inner_join & where ).select( table.ALL, orderby = table.rank ).as_list()
-		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		query = """SELECT matrix.term_index AS term_index, topic_index, value, term_text FROM {MATRIX} AS matrix
+			INNER JOIN {REF} AS terms ON matrix.term_index = terms.term_index
+			WHERE {LB} <= terms.term_index AND terms.term_index < {UB}
+			ORDER BY matrix.rank""".format(MATRIX = matrix, REF = ref, LB = term_limits[0], UB = term_limits[1])
+		rows = self.db.executesql(query, as_dict=True)
+		header = [
+			{ 'name' : 'term_index' , 'type' : matrix.term_index.type  },
+			{ 'name' : 'term_text'  , 'type' : ref.term_text.type      },
+			{ 'name' : 'topic_index', 'type' : matrix.topic_index.type },
+			{ 'name' : 'value'      , 'type' : matrix.value.type       }
+		]
 		self.content.update({
 			'TermTopicMatrix' : rows,
 			'TermCount' : self.db(self.db.terms).count(),
 			'TopicCount' : self.db(self.db.topics).count(),
-			'CellCount' : self.db(table).count()
+			'CellCount' : self.db(matrix).count()
 		})
 		self.table = rows
 		self.header = header
 
 	def LoadDocTopicMatrix(self):
 		doc_limits = self.GetDocLimits()
-		table = self.db.doc_topic_matrix
+		matrix = self.db.doc_topic_matrix
 		ref = self.db.docs
-		inner_join = ( table.doc_index == ref.doc_index )
-		where = ( doc_limits[0] <= table.doc_index ) & ( table.doc_index < doc_limits[1] )
-		rows = self.db( inner_join & where ).select( table.ALL, orderby = table.rank ).as_list()
-		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		query = """SELECT matrix.doc_index AS doc_index, topic_index, value, doc_id FROM {MATRIX} AS matrix
+			INNER JOIN {REF} AS docs ON matrix.doc_index = docs.doc_index
+			WHERE {LB} <= docs.doc_index AND docs.doc_index < {UB}
+			ORDER BY matrix.rank""".format(MATRIX = matrix, REF = ref, LB = doc_limits[0], UB = doc_limits[1])
+		rows = self.db.executesql(query, as_dict=True)
+		header = [
+			{ 'name' : 'doc_index'  , 'type' : matrix.doc_index.type  },
+			{ 'name' : 'doc_id'     , 'type' : ref.doc_id.type      },
+			{ 'name' : 'topic_index', 'type' : matrix.topic_index.type },
+			{ 'name' : 'value'      , 'type' : matrix.value.type       }
+		]
 		self.content.update({
 			'DocTopicMatrix' : rows,
 			'DocCount' : self.db(self.db.docs).count(),
 			'TopicCount' : self.db(self.db.topics).count(),
-			'CellCount' : self.db(table).count()
+			'CellCount' : self.db(matrix).count()
 		})
 		self.table = rows
 		self.header = header

@@ -68,7 +68,7 @@ class HomeCore( object ):
 	def GetModels( self, dataset ):
 		if self.IsExcluded(dataset):
 			return None
-		folders = [ 'vis', 'charts' ]
+		folders = [ 'vis' ]
 		with Corpus_DB() as corpus_db:
 			folders += corpus_db.GetModels()
 		folders = sorted( folders )
@@ -93,15 +93,6 @@ class HomeCore( object ):
 			]
 		if model == 'itm':
 			return [
-				'DocIndex',
-				'TermIndex',
-				'TopicIndex',
-				'TermTopicMatrix',
-				'DocTopicMatrix',
-				'TopicCooccurrence',
-				'TopicCovariance',
-				'TopTerms',
-				'TopDocs',
 				'Update'
 			]
 		if model == 'corpus':

@@ -9,6 +9,7 @@ def index():
 
 def GroupInABox():
 	gib = GroupInABoxModel()
+	gib.Load()
 	gib.LoadTopTermsPerTopic()
 	gib.LoadTopicCovariance()
 	gib.LoadTermFreqs()
@@ -17,9 +18,3 @@ def GroupInABox():
 	gib.LoadTermPMI()
 	gib.LoadTermSentencePMI()
 	return gib.GenerateResponse()
-
-def CovariateChart():
-	chart = CovariateChartModel()
-	chart.LoadDocTopicMatrix()
-	chart.LoadTopicTopTerms()
-	return chart.GenerateResponse()

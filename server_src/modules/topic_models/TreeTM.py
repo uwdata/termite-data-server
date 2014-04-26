@@ -19,6 +19,7 @@ class RefineLDA(object):
 	def __init__( self, modelPath, numIters = 1000, prevEntry = None,
 			mustLinks = None, cannotLinks = None, keepTerms = None, removeTerms = None,
 			MALLET_PATH = 'tools/mallet' ):
+		print "after", mustLinks, cannotLinks, keepTerms, removeTerms
 		with TreeTM( modelsPath = modelPath, resume = True, finalIter = numIters, prevEntryID = prevEntry ) as treeTM:
 			treeTM.ResumeTraining()
 			if mustLinks is not None:
@@ -29,6 +30,7 @@ class RefineLDA(object):
 				treeTM.SetKeepTerms( keepTerms )
 			if removeTerms is not None:
 				treeTM.SetRemoveTerms( removeTerms )
+			treeTM.WriteFiles()
 			treeTM.Execute()
 	
 class BuildLDA(object):
@@ -54,6 +56,7 @@ class BuildLDA(object):
 				treeTM.SetKeepTerms( keepTerms )
 			if removeTerms is not None:
 				treeTM.SetRemoveTerms( removeTerms )
+			treeTM.WriteFiles()
 			treeTM.Execute()
 
 HYPER_PARAMS = u"""DEFAULT_ 0.01
@@ -245,11 +248,11 @@ class TreeTM(object):
 		
 	def SetMustLinkConstraints( self, mustLinkConstraints ):
 		"""Argument 'mustLinkConstraints' should be a list of lists of words"""
-		self.mustLinkConstraints = [ frozenset(constraint) for constaint in mustLinkConstraints ]
+		self.mustLinkConstraints = [ frozenset(constraint) for constraint in mustLinkConstraints ]
 
 	def SetCannotLinkConstraints( self, cannotLinkConstraints ):
 		"""Argument 'cannotLinkConstraints' should be a list of lists of words"""
-		self.cannotLinkConstraints = [ frozenset(constraint) for constaint in cannotLinkConstraints ]
+		self.cannotLinkConstraints = [ frozenset(constraint) for constraint in cannotLinkConstraints ]
 
 	def SetKeepTerms( self, keepTerms ):
 		"""Argument 'keepTerms' should be a dict where the keys are topic indexes and the values are a list of words"""
@@ -326,17 +329,19 @@ class TreeTM(object):
 			lines.append( u'SPLIT_\t{}'.format( u'\t'.join(term for term in cannotLink) ) )
 		with open( self.filenameConstraints, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
+		print lines
 	
 	def WriteKeepTermsFile( self ):
 		lines = []
-		for topic, terms in self.keepTerms:
+		for topic, terms in self.keepTerms.iteritems():
 			for term in terms:
 				lines.append( u'{}\t{}'.format(term, topic) )
 		with open( self.filenameKeepTerms, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
+		print lines
 
 	def ReadRemoveTermsFile( self ):
-		with open( self.filenamesRemoveTermsPrevious, 'r' ) as f:
+		with open( self.filenameRemoveTermsPrevious, 'r' ) as f:
 			lines = f.read().decode('utf-8').splitlines()
 		return frozenset(lines)
 		
@@ -347,13 +352,13 @@ class TreeTM(object):
 		lines = [ term for term in self.removeTermsNew ]
 		with open( self.filenameRemoveTermsNew, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
+		print lines
 	
 	def WriteExecuteBashScript( self ):
 		with open( self.filenameExecute, 'w' ) as f:
 			f.write( self.EXECUTE_BASH_SCRIPT.encode('utf-8') )
 		os.chmod( self.filenameExecute, 0755 )
-	
-	
+		
 ################################################################################
 # Steps in Training a TreeTM
 
@@ -402,14 +407,12 @@ class TreeTM(object):
 		self.ImportFileOrFolder()
 		self.CreateHyperparamsFile()
 		self.CreateVocabFile()
-		self.Prepare()
 	
 	def ResumeTraining( self ):
 		assert self.resume
 		self.CopyEntryFolder()
-		self.Prepare()
 
-	def Prepare( self ):
+	def WriteFiles( self ):
 		self.CreateEntryFolder()
 		self.WriteStatesFile()
 		self.WriteConstraintsFile()
