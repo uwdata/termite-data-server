@@ -1,33 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
+from LDAReader import LDAReader
 import os
 
-class TreeTMReader():
+class TreeTMReader(LDAReader):
 	"""
+	lda_db = a SQLite3 database
 	modelPath = a model folder containing files corpus.voc, model.topic-words, and model.docs
-	LDA_DB = a SQLite3 database
 	"""
 	
-	THRESHOLD = 0.01
+	PROB_THRESHOLD = 0.001
 	CORPUS_VOCAB_FILENAME = 'corpus.voc'
 	TOPIC_WORDS_FILENAME = 'model.topic-words'
 	DOC_TOPICS_FILENAME = 'model.docs'
 	
-	def __init__( self, modelPath, LDA_DB ):
-		self.logger = logging.getLogger('termite')
+	def __init__(self, lda_db, modelPath):
+		super(TreeTMReader, self).__init__(lda_db)
 		self.modelPath = modelPath
 		self.entryPath = self.GetLatestEntry()
 		self.corpusVocab = '{}/{}'.format( self.modelPath, TreeTMReader.CORPUS_VOCAB_FILENAME )
 		self.entryTopicWordWeights = '{}/{}'.format( self.entryPath, TreeTMReader.TOPIC_WORDS_FILENAME )
 		self.entryDocTopicMixtures = '{}/{}'.format( self.entryPath, TreeTMReader.DOC_TOPICS_FILENAME )
-		self.ldaDB = LDA_DB
 
 	def Execute(self):
+		self.logger.info( 'Reading ITM topic model output...' )
 		self.ReadVocabFile()
 		self.ReadTopicWordWeights()
 		self.ReadDocTopicMixtures()
+		self.logger.info( 'Writing to database...' )
 		self.SaveToDB()
 
 	def GetLatestEntry( self ):
@@ -39,126 +40,63 @@ class TreeTMReader():
 		return entries[-1]
 
 	def ReadVocabFile( self ):
-		self.logger.info( 'Reading vocbuary: %s', self.corpusVocab )
+		self.termList = []
+		self.logger.debug( '    Loading vocbuary: %s', self.corpusVocab )
 		with open( self.corpusVocab ) as f:
 			self.termList = [ line.decode('utf-8', 'ignore').rstrip('\n').split('\t')[1] for line in f ]
-		self.termLookup = { term : index for index, term in enumerate(self.termList) }
 
 	def ReadTopicWordWeights( self ):
-		self.logger.info( 'Reading topic-term matrix: %s', self.entryTopicWordWeights )
-		self.termSet = set()
-		self.topicSet = set()
-		self.termFreqs = {}
-		self.topicFreqs = []
-		self.termsAndTopics = {}
+		self.termTopicMatrix = []
+		self.logger.debug( '    Loading matrix: %s', self.entryTopicWordWeights )
 		with open( self.entryTopicWordWeights, 'r' ) as f:
 			for line in f:
 				line = line.rstrip('\n').decode('utf-8')
-				topic, term, value = line.split('\t')
-				topic = int(topic)
+				topicIndex, term, value = line.split('\t')
+				topicIndex = int(topicIndex)
 				value = float(value)
-				if topic not in self.topicSet:
-					self.topicSet.add( topic )
-					self.topicFreqs.append( 0.0 )
-				if term not in self.termSet:
-					self.termSet.add( term )
-					self.termFreqs[ term ] = 0.0
-					self.termsAndTopics[ term ] = []
-				self.topicFreqs[ topic ] += value
-				self.termFreqs[ term ] += value
-				self.termsAndTopics[ term ].append( value )
-
-		self.topTerms = []
-		for topic in self.topicSet:
-			topTerms = sorted( self.termSet, key = lambda x : -self.termsAndTopics[x][topic] )
-			self.topTerms.append( topTerms )
-
-		self.termCount = len(self.termSet)
-		self.topicCount = len(self.topicSet)
+				if value > TreeTMReader.PROB_THRESHOLD:
+					self.termTopicMatrix.append({
+						'term_index' : term,
+						'topic_index' : topicIndex,
+						'value' : value,
+						'rank' : 0
+					})
+		termLookup = { term : termIndex for termIndex, term in enumerate(self.termList) }
+		self.termTopicMatrix.sort( key = lambda d : -d['value'] )
+		for index, d in enumerate(self.termTopicMatrix):
+			d['term_index'] = termLookup[d['term_index']]
+			d['rank'] = index + 1
 
 	def ReadDocTopicMixtures( self ):
-		self.logger.info( 'Reading doc-topic matrix: %s', self.entryDocTopicMixtures )
-		self.docSet = set()
-		self.docsAndTopics = {}
-		header = None
+		self.docList = []
+		self.docTopicMatrix = []
+		docSet = set()
+		self.logger.debug( '    Loading matrix: %s', self.entryDocTopicMixtures )
 		with open( self.entryDocTopicMixtures, 'r' ) as f:
-			for line in f:
+			for index, line in enumerate(f):
 				line = line.rstrip('\n').decode('utf-8')
-				if header is None:
+				if index == 0:
 					assert line == "#doc source topic proportion ..."
-					header = line
 				else:
 					fields = line.split( ' ' )
 					docIndex = int(fields[0])
 					docId = fields[1]
-					topicKeys = [ int(key) for n, key in enumerate(fields[2:]) if n % 2 == 0 and key != '' ]
-					topicValues = [ float(value) for n, value in enumerate(fields[2:]) if n % 2 == 1 and value != '' ]
-					for n in range(len(topicKeys)):
-						topic = topicKeys[n]
-						value = topicValues[n]
-						if docId not in self.docSet:
-							self.docSet.add( docId )
-							self.docsAndTopics[ docId ] = [ 0.0 ] * self.topicCount
-						self.docsAndTopics[ docId ][ topic ] = value
-
-		self.docCount = len(self.docSet)
-
-	def SaveToDB( self ):
-		termList = self.termList
-		docList = sorted( self.docSet )
-		topicList = sorted( self.topicSet )
-
-		termTable = []
-		docTable = []
-		topicTable = []
-		termLookup = self.termLookup
-		docLookup = {}
-		for index, term in enumerate(termList):
-			termTable.append({
-				'term_index' : index,
-				'term_text' : term
-			})
-		for index, docId in enumerate(docList):
-			docTable.append({
-				'doc_index' : index
-			})
-			docLookup[docId] = index
-		for index, topic in enumerate(topicList):
-			topicTable.append({
-				'topic_index' : index,
-				'topic_freq' : self.topicFreqs[ topic ],
-				'topic_desc' : u', '.join( self.topTerms[topic][:5] ),
-				'topic_top_terms' : self.topTerms[topic][:30]
-			})
-		self.ldaDB.db.terms.bulk_insert(termTable)
-		self.ldaDB.db.docs.bulk_insert(docTable)
-		self.ldaDB.db.topics.bulk_insert(topicTable)
-
-		termTopicMatrix = []
-		docTopicMatrix = []
-		for term in self.termsAndTopics:
-			for topic, value in enumerate(self.termsAndTopics[term]):
-				if value > TreeTMReader.THRESHOLD:
-					termTopicMatrix.append({
-						'term_index' : termLookup[term],
-					 	'topic_index' : topic,
-						'value' : value,
-						'rank' : 0
-					})
-		for docId in self.docsAndTopics:
-			for topic, value in enumerate(self.docsAndTopics[docId]):
-				if value > TreeTMReader.THRESHOLD:
-					docTopicMatrix.append({
-						'doc_index' : docLookup[docId],
-					 	'topic_index' : topic,
-						'value' : value,
-						'rank' : 0
-					})
-		termTopicMatrix.sort( key = lambda x : -x['value'] )
-		docTopicMatrix.sort( key = lambda x : -x['value'] )
-		for rank, d in enumerate(termTopicMatrix):
-			d['rank'] = rank+1
-		for rank, d in enumerate(docTopicMatrix):
-			d['rank'] = rank+1
-		self.ldaDB.db.term_topic_matrix.bulk_insert(termTopicMatrix)
-		self.ldaDB.db.doc_topic_matrix.bulk_insert(docTopicMatrix)
+					topicIndexes = [ int(d) for n, d in enumerate(fields[2:]) if n % 2 == 0 and d != '' ]
+					values = [ float(d) for n, d in enumerate(fields[2:]) if n % 2 == 1 and d != '' ]
+					for n, topicIndex in enumerate(topicIndexes):
+						value = values[n]
+						if value > TreeTMReader.PROB_THRESHOLD:
+							self.docTopicMatrix.append({
+								'doc_index' : docId,
+								'topic_index' : topicIndex,
+								'value' : value,
+								'rank' : 0
+							})
+						if docId not in docSet:
+							docSet.add(docId)
+							self.docList.append(docId)
+		docLookup = { docId : docIndex for docIndex, docId in enumerate(self.docList) }
+		self.docTopicMatrix.sort( key = lambda d : -d['value'] )
+		for index, d in enumerate(self.docTopicMatrix):
+			d['doc_index'] = docLookup[d['doc_index']]
+			d['rank'] = index + 1
