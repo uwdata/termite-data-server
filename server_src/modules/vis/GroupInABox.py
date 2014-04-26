@@ -2,148 +2,95 @@
 
 import os
 import json
-from core import TermiteCore
+from core.HomeCore import HomeCore
 from json import encoder as JsonEncoder
 
-class GroupInABox( TermiteCore ):
-	def __init__( self, request, response ):
-		super( GroupInABox, self ).__init__( request, response )
+class GroupInABox(HomeCore):
+	def __init__(self, request, response, corpus_db, lda_db):
+		super(GroupInABox, self).__init__( request, response )
 		JsonEncoder.FLOAT_REPR = lambda number : format( number, '.4g' )
+		self.corpusDB = corpus_db.db
+		self.ldaDB = lda_db.db
 
-	def GetParam( self, key ):
-		if key == 'termLimit':
-			if self.IsJsonFormat():
-				value = self.GetNonNegativeIntegerParam( 'termLimit', 100 )
-			else:
-				value = self.GetNonNegativeIntegerParam( 'termLimit', 5 )
-			self.params.update({ key : value })
+	def GetTermLimit(self):
+		termLimit = self.GetNonNegativeIntegerParam( 'termLimit', 100 if self.IsMachineFormat() else 5 )
+		self.params.update({
+			'termLimit' : termLimit
+		})
+		return termLimit
 
-		return value
-
+	def Load(self):
+		self.LoadTopTermsPerTopic()
+		self.LoadTopicCovariance()
+		self.CreateTempVocabTable()
+		self.LoadTermPMI()
+		self.LoadSentencePMI()
+		self.DeleteTempVocabTable()
+		
 	def LoadTopTermsPerTopic( self ):
-		termLimit = self.GetParam('termLimit')
-		filename = os.path.join( self.request.folder, 'data/lda', 'topic-term-matrix.json' )
-		with open( filename ) as f:
-			matrix = json.load( f, encoding = 'utf-8' )
-		submatrix = []
-		vocab = set()
-		for vector in matrix:
-			allTerms = sorted( vector.iterkeys(), key = lambda x : -vector[x] )
-			subTerms = allTerms[:termLimit]
-			termSet = frozenset(subTerms)
-			vocab.update( termSet )
-			submatrix.append( [ { term : vector[term] } for term in termSet if term in vector ] )
-		results = {
-			'TopTermsPerTopic' : submatrix,
-			'Vocab' : list( vocab )
-		}
-		self.content.update(results)
-		return results
-
-	def LoadTopicCooccurrence( self ):
-		filename = os.path.join( self.request.folder, 'data/lda', 'topic-cooccurrence.json' )
-		with open( filename ) as f:
-			topicCooccurrence = json.load( f, encoding = 'utf-8' )
-		results = {
-			'TopicCooccurrence' : topicCooccurrence
-		}
-		self.content.update(results)
-		return results
+		termLimit = self.GetTermLimit()
+		topicCount = self.ldaDB(self.ldaDB.topics).count()
+		data = []
+		self.vocab = set()
+		for topicIndex in range(topicCount):
+			query = """SELECT matrix.value AS freq, terms.term_text AS term
+			FROM {MATRIX} AS matrix
+			INNER JOIN {TERMS} AS terms ON matrix.term_index = terms.term_index
+			WHERE matrix.topic_index = {TOPIC_INDEX}
+			ORDER BY matrix.rank
+			LIMIT {LIMIT}""".format(MATRIX=self.ldaDB.term_topic_matrix, TERMS=self.ldaDB.terms, LIMIT=termLimit, TOPIC_INDEX=topicIndex)
+			rows = self.ldaDB.executesql(query, as_dict = True)
+			data.append(rows)
+			self.vocab.update(row['term'] for row in rows)
+		self.content.update({
+			'TopTermsPerTopic' : data
+		})
 
 	def LoadTopicCovariance( self ):
-		self.LoadTopicCooccurrence()
-		topicCooccurrence = self.content['TopicCooccurrence']
-		normalization = sum( [ sum( vector ) for vector in topicCooccurrence ] )
-		normalization = 1.0 / normalization if normalization > 1.0 else 1.0
-		topicCovariance = [ [ value * normalization for value in vector ] for vector in topicCooccurrence ]
-		results = {
-			'TopicCovariance' : topicCovariance
-		}
-		self.content.update(results)
-		return results
-
-	def LoadTermFreqs( self ):
-		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-stats.json' )
-		with open( filename ) as f:
-			termStats = json.load( f, encoding = 'utf-8' )
-			allTermFreqs = termStats['freqs']
-		subTermFreqs = { term : allTermFreqs[term] for term in vocab if term in allTermFreqs }
-		results = {
-			'TermFreqs' : subTermFreqs
-		}
-		self.content.update(results)
-		return results
-
-	def LoadTermCoFreqs( self ):
-		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
-		with open( filename ) as f:
-			termCoStats = json.load( f, encoding = 'utf-8' )
-			allTermCoFreqs = termCoStats['coFreqs']
-		subTermCoFreqs = { term : allTermCoFreqs[term] for term in vocab if term in allTermCoFreqs }
-		for term, termFreqs in subTermCoFreqs.iteritems():
-			subTermCoFreqs[ term ] = { t : termFreqs[t] for t in vocab if t in termFreqs }
-		results = {
-			'TermCoFreqs' : subTermCoFreqs
-		}
-		self.content.update(results)
-		return results
-
-	def LoadTermProbs( self ):
-		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-stats.json' )
-		with open( filename ) as f:
-			termStats = json.load( f, encoding = 'utf-8' )
-			allTermProbs = termStats['probs']
-		subTermProbs = { term : allTermProbs[term] for term in vocab if term in allTermProbs }
-		results = {
-			'TermProbs' : subTermProbs
-		}
-		self.content.update(results)
-		return results
-
-	def LoadTermCoProbs( self ):
-		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
-		with open( filename ) as f:
-			termCoStats = json.load( f, encoding = 'utf-8' )
-			allTermCoProbs = termCoStats['coProbs']
-		subTermCoProbs = { term : allTermCoProbs[term] for term in vocab if term in allTermCoProbs }
-		for term, termProbs in subTermCoProbs.iteritems():
-			subTermCoProbs[ term ] = { t : termProbs[t] for t in vocab if t in termProbs }
-		results = {
-			'TermCoProbs' : subTermCoProbs
-		}
-		self.content.update(results)
-		return results
+		topicCount = self.ldaDB(self.ldaDB.topics).count()
+		table = self.ldaDB.topic_covariance
+		rows = self.ldaDB().select( table.ALL, orderby = table.rank )
+		data = [ [0.0] * topicCount for _ in range(topicCount) ]
+		for row in rows:
+			data[row.first_topic_index][row.second_topic_index] = row.value
+		self.content.update({
+			'TopicCovariance' : data
+		})
+	
+	def CreateTempVocabTable( self ):
+		self.corpusDB.executesql( 'DELETE FROM vocab;' )
+		self.corpusDB.executesql( 'DELETE FROM vocab_text;' )
+		self.corpusDB.vocab_text.bulk_insert( { 'term_text' : d } for d in self.vocab )
+		query = """INSERT INTO {TARGET} (term_index, term_text)
+			SELECT terms.term_index, terms.term_text
+			FROM {TERMS} AS terms
+			INNER JOIN {SOURCE} AS vocab ON terms.term_text = vocab.term_text""".format(
+				TERMS=self.corpusDB.term_texts, SOURCE=self.corpusDB.vocab_text, TARGET=self.corpusDB.vocab)
+		self.corpusDB.executesql(query)
+	
+	def DeleteTempVocabTable( self ):
+		pass
 
 	def LoadTermPMI( self ):
-		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'corpus-term-co-stats.json' )
-		with open( filename ) as f:
-			termCoStats = json.load( f, encoding = 'utf-8' )
-			allTermPMI = termCoStats['coProbs']
-		subTermPMI = { term : allTermPMI[term] for term in vocab if term in allTermPMI }
-		for term, termProbs in subTermPMI.iteritems():
-			subTermPMI[ term ] = { t : termProbs[t] for t in vocab if t in termProbs }
-		results = {
-			'TermPMI' : subTermPMI
-		}
-		self.content.update(results)
-		return results
+		query = """SELECT ref1.term_text AS first_term, ref2.term_text AS second_term, matrix.value
+		FROM {MATRIX} AS matrix
+		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
+		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
+		ORDER BY matrix.rank
+		LIMIT 2500""".format(MATRIX=self.corpusDB.term_pmi, VOCAB=self.corpusDB.vocab)
+		rows = self.corpusDB.executesql(query, as_dict=True)
+		self.content.update({
+			'TermPMI' : rows
+		})
 
-	def LoadTermSentencePMI( self ):
-		vocab = frozenset( self.content['Vocab'] )
-		filename = os.path.join( self.request.folder, 'data/corpus', 'sentence-term-co-stats.json' )
-		with open( filename ) as f:
-			termCoStats = json.load( f, encoding = 'utf-8' )
-			allTermSentencePMI = termCoStats['coProbs']
-		subTermSentencePMI = { term : allTermSentencePMI[term] for term in vocab if term in allTermSentencePMI }
-		for term, termProbs in subTermSentencePMI.iteritems():
-			subTermSentencePMI[ term ] = { t : termProbs[t] for t in vocab if t in termProbs }
-		results = {
-			'TermSentencePMI' : subTermSentencePMI
-		}
-		self.content.update(results)
-		return results
+	def LoadSentencePMI( self ):
+		query = """SELECT ref1.term_text AS first_term, ref2.term_text AS second_term, matrix.value
+		FROM {MATRIX} AS matrix
+		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
+		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
+		ORDER BY matrix.rank
+		LIMIT 2500""".format(MATRIX=self.corpusDB.sentences_pmi, VOCAB=self.corpusDB.vocab)
+		rows = self.corpusDB.executesql(query, as_dict=True)
+		self.content.update({
+			'SentencePMI' : rows
+		})

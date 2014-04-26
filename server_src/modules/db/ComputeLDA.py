@@ -3,12 +3,11 @@
 
 import logging
 
-class ComputeLDAStats():
+class ComputeLDA():
 
-	def __init__( self, ldaDB, ldaStatsDB ):
+	def __init__( self, ldaDB ):
 		self.logger = logging.getLogger('termite')
-		self.ldaDB = ldaDB
-		self.ldaStatsDB = ldaStatsDB
+		self.db = ldaDB.db
 
 	def Execute( self ):
 		self.logger.info( 'Computing derived LDA statistics...' )
@@ -20,17 +19,17 @@ class ComputeLDAStats():
 		self.WriteTopicCovariance()
 	
 	def ReadDocCount(self):
-		count = self.ldaDB.db( self.ldaDB.db.docs ).count()
+		count = self.db( self.db.docs ).count()
 		self.docCount = count
 		
 	def ReadTopicCount(self):
-		count = self.ldaDB.db( self.ldaDB.db.topics ).count()
+		count = self.db( self.db.topics ).count()
 		self.topicCount = count
 		
 	def ReadDocTopicMatrix( self ):
 		self.logger.debug( '    Loading doc_topic_matrix...' )
 		matrix = {}
-		rows = self.ldaDB.db( self.ldaDB.db.doc_topic_matrix ).select( self.ldaDB.db.doc_topic_matrix.doc_index, self.ldaDB.db.doc_topic_matrix.topic_index, self.ldaDB.db.doc_topic_matrix.value )
+		rows = self.db( self.db.doc_topic_matrix ).select( self.db.doc_topic_matrix.doc_index, self.db.doc_topic_matrix.topic_index, self.db.doc_topic_matrix.value )
 		for row in rows:
 			doc_index = row.doc_index
 			topic_index = row.topic_index
@@ -73,8 +72,8 @@ class ComputeLDAStats():
 
 	def WriteTopicCooccurrence( self ):
 		self.logger.debug( '    Saving topic_cooccurrences...' )
-		self.ldaStatsDB.db.topic_cooccurrences.bulk_insert( self.topicCooccurrences )
+		self.db.topic_cooccurrences.bulk_insert( self.topicCooccurrences )
 		
 	def WriteTopicCovariance( self ):
 		self.logger.debug( '    Saving topic_covariance...' )
-		self.ldaStatsDB.db.topic_covariance.bulk_insert( self.topicCovariance )
+		self.db.topic_covariance.bulk_insert( self.topicCovariance )

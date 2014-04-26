@@ -5,10 +5,9 @@ import json
 from core.HomeCore import HomeCore
 
 class LDACore(HomeCore):
-	def __init__(self, request, response, lda_db, ldaStats_db):
+	def __init__(self, request, response, lda_db):
 		super( LDACore, self ).__init__( request, response )
 		self.db = lda_db.db
-		self.stats = ldaStats_db.db
 	
 	def GetDocLimits(self):
 		docOffset = self.GetNonNegativeIntegerParam( 'docOffset', 0 )
@@ -119,8 +118,8 @@ class LDACore(HomeCore):
 		self.header = header
 	
 	def LoadTopicCooccurrences(self):
-		table = self.stats.topic_cooccurrences
-		rows = self.stats().select( table.ALL, orderby = table.rank ).as_list()
+		table = self.db.topic_cooccurrences
+		rows = self.db().select( table.ALL, orderby = table.rank ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
 			'TopicCooccurrences' : rows,
@@ -130,8 +129,8 @@ class LDACore(HomeCore):
 		self.header = header
 
 	def LoadTopicCovariance(self):
-		table = self.stats.topic_covariance
-		rows = self.stats().select( table.ALL, orderby = table.rank ).as_list()
+		table = self.db.topic_covariance
+		rows = self.db().select( table.ALL, orderby = table.rank ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
 			'TopicCovariance' : rows,

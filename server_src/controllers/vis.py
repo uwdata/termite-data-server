@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 
+from core.HomeCore import HomeCore
 from vis.GroupInABox import GroupInABox as GroupInABoxModel
-from vis.CovariateChart import CovariateChart as CovariateChartModel
+from db.Corpus_DB import Corpus_DB
+from db.CorpusStats_DB import CorpusStats_DB
+from db.LDA_DB import LDA_DB
+from db.LDAStats_DB import LDAStats_DB
 
 def index():
-	core = TermiteCore()
+	core = HomeCore(request, response)
 	return core.GenerateResponse()
 
 def GroupInABox():
-	gib = GroupInABoxModel()
+	with Corpus_DB() as corpus_db:
+		with LDA_DB() as lda_db:
+			gib = GroupInABoxModel(request, response, corpus_db, lda_db)
 	gib.Load()
-	gib.LoadTopTermsPerTopic()
-	gib.LoadTopicCovariance()
-	gib.LoadTermFreqs()
-	gib.LoadTermCoFreqs()
-	gib.LoadTermProbs()
-	gib.LoadTermPMI()
-	gib.LoadTermSentencePMI()
 	return gib.GenerateResponse()

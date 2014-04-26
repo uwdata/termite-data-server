@@ -3,7 +3,6 @@
 import json
 from core.HomeCore import HomeCore
 from db.LDA_DB import LDA_DB
-from db.LDAStats_DB import LDAStats_DB
 from db.ComputeLDAStats import ComputeLDAStats
 from readers.TreeTMReader import TreeTMReader
 from topic_models.TreeTM import RefineLDA
@@ -95,10 +94,8 @@ class ITMCore(HomeCore):
 			with LDA_DB( isReset = True ) as lda_db:
 				reader = TreeTMReader( lda_db, app_model_path )
 				reader.Execute()
-				with LDAStats_DB( isReset = True ) as ldaStats_db:
-					computer = ComputeLDAStats( lda_db, ldaStats_db )
-					computer.Execute()
-					pass
+				computer = ComputeLDAStats( lda_db )
+				computer.Execute()
 			self.content.update({
 				'IterCount' : iters,
 				'MustLinks' : mustLinks,

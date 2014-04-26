@@ -6,10 +6,9 @@ import json
 from core.HomeCore import HomeCore
 
 class CorpusCore( HomeCore ):
-	def __init__( self, request, response, corpus_db, corpusStats_db ):
+	def __init__( self, request, response, corpus_db ):
 		super( CorpusCore, self ).__init__( request, response )
 		self.db = corpus_db.db
-		self.stats = corpusStats_db.db
 	
 	def GetDocLimits(self):
 		docOffset = self.GetNonNegativeIntegerParam( 'docOffset', 0 )
@@ -106,14 +105,14 @@ class CorpusCore( HomeCore ):
 		INNER JOIN term_texts as ref ON stats.term_index = ref.term_index 
 		ORDER BY stats.rank LIMIT {LIMIT} OFFSET {OFFSET}""".format(
 			FIELD = field_name, TABLE = table_name, LIMIT = term_limits[1]-term_limits[0], OFFSET = term_limits[0] )
-		rows = self.stats.executesql( query, as_dict = True )
+		rows = self.db.executesql( query, as_dict = True )
 		header = [
-			{ 'name' : 'term_text', 'type' : self.stats.term_texts.term_text.type },
-			{ 'name' : field_name, 'type' : self.stats[table_name].value.type }
+			{ 'name' : 'term_text', 'type' : self.db.term_texts.term_text.type },
+			{ 'name' : field_name, 'type' : self.db[table_name].value.type }
 		]
 		self.content.update({
 			var_name : rows,
-			'TermCount' : self.stats(self.stats.term_texts).count()
+			'TermCount' : self.db(self.db.term_texts).count()
 		})
 		self.table = rows
 		self.header = header
@@ -126,46 +125,46 @@ class CorpusCore( HomeCore ):
 		INNER JOIN term_texts as ref2 ON stats.second_term_index = ref2.term_index 
 		ORDER BY stats.rank LIMIT {LIMIT} OFFSET {OFFSET}""".format(
 			TABLE = table_name, LIMIT = term_limits[1]-term_limits[0], OFFSET = term_limits[0] )
-		rows = self.stats.executesql( query, as_dict = True )
+		rows = self.db.executesql( query, as_dict = True )
 		header = [
-			{ 'name' : 'first_term', 'type' : self.stats.term_texts.term_text.type },
-			{ 'name' : 'second_term', 'type' : self.stats.term_texts.term_text.type },
-			{ 'name' : 'value', 'type' : self.stats[table_name].value.type }
+			{ 'name' : 'first_term', 'type' : self.db.term_texts.term_text.type },
+			{ 'name' : 'second_term', 'type' : self.db.term_texts.term_text.type },
+			{ 'name' : 'value', 'type' : self.db[table_name].value.type }
 		]
 		self.content.update({
 			var_name : rows,
-			'CellCount' : self.stats(self.stats[table_name]).count(),
-			'TermCount' : self.stats(self.stats.term_texts).count()
+			'CellCount' : self.db(self.db[table_name]).count(),
+			'TermCount' : self.db(self.db.term_texts).count()
 		})
 		self.table = rows
 		self.header = header
 
 	def LoadTermFreqs( self ):
-		self.LoadTermStats( self.stats.term_freqs, 'TermFreqs', 'term_freq' )
+		self.LoadTermStats( self.db.term_freqs, 'TermFreqs', 'term_freq' )
 
 	def LoadTermProbs( self ):
-		self.LoadTermStats( self.stats.term_probs, 'TermProbs', 'term_prob' )
+		self.LoadTermStats( self.db.term_probs, 'TermProbs', 'term_prob' )
 
 	def LoadTermCoFreqs( self ):
-		self.LoadCoTermStats( self.stats.term_co_freqs, 'TermCoFreqs' )
+		self.LoadCoTermStats( self.db.term_co_freqs, 'TermCoFreqs' )
 
 	def LoadTermCoProbs( self ):
-		self.LoadCoTermStats( self.stats.term_co_probs, 'TermCoProbs' )
+		self.LoadCoTermStats( self.db.term_co_probs, 'TermCoProbs' )
 
 	def LoadTermPMI( self ):
-		self.LoadCoTermStats( self.stats.term_pmi, 'TermPMI' )
+		self.LoadCoTermStats( self.db.term_pmi, 'TermPMI' )
 
 	def LoadTermG2( self ):
-		self.LoadCoTermStats( self.stats.term_g2, 'TermG2' )
+		self.LoadCoTermStats( self.db.term_g2, 'TermG2' )
 
 	def LoadSentenceCoFreqs( self ):
-		self.LoadCoTermStats( self.stats.sentences_co_freqs, 'SentenceCoFreqs' )
+		self.LoadCoTermStats( self.db.sentences_co_freqs, 'SentenceCoFreqs' )
 
 	def LoadSentenceCoProbs( self ):
-		self.LoadCoTermStats( self.stats.sentences_co_probs, 'SentenceCoProbs' )
+		self.LoadCoTermStats( self.db.sentences_co_probs, 'SentenceCoProbs' )
 
 	def LoadSentencePMI( self ):
-		self.LoadCoTermStats( self.stats.sentences_pmi, 'SentencePMI' )
+		self.LoadCoTermStats( self.db.sentences_pmi, 'SentencePMI' )
 
 	def LoadSentenceG2( self ):
-		self.LoadCoTermStats( self.stats.sentences_g2, 'SentenceG2' )
+		self.LoadCoTermStats( self.db.sentences_g2, 'SentenceG2' )

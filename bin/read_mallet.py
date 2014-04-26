@@ -11,11 +11,9 @@ import os
 import shutil
 
 from modules.db.Corpus_DB import Corpus_DB
-from modules.db.CorpusStats_DB import CorpusStats_DB
 from modules.db.LDA_DB import LDA_DB
-from modules.db.LDAStats_DB import LDAStats_DB
-from modules.db.ComputeCorpusStats import ComputeCorpusStats
-from modules.db.ComputeLDAStats import ComputeLDAStats
+from modules.db.ComputeCorpus import ComputeCorpus
+from modules.db.ComputeLDA import ComputeLDA
 
 from modules.apps.CreateApp import CreateApp
 from modules.apps.SplitSentences import SplitSentences
@@ -58,10 +56,9 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 			
 			# Compute derived-statistics about the corpus
 			db_path = app.GetDatabasePath()
-			with Corpus_DB(db_path) as corpus_db:
-				with CorpusStats_DB(db_path, isInit=True) as corpusStats_db:
-					computer = ComputeCorpusStats( corpus_db, corpusStats_db, app_corpus_filename, app_sentences_filename )
-					computer.Execute()
+			with Corpus_DB(db_path, isInit=True) as corpus_db:
+				computer = ComputeCorpus( corpus_db, app_corpus_filename, app_sentences_filename )
+				computer.Execute()
 			
 				# Mark 'corpus' as available
 				corpus_db.AddModel('corpus', 'Text corpus')
@@ -75,12 +72,11 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 				with LDA_DB(db_path, isInit=True) as lda_db:
 					reader = MalletReader( lda_db, app_model_path )
 					reader.Execute()
-					with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
-						computer = ComputeLDAStats( lda_db, ldaStats_db )
-						computer.Execute()
+					computer = ComputeLDA( lda_db )
+					computer.Execute()
 				
-				# Mark 'lda' as available
-				corpus_db.AddModel('lda', 'LDA model')
+					# Mark 'lda' as available
+					corpus_db.AddModel('lda', 'LDA model')
 			
 	else:
 		logger.info( '    Already available: %s', app_path )

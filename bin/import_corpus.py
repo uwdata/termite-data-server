@@ -13,13 +13,13 @@ from modules.db.Corpus_DB import Corpus_DB
 def ImportCorpus(corpus_filename_or_folder, database_path):
 	database_filename = '{}/corpus.db'.format(database_path)
 	
-	with Corpus_DB(database_path, isInit=True) as corpusDB:
+	with Corpus_DB(database_path, isDistribution=True) as corpus_db:
 		if os.path.isfile(corpus_filename_or_folder):
 			print 'Importing file [{}] into database [{}]'.format(corpus_filename_or_folder, database_filename)
-			corpusDB.ImportFromFile(corpus_filename_or_folder)
+			corpus_db.ImportFromFile(corpus_filename_or_folder)
 		else:
 			print 'Importing folder [{}] into database [{}]'.format(corpus_filename_or_folder, database_filename)
-			corpusDB.ImportFromFolder(corpus_filename_or_folder)
+			corpus_db.ImportFromFolder(corpus_filename_or_folder)
 
 def main():
 	parser = argparse.ArgumentParser( description = 'Import a file into a SQLite3 Database.' )

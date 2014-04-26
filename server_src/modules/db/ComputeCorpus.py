@@ -6,14 +6,13 @@ import math
 import re
 from collections import Counter
 
-class ComputeCorpusStats():
+class ComputeCorpus():
 	
 	DEFAULT_STOPWORDS = 'tools/mallet/stoplists/en.txt'
 	
-	def __init__( self, corpusDB, corpusStatsDB, corpusFilename, sentencesFilename, STOPWORDS = None ):
+	def __init__( self, corpusDB, corpusFilename, sentencesFilename, STOPWORDS = None ):
 		self.logger = logging.getLogger('termite')
-		self.corpusDB = corpusDB
-		self.corpusStatsDB = corpusStatsDB
+		self.db = corpusDB.db
 		self.corpusFilename = corpusFilename
 		self.sentencesFilename = sentencesFilename
 		
@@ -23,7 +22,7 @@ class ComputeCorpusStats():
 		self.minDocFreq = int(corpusDB.GetOption('min_doc_freq'))
 		self.maxTermCount = int(corpusDB.GetOption('max_term_count'))
 		self.maxCoTermCount = int(corpusDB.GetOption('max_co_term_count'))
-		self.stopwords = self.LoadStopwords( STOPWORDS if STOPWORDS is not None else ComputeCorpusStats.DEFAULT_STOPWORDS )
+		self.stopwords = self.LoadStopwords( STOPWORDS if STOPWORDS is not None else ComputeCorpus.DEFAULT_STOPWORDS )
 	
 	def Execute( self ):
 		self.logger.info( 'Computing document-level statistics...' )
@@ -82,21 +81,21 @@ class ComputeCorpusStats():
 		termCoStats = self.ComputeTermCoFreqs( corpus, termStats )
 		
 		self.logger.debug( '    Saving term_texts...' )
-		self.corpusStatsDB.db.term_texts.bulk_insert( self.UnfoldVocab() )
+		self.db.term_texts.bulk_insert( self.UnfoldVocab() )
 		self.logger.debug( '    Saving term_freqs...' )
-		self.corpusStatsDB.db.term_freqs.bulk_insert( self.UnfoldStats(termStats['term_freqs']) )
+		self.db.term_freqs.bulk_insert( self.UnfoldStats(termStats['term_freqs']) )
 		self.logger.debug( '    Saving term_probs...' )
-		self.corpusStatsDB.db.term_probs.bulk_insert( self.UnfoldStats(termStats['term_probs']) )
+		self.db.term_probs.bulk_insert( self.UnfoldStats(termStats['term_probs']) )
 		self.logger.debug( '    Saving term_doc_freqs...' )
-		self.corpusStatsDB.db.term_doc_freqs.bulk_insert( self.UnfoldStats(termStats['term_doc_freqs']) )
+		self.db.term_doc_freqs.bulk_insert( self.UnfoldStats(termStats['term_doc_freqs']) )
 		self.logger.debug( '    Saving term_co_freqs...' )
-		self.corpusStatsDB.db.term_co_freqs.bulk_insert( self.UnfoldCoStats(termCoStats['co_freqs']) )
+		self.db.term_co_freqs.bulk_insert( self.UnfoldCoStats(termCoStats['co_freqs']) )
 		self.logger.debug( '    Saving term_co_probs...' )
-		self.corpusStatsDB.db.term_co_probs.bulk_insert( self.UnfoldCoStats(termCoStats['co_probs']) )
+		self.db.term_co_probs.bulk_insert( self.UnfoldCoStats(termCoStats['co_probs']) )
 		self.logger.debug( '    Saving term_pmi...' )
-		self.corpusStatsDB.db.term_pmi.bulk_insert( self.UnfoldCoStats(termCoStats['pmi']) )
+		self.db.term_pmi.bulk_insert( self.UnfoldCoStats(termCoStats['pmi']) )
 		self.logger.debug( '    Saving term_g2...' )
-		self.corpusStatsDB.db.term_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
+		self.db.term_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
 	
 	def ComputeAndSaveSentenceLevelStatistics( self ):
 		reader = self.ReadCorpus( self.sentencesFilename )
@@ -105,13 +104,13 @@ class ComputeCorpusStats():
 		termCoStats = self.ComputeTermCoFreqs( corpus, termStats )
 		
 		self.logger.debug( '    Saving sentences_co_freqs...' )
-		self.corpusStatsDB.db.sentences_co_freqs.bulk_insert( self.UnfoldCoStats(termCoStats['co_freqs']) )
+		self.db.sentences_co_freqs.bulk_insert( self.UnfoldCoStats(termCoStats['co_freqs']) )
 		self.logger.debug( '    Saving sentences_co_probs...' )
-		self.corpusStatsDB.db.sentences_co_probs.bulk_insert( self.UnfoldCoStats(termCoStats['co_probs']) )
+		self.db.sentences_co_probs.bulk_insert( self.UnfoldCoStats(termCoStats['co_probs']) )
 		self.logger.debug( '    Saving sentences_pmi...' )
-		self.corpusStatsDB.db.sentences_pmi.bulk_insert( self.UnfoldCoStats(termCoStats['pmi']) )
+		self.db.sentences_pmi.bulk_insert( self.UnfoldCoStats(termCoStats['pmi']) )
 		self.logger.debug( '    Saving sentences_g2...' )
-		self.corpusStatsDB.db.sentences_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
+		self.db.sentences_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
 	
 	def ComputeTermFreqs( self, corpus ):
 		def ComputeFreqs( corpus ):

@@ -111,14 +111,9 @@ class HomeCore( object ):
 				'SentencePMI',
 				'SentenceG2'
 			]
-		if model == 'charts':
-			return [
-				'ScatterPlot'
-			]
 		if model == 'vis':
 			return [
-				'GroupInABox',
-				'CovariateChart'
+				'GroupInABox'
 			]
 		return []
 	
