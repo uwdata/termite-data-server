@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import json
-import logging
 import os
 import subprocess
+from LDAReader import LDAReader
 
-class STMReader():
+class STMReader(LDAReader):
 	"""
+	lda_db = a SQLite3 database
 	modelPath = a model folder containing an R datafile stm.RData
-	LDA_DB = a SQLite3 database
 	"""
 	
-	THRESHOLD = 1e-5
+	PROB_THRESHOLD = 0.0001
 	RDATA_FILENAME = 'stm.RData'
 	
 	SCRIPT = """# Load an STM model and save its content as Termite Data Server files
@@ -83,8 +83,8 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 
 """
 
-	def __init__( self, modelPath, LDA_DB ):
-		self.logger = logging.getLogger('termite')
+	def __init__( self, lda_db, modelPath, corpus_db ):
+		super(STMReader, self).__init__(lda_db)
 		self.modelPath = modelPath
 		self.modelRData = '{}/{}'.format( self.modelPath, STMReader.RDATA_FILENAME )
 		self.modelScript = '{}/import.r'.format( self.modelPath )
@@ -93,12 +93,13 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 		self.ldaDocIndex = '{}/doc-index.json'.format( self.modelPath )
 		self.ldaTermIndex = '{}/term-index.json'.format( self.modelPath )
 		self.ldaTopicIndex = '{}/topic-index.json'.format( self.modelPath )
-		self.ldaDB = LDA_DB
+		self.corpus = corpus_db.db
 
 	def Execute( self ):
+		self.logger.info( 'Reading STM topic model...' )
 		self.WriteToDisk()
 		self.ReadFromDisk()
-		self.GetTopTerms()
+		self.logger.info( 'Writing to database...' )
 		self.SaveToDB()
 
 	def RunCommand( self, command ):
@@ -109,89 +110,53 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 				self.logger.debug( line )
 	
 	def WriteToDisk( self ):
-		self.logger.info( 'Generating R script: %s', self.modelScript )
+		self.logger.debug( '    Writing R script: %s', self.modelScript )
 		r = STMReader.SCRIPT.format( DATA_PATH = self.modelPath, MODEL_FILENAME = self.modelRData )
 		with open( self.modelScript, 'w' ) as f:
 			f.write( r.encode( 'utf-8' ) )
 		self.logger.info( 'Executing R script: %s', self.modelScript )
 		command = [ 'RScript', self.modelScript ]
+		
+		self.logger.debug( '    Executing R script: %s', self.modelScript )
 		self.RunCommand( command )
 	
 	def ReadFromDisk( self ):
-		with open( self.ldaTermTopicMatrix ) as f:
-			self.termTopicMatrix = json.load( f, encoding = 'utf-8' )
-		with open( self.ldaDocTopicMatrix ) as f:
-			self.docTopicMatrix = json.load( f, encoding = 'utf-8' )
-		with open( self.ldaDocIndex ) as f:
-			self.docIndex = json.load( f, encoding = 'utf-8' )
+		self.logger.debug( '    Loading json: %s', self.ldaTermIndex )
 		with open( self.ldaTermIndex ) as f:
-			self.termIndex = json.load( f, encoding = 'utf-8' )
-		with open( self.ldaTopicIndex ) as f:
-			self.topicIndex = json.load( f, encoding = 'utf-8' )
-		self.docCount = len(self.docIndex)
-		self.termCount = len(self.termIndex)
-		self.topicCount = len(self.topicIndex)
-	
-	def GetTopTerms( self ):
-		self.topTerms = []
-		for topic in range(self.topicCount):
-			topTerms = [ { 'index' : termIndex, 'freq' : d[topic] } for termIndex, d in enumerate(self.termTopicMatrix) ]
-			self.topTerms.append( [ d['index'] for d in sorted( topTerms, key = lambda x : -x['freq'] ) ] )
-			
-	def SaveToDB( self ):
-		termTable = []
-		docTable = []
-		topicTable = []
-		for termObject in self.termIndex:
-			text = termObject['text']
-			index = int(termObject['index'])
-			termTable.append({
-				'term_index' : index,
-				'term_text' : text
-			})
-		for docObject in self.docIndex:
-			index = int(docObject['index'])
-			docTable.append({
-				'doc_index' : index
-			})
-		for topic, topicObject in enumerate(self.topicIndex):
-			index = int(topicObject['index'])
-			freq = float(topicObject['freq'])
-			topicTable.append({
-				'topic_index' : index,
-				'topic_freq' : freq,
-				'topic_desc' : u', '.join(termTable[d]['term_text'] for d in self.topTerms[topic][:5]),
-				'topic_top_terms' : [termTable[d]['term_text'] for d in self.topTerms[topic][:30]]
-			})
-		self.ldaDB.db.terms.bulk_insert(termTable)
-		self.ldaDB.db.docs.bulk_insert(docTable)
-		self.ldaDB.db.topics.bulk_insert(topicTable)
+			data = json.load( f, encoding = 'utf-8' )
+		self.termList = [ d['text'] for d in data ]
+		self.docList = [ d.doc_id for d in self.corpus().select(self.corpus.corpus.doc_id, orderby=self.corpus.corpus.doc_index) ]
 
-		termTopicMatrix = []
-		docTopicMatrix = []
-		for term, topicFreqs in enumerate(self.termTopicMatrix):
-			for topic, value in enumerate(topicFreqs):
-				if value > STMReader.THRESHOLD:
-					termTopicMatrix.append({
-						'term_index' : term,
-					 	'topic_index' : topic,
+		self.logger.debug( '    Loading matrix: %s', self.ldaTermTopicMatrix )
+		with open( self.ldaTermTopicMatrix ) as f:
+			matrix = json.load( f, encoding = 'utf-8' )
+		self.termTopicMatrix = []
+		for termIndex, topicFreqs in enumerate(matrix):
+			for topicIndex, value in enumerate(topicFreqs):
+				if value > STMReader.PROB_THRESHOLD:
+					self.termTopicMatrix.append({
+						'term_index' : termIndex,
+					 	'topic_index' : topicIndex,
 						'value' : value,
 						'rank' : 0
 					})
-		for doc, topicFreqs in enumerate(self.docTopicMatrix):
-			for topic, value in enumerate(topicFreqs):
-				if value > STMReader.THRESHOLD:
-					docTopicMatrix.append({
-						'doc_index' : doc,
-					 	'topic_index' : topic,
+		self.termTopicMatrix.sort( key = lambda d : -d['value'] )
+		for index, d in enumerate(self.termTopicMatrix):
+			d['rank'] = index + 1
+
+		self.logger.debug( '    Loading matrix: %s', self.ldaDocTopicMatrix )
+		with open( self.ldaDocTopicMatrix ) as f:
+			matrix = json.load( f, encoding = 'utf-8' )
+		self.docTopicMatrix = []
+		for docIndex, topicFreqs in enumerate(matrix):
+			for topicIndex, value in enumerate(topicFreqs):
+				if value > STMReader.PROB_THRESHOLD:
+					self.docTopicMatrix.append({
+						'doc_index' : docIndex,
+					 	'topic_index' : topicIndex,
 						'value' : value,
 						'rank' : 0
 					})
-		termTopicMatrix.sort( key = lambda x : -x['value'] )
-		docTopicMatrix.sort( key = lambda x : -x['value'] )
-		for rank, d in enumerate(termTopicMatrix):
-			d['rank'] = rank+1
-		for rank, d in enumerate(docTopicMatrix):
-			d['rank'] = rank+1
-		self.ldaDB.db.term_topic_matrix.bulk_insert(termTopicMatrix)
-		self.ldaDB.db.doc_topic_matrix.bulk_insert(docTopicMatrix)
+		self.docTopicMatrix.sort( key = lambda d : -d['value'] )
+		for index, d in enumerate(self.docTopicMatrix):
+			d['rank'] = index + 1
