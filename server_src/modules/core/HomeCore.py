@@ -86,8 +86,10 @@ class HomeCore( object ):
 				'TopicIndex',
 				'TermTopicMatrix',
 				'DocTopicMatrix',
-				'TopicCooccurrence',
-				'TopicCovariance'
+				'TopicCooccurrences',
+				'TopicCovariance',
+				'TopTerms',
+				'TopDocs'
 			]
 		if model == 'itm':
 			return [

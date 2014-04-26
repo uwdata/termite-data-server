@@ -40,10 +40,9 @@ class LDACore(HomeCore):
 		table = self.db.terms
 		rows = self.db().select( table.ALL, orderby = table.rank, limitby = term_limits ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
-		count = self.db(table).count()
 		self.content.update({
 			'TermIndex' : rows,
-			'TermCount' : count
+			'TermCount' : self.db(table).count()
 		})
 		self.table = rows
 		self.header = header
@@ -53,10 +52,9 @@ class LDACore(HomeCore):
 		table = self.db.docs
 		rows = self.db().select( table.ALL, orderby = table.doc_index, limitby = doc_limits ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
-		count = self.db(table).count()
 		self.content.update({
 			'DocIndex' : rows,
-			'DocCount' : count
+			'DocCount' : self.db(table).count()
 		})
 		self.table = rows
 		self.header = header
@@ -65,10 +63,9 @@ class LDACore(HomeCore):
 		table = self.db.topics
 		rows = self.db().select( table.ALL, orderby = table.topic_index ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
-		count = self.db(table).count()
 		self.content.update({
 			'TopicIndex' : rows,
-			'TopicCount' : count
+			'TopicCount' : self.db(table).count()
 		})
 		self.table = rows
 		self.header = header
@@ -81,10 +78,11 @@ class LDACore(HomeCore):
 		where = ( term_limits[0] <= table.term_index ) & ( table.term_index < term_limits[1] )
 		rows = self.db( inner_join & where ).select( table.ALL, orderby = table.rank ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
-		count = self.db(table).count()
 		self.content.update({
 			'TermTopicMatrix' : rows,
-			'CellCount' : count,
+			'TermCount' : self.db(self.db.terms).count(),
+			'TopicCount' : self.db(self.db.topics).count(),
+			'CellCount' : self.db(table).count()
 		})
 		self.table = rows
 		self.header = header
@@ -97,10 +95,11 @@ class LDACore(HomeCore):
 		where = ( doc_limits[0] <= table.doc_index ) & ( table.doc_index < doc_limits[1] )
 		rows = self.db( inner_join & where ).select( table.ALL, orderby = table.rank ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
-		count = self.db(table).count()
 		self.content.update({
 			'DocTopicMatrix' : rows,
-			'CellCount' : count
+			'DocCount' : self.db(self.db.docs).count(),
+			'TopicCount' : self.db(self.db.topics).count(),
+			'CellCount' : self.db(table).count()
 		})
 		self.table = rows
 		self.header = header
@@ -110,7 +109,8 @@ class LDACore(HomeCore):
 		rows = self.stats().select( table.ALL, orderby = table.rank ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'TopicCooccurrences' : rows
+			'TopicCooccurrences' : rows,
+			'TopicCount' : self.db(self.db.topics).count()
 		})
 		self.table = rows
 		self.header = header
@@ -120,19 +120,21 @@ class LDACore(HomeCore):
 		rows = self.stats().select( table.ALL, orderby = table.rank ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'TopicCovariance' : rows
+			'TopicCovariance' : rows,
+			'TopicCount' : self.db(self.db.topics).count()
 		})
 		self.table = rows
 		self.header = header
 
 	def LoadTopTerms(self):
+		self.LoadTopics()
 		topic_index = self.GetTopicIndex()
 		term_limits = self.GetTermLimits()
 		matrix = self.db.term_topic_matrix
 		table = self.db.terms
 		inner_join = ( matrix.term_index == table.term_index )
 		where = ( matrix.topic_index == topic_index )
-		rows = self.db( inner_join & where ).select( table.ALL, matrix.ALL, orderby = matrix.rank, limitby = term_limits ).as_list()
+		rows = self.db( inner_join & where ).select( table.ALL, orderby = matrix.rank, limitby = term_limits ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
 			'TopTerms' : rows
@@ -141,13 +143,14 @@ class LDACore(HomeCore):
 		self.header = header
 
 	def LoadTopDocs(self):
+		self.LoadTopics()
 		topic_index = self.GetTopicIndex()
 		doc_limits = self.GetDocLimits()
 		matrix = self.db.doc_topic_matrix
 		table = self.db.docs
 		inner_join = ( matrix.doc_index == table.doc_index )
 		where = ( matrix.topic_index == topic_index )
-		rows = self.db( inner_join & where ).select( table.ALL, matrix.ALL, orderby = matrix.rank, limitby = doc_limits ).as_list()
+		rows = self.db( inner_join & where ).select( table.ALL, orderby = matrix.rank, limitby = doc_limits ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
 			'TopDocs' : rows
