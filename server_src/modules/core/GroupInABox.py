@@ -16,19 +16,14 @@ class GroupInABox(HomeCore):
 		self.corpusDB = corpus_db.db
 		self.ldaDB = lda_db.db
 
+################################################################################
+
 	def GetAction(self):
 		action = self.GetStringParam( 'action' )
 		self.params.update({
 			'action' : action
 		})
 		return action
-
-	def GetTermLimit(self):
-		termLimit = self.GetNonNegativeIntegerParam( 'termLimit', 100 if self.IsMachineFormat() else 5 )
-		self.params.update({
-			'termLimit' : termLimit
-		})
-		return termLimit
 
 	def GetIterCount(self, app_model_path):
 		filename = '{}/index.json'.format(app_model_path)
@@ -123,6 +118,13 @@ class GroupInABox(HomeCore):
 			})
 
 ################################################################################
+
+	def GetTermLimit(self):
+		termLimit = self.GetNonNegativeIntegerParam( 'termLimit', 100 if self.IsMachineFormat() else 5 )
+		self.params.update({
+			'termLimit' : termLimit
+		})
+		return termLimit
 
 	def Load(self):
 		self.UpdateModel()

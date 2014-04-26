@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from core.HomeCore import HomeCore
-from vis.GroupInABox import GroupInABox as GroupInABoxModel
+from core.GroupInABox import GroupInABox as GroupInABoxModel
 from db.Corpus_DB import Corpus_DB
 from db.LDA_DB import LDA_DB
 

@@ -4,7 +4,7 @@
 <script type="text/javascript">
 var onSubmitParams = function() {
 	var query = {{WriteJSON({ key : request.vars[key] for key in request.vars })}}
-	var keys = [ "iters", "mustLinks", "cannotLinks", "keepTerms", "removeTerms" ];
+	var keys = [ "action", "iters", "mustLinks", "cannotLinks", "keepTerms", "removeTerms" ];
 	keys.forEach( function(key) {
 		var value = $("."+key).val();
 		if ( value.length > 0 ) {
@@ -28,21 +28,24 @@ var onSubmitParams = function() {
 <div class="body">
 	<div class="heading">Request Parameters</div>
 	<div class="params">
-		<div class="param">iters = <input type="text" class="iters" value="{{=params['iters']+50}}"></input>
+		<div class="param">action = <input type="text" class="action" value="{{=params['action']}}"></input> 
+			<span style="color: #999">(enter &ldquo;train&rdquo; to enable training)</span>
+		</div>
+		<div class="param">iters = <input type="text" class="iters" value="{{=IterCount}}"></input>
 			<span style="color: #999">(a non-negative integer)</span>
 		</div>
-		<div class="param">mustLinks = <input type="text" class="mustLinks" value="{{=params['mustLinks']}}"></input> 
+		<div class="param">mustLinks = <textarea type="text" class="mustLinks">{{=params['mustLinks']}}</textarea> 
 			<span style="color: #999">(a list of list of words)</span>
 		</div>
-		<div class="param">cannotLinks = <input type="text" class="cannotLinks" value="{{=params['cannotLinks']}}"></input> 
+		<div class="param">cannotLinks = <textarea type="text" class="cannotLinks">{{=params['cannotLinks']}}</textarea> 
 			<span style="color: #999">(a list of list of words)</span>
 		</div>
-		<div class="param">keepTerms = <input type="text" class="keepTerms" value="{{=params['keepTerms']}}"></input> 
+		<div class="param">keepTerms = <textarea type="text" class="keepTerms">{{=params['keepTerms']}}</textarea> 
 			<span style="color: #999">(a dict with integer keys and a list of words as values)</span>
 		</div>
-		<div class="param">removeTerms = <input type="text" class="removeTerms" value="{{=params['removeTerms']}}"></input> 
+		<div class="param">removeTerms = <textarea type="text" class="removeTerms">{{=params['removeTerms']}}</textarea> 
 			<span style="color: #999">(a list of words)</span>
-		</div>
+		</div>	
 		<div class="param">
 			<input type="button" value="Update Model" onclick="onSubmitParams()" />
 		</div>

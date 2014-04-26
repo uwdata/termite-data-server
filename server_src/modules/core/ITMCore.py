@@ -12,6 +12,13 @@ class ITMCore(HomeCore):
 		super( ITMCore, self ).__init__( request, response )
 		self.db = lda_db.db
 
+	def GetAction(self):
+		action = self.GetStringParam( 'action' )
+		self.params.update({
+			'action' : action
+		})
+		return action
+
 	def GetIterCount(self, app_model_path):
 		filename = '{}/index.json'.format(app_model_path)
 		with open(filename, 'r') as f:
@@ -20,16 +27,16 @@ class ITMCore(HomeCore):
 		filename = '{}/entry-{:06d}/states.json'.format(app_model_path, entry)
 		with open(filename, 'r') as f:
 			data = json.load(f, encoding='utf-8')
-			iters = data['numIters']
-		return iters
-		
-	def GetIters(self):
+			iterCount = data['numIters']
+		return iterCount
+
+	def GetIters(self, iterCount):
 		iters = self.GetNonNegativeIntegerParam( 'iters', None )
 		self.params.update({
-			'iters' : iters if iters is not None else 1000
+			'iters' : iters if iters is not None else iterCount
 		})
 		return iters
-	
+
 	def GetConstraints(self):
 		mustLinksStr = self.GetStringParam( 'mustLinks' )
 		cannotLinksStr = self.GetStringParam( 'cannotLinks' )
@@ -64,7 +71,7 @@ class ITMCore(HomeCore):
 				removeTerms = [ d for d in data if type(d) is unicode ]
 		except (ValueError, KeyError, TypeError):
 			pass
-			
+
 		self.params.update({
 			'mustLinks' : mustLinksStr,
 			'cannotLinks' : cannotLinksStr,
@@ -79,7 +86,8 @@ class ITMCore(HomeCore):
 		iterCount = self.GetIterCount(app_model_path)
 		iters = self.GetIters(iterCount)
 		mustLinks, cannotLinks, keepTerms, removeTerms = self.GetConstraints()
-		if iters is None:
+		action = self.GetAction()
+		if action != 'train' or iters is None:
 			self.content.update({
 				'IterCount' : iterCount,
 				'MustLinks' : mustLinks,
@@ -102,5 +110,3 @@ class ITMCore(HomeCore):
 				'KeepTerms' : keepTerms,
 				'RemoveTerms' : removeTerms
 			})
-#		self.table = rows
-#		self.header = header
