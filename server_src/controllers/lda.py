@@ -14,29 +14,27 @@ def TermIndex():
 	with LDA_DB() as lda_db:
 		with LDAStats_DB() as ldaStats_db:
 			core = LDACore( request, response, lda_db, ldaStats_db )
-			core.LoadTermIndex()
+			core.LoadTerms()
 	return core.GenerateResponse()
 
 def DocIndex():
 	with LDA_DB() as lda_db:
 		with LDAStats_DB() as ldaStats_db:
 			core = LDACore( request, response, lda_db, ldaStats_db )
-			core.LoadDocIndex()
+			core.LoadDocs()
 	return core.GenerateResponse()
 
 def TopicIndex():
 	with LDA_DB() as lda_db:
 		with LDAStats_DB() as ldaStats_db:
 			core = LDACore( request, response, lda_db, ldaStats_db )
-			core.LoadTopicIndex()
+			core.LoadTopics()
 	return core.GenerateResponse()
 
 def TermTopicMatrix():
 	with LDA_DB() as lda_db:
 		with LDAStats_DB() as ldaStats_db:
 			core = LDACore( request, response, lda_db, ldaStats_db )
-			core.LoadTermIndex()
-			core.LoadTopicIndex()
 			core.LoadTermTopicMatrix()
 	return core.GenerateResponse()
 
@@ -44,23 +42,33 @@ def DocTopicMatrix():
 	with LDA_DB() as lda_db:
 		with LDAStats_DB() as ldaStats_db:
 			core = LDACore( request, response, lda_db, ldaStats_db )
-			core.LoadDocIndex()
-			core.LoadTopicIndex()
 			core.LoadDocTopicMatrix()
 	return core.GenerateResponse()
 
-def TopicCooccurrence():
+def TopicCooccurrences():
 	with LDA_DB() as lda_db:
 		with LDAStats_DB() as ldaStats_db:
 			core = LDACore( request, response, lda_db, ldaStats_db )
-			core.LoadTopicIndex()
-			core.LoadTopicCooccurrence()
+			core.LoadTopicCooccurrences()
 	return core.GenerateResponse()
 
 def TopicCovariance():
 	with LDA_DB() as lda_db:
 		with LDAStats_DB() as ldaStats_db:
 			core = LDACore( request, response, lda_db, ldaStats_db )
-			core.LoadTopicIndex()
 			core.LoadTopicCovariance()
+	return core.GenerateResponse()
+
+def TopTerms():
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadTopTerms()
+	return core.GenerateResponse()
+
+def TopDocs():
+	with LDA_DB() as lda_db:
+		with LDAStats_DB() as ldaStats_db:
+			core = LDACore( request, response, lda_db, ldaStats_db )
+			core.LoadTopDocs()
 	return core.GenerateResponse()
