@@ -4,219 +4,153 @@ import os
 import json
 from core.HomeCore import HomeCore
 
-class LDACore( HomeCore ):
-	def __init__( self, request, response, lda_db, ldaStats_db ):
+class LDACore(HomeCore):
+	def __init__(self, request, response, lda_db, ldaStats_db):
 		super( LDACore, self ).__init__( request, response )
 		self.db = lda_db.db
 		self.stats = ldaStats_db.db
 	
-	def GetParam( self, key ):
-		if key == 'docOffset':
-			value = self.GetNonNegativeIntegerParam( key, 0 )
-			self.params.update({ key : value })
-		if key == 'docLimit':
-			if self.IsMachineFormat():
-				value = self.GetNonNegativeIntegerParam( key, 100 )
-			else:
-				value = self.GetNonNegativeIntegerParam( key, 5 )
-			self.params.update({ key : value })
-		
-		if key == 'termOffset':
-			value = self.GetNonNegativeIntegerParam( key, 0 )
-			self.params.update({ key : value })
-		if key == 'termLimit':
-			if self.IsMachineFormat():
-				value = self.GetNonNegativeIntegerParam( key, 100 )
-			else:
-				value = self.GetNonNegativeIntegerParam( key, 5 )
-			self.params.update({ key : value })
-		
-		if key == 'topicIndex':
-			value = self.GetNonNegativeIntegerParam( key, 0 )
-			self.params.update({ key : value })
-		
-		if key == 'rank':
-			value = self.GetNonNegativeFloatParam( key, 1000 )
-			self.params.update({ key : value })
-			
-		return value
+	def GetDocLimits(self):
+		docOffset = self.GetNonNegativeIntegerParam( 'docOffset', 0 )
+		docLimit = self.GetNonNegativeIntegerParam( 'docLimit', 100 if self.IsMachineFormat() else 5 )
+		self.params.update({
+			'docOffset' : docOffset,
+			'docLimit' : docLimit
+		})
+		return docOffset, docOffset+docLimit
 	
-	def LoadTermIndex( self ):
-		# Parameters
-		termLimit = self.GetParam('termLimit')
-		termOffset = self.GetParam('termOffset')
-		limits = (termOffset, termOffset+termLimit)
-		
-		# Load from DB
-		rows = self.db(self.db.terms).select(self.db.terms.ALL, orderby=self.db.terms.term_index, limitby=limits)
-		table = [ {
-			'index' : row.term_index,
-			'text' : row.term_text
-		} for row in rows ]
-		header = [
-			{ 'name' : 'index', 'type' : 'integer' },
-			{ 'name' : 'text', 'type' : 'string' } 
-		]
-		termCount = len(table)
-		termMaxCount = self.db(self.db.terms).count()
-		
-		# Responses
-		self.content.update({
-			'TermIndex' : table,
-			'TermCount' : termCount,
-			'TermMaxCount' : termMaxCount
+	def GetTermLimits(self):
+		termOffset = self.GetNonNegativeIntegerParam( 'termOffset', 0 )
+		termLimit = self.GetNonNegativeIntegerParam( 'termLimit', 100 if self.IsMachineFormat() else 5 )
+		self.params.update({
+			'termOffset' : termOffset,
+			'termLimit' : termLimit
 		})
-		self.table = table
+		return termOffset, termOffset+termLimit
+	
+	def GetTopicIndex(self):
+		topicIndex = self.GetNonNegativeIntegerParam( 'topicIndex', 0 )
+		self.params.update({
+			'topicIndex' : topicIndex
+		})
+		return topicIndex
+	
+	def LoadTerms(self):
+		term_limits = self.GetTermLimits()
+		table = self.db.terms
+		rows = self.db().select( table.ALL, orderby = table.rank, limitby = term_limits ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		count = self.db(table).count()
+		self.content.update({
+			'TermIndex' : rows,
+			'TermCount' : count
+		})
+		self.table = rows
 		self.header = header
 
-	def LoadDocIndex( self ):
-		# Parameters
-		docLimit = self.GetParam('docLimit')
-		docOffset = self.GetParam('docOffset')
-		limits = (docOffset, docOffset+docLimit)
-		
-		# Load from DB
-		rows = self.db(self.db.docs).select(self.db.docs.ALL, orderby=self.db.docs.doc_index, limitby=limits)
-		table = [ {
-			'index' : row.doc_index
-		} for row in rows ]
-		header = [
-			{ 'name' : 'index', 'type' : 'integer' }
-		]
-		docCount = len(table)
-		docMaxCount = self.db(self.db.docs).count()
-
-		# Responses
+	def LoadDocs(self):
+		doc_limits = self.GetDocLimits()
+		table = self.db.docs
+		rows = self.db().select( table.ALL, orderby = table.doc_index, limitby = doc_limits ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		count = self.db(table).count()
 		self.content.update({
-			'DocIndex' : table,
-			'DocCount' : docCount,
-			'DocMaxCount' : docMaxCount
+			'DocIndex' : rows,
+			'DocCount' : count
 		})
-		self.table = table
+		self.table = rows
 		self.header = header
 
-	def LoadTopicIndex( self ):
-		# Load from DB
-		rows = self.db(self.db.topics).select(self.db.topics.ALL, orderby=self.db.topics.topic_index)
-		table = [ {
-			'index' : row.topic_index,
-			'desc' : row.topic_desc
-		} for row in rows ]
-		header = [
-			{ 'name' : 'index', 'type' : 'integer' },
-			{ 'name' : 'desc', 'type' : 'string' }
-		]
-		topicCount = len(table)
-
-		# Responses
+	def LoadTopics(self):
+		table = self.db.topics
+		rows = self.db().select( table.ALL, orderby = table.topic_index ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		count = self.db(table).count()
 		self.content.update({
-			'TopicIndex' : table,
-			'TopicCount' : topicCount,
-			'TopicMaxCount' : topicCount,
+			'TopicIndex' : rows,
+			'TopicCount' : count
 		})
-		self.table = table
+		self.table = rows
 		self.header = header
 	
-	def LoadTermTopicMatrix( self ):
-		# Parameters
-		termLimit = self.GetParam('termLimit')
-		termOffset = self.GetParam('termOffset')
-		
-		# Load from DB
-		inner_join = (self.db.term_topic_matrix.term_index == self.db.terms.term_index)
-		limits = (termOffset <= self.db.terms.term_index) & (self.db.terms.term_index < termOffset+termLimit)
-		rows = self.db(inner_join & limits).select(orderby=self.db.term_topic_matrix.rank)
-		table = [ {
-			'term' : row.terms.term_text,
-			'topic' : row.term_topic_matrix.topic_index,
-			'value' : row.term_topic_matrix.value
-		} for row in rows ]
-		header = [
-			{ 'name' : 'term', 'type' : 'string' },
-			{ 'name' : 'topic', 'type' : 'integer' },
-			{ 'name' : 'value', 'type' : 'real' }
-		]
-		cellCount = len(table)
-		cellMaxCount = self.db(self.db.term_topic_matrix).count()
-
-		# Responses
+	def LoadTermTopicMatrix(self):
+		term_limits = self.GetTermLimits()
+		table = self.db.term_topic_matrix
+		ref = self.db.terms
+		inner_join = ( table.term_index == ref.term_index )
+		where = ( term_limits[0] <= table.term_index ) & ( table.term_index < term_limits[1] )
+		rows = self.db( inner_join & where ).select( table.ALL, orderby = table.rank ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		count = self.db(table).count()
 		self.content.update({
-			'TermTopicMatrix' : table,
-			'CellCount' : cellCount,
-			'CellMaxCount' : cellMaxCount
+			'TermTopicMatrix' : rows,
+			'CellCount' : count,
 		})
-		self.table = table
+		self.table = rows
 		self.header = header
 
-	def LoadDocTopicMatrix( self ):
-		# Parameters
-		docLimit = self.GetParam('docLimit')
-		docOffset = self.GetParam('docOffset')
-		
-		# Load from DB
-		inner_join = (self.db.doc_topic_matrix.doc_index == self.db.docs.doc_index)
-		limits = (docOffset <= self.db.docs.doc_index) & (self.db.docs.doc_index < docOffset+docLimit)
-		rows = self.db(inner_join & limits).select(orderby=self.db.doc_topic_matrix.rank)
-		table = [ {
-			'doc_index' : row.docs.doc_index,
-			'topic' : row.doc_topic_matrix.topic_index,
-			'value' : row.doc_topic_matrix.value
-		} for row in rows ]
-		header = [
-			{ 'name' : 'doc_index', 'type' : 'string' },
-			{ 'name' : 'topic', 'type' : 'integer' },
-			{ 'name' : 'value', 'type' : 'real' }
-		]
-		cellCount = len(table)
-		cellMaxCount = self.db(self.db.doc_topic_matrix).count()
-		
-		# Responses
+	def LoadDocTopicMatrix(self):
+		doc_limits = self.GetDocLimits()
+		table = self.db.doc_topic_matrix
+		ref = self.db.docs
+		inner_join = ( table.doc_index == ref.doc_index )
+		where = ( doc_limits[0] <= table.doc_index ) & ( table.doc_index < doc_limits[1] )
+		rows = self.db( inner_join & where ).select( table.ALL, orderby = table.rank ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		count = self.db(table).count()
 		self.content.update({
-			'DocTopicMatrix' : table,
-			'CellCount' : cellCount,
-			'CellMaxCount' : cellMaxCount
+			'DocTopicMatrix' : rows,
+			'CellCount' : count
 		})
-		self.table = table
+		self.table = rows
 		self.header = header
 	
-	def LoadTopicCooccurrence( self ):
-		# Load from DB
-		rows = self.stats(self.stats.topic_cooccurrences).select()
-		table = [ {
-			'firstTopic' : row.first_topic_index,
-			'secondTopic' : row.second_topic_index,
-			'value' : row.value
-		} for row in rows ]
-		header = [
-			{ 'name' : 'firstTopic', 'type' : 'integer' },
-			{ 'name' : 'secondTopic', 'type' : 'integer' },
-			{ 'name' : 'value', 'type' : 'real' }
-		]
-
-		# Responses
+	def LoadTopicCooccurrences(self):
+		table = self.stats.topic_cooccurrences
+		rows = self.stats().select( table.ALL, orderby = table.rank ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'TopicCooccurrence' : table
+			'TopicCooccurrences' : rows
 		})
-		self.table = table
+		self.table = rows
 		self.header = header
 
-	def LoadTopicCovariance( self ):
-		# Load from DB
-		rows = self.stats(self.stats.topic_covariance).select()
-		table = [ {
-			'firstTopic' : row.first_topic_index,
-			'secondTopic' : row.second_topic_index,
-			'value' : row.value
-		} for row in rows ]
-		header = [
-			{ 'name' : 'firstTopic', 'type' : 'integer' },
-			{ 'name' : 'secondTopic', 'type' : 'integer' },
-			{ 'name' : 'value', 'type' : 'real' }
-		]
-		
-		# Responses
+	def LoadTopicCovariance(self):
+		table = self.stats.topic_covariance
+		rows = self.stats().select( table.ALL, orderby = table.rank ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'TopicCovariance' : table
+			'TopicCovariance' : rows
 		})
-		self.table = table
+		self.table = rows
+		self.header = header
+
+	def LoadTopTerms(self):
+		topic_index = self.GetTopicIndex()
+		term_limits = self.GetTermLimits()
+		matrix = self.db.term_topic_matrix
+		table = self.db.terms
+		inner_join = ( matrix.term_index == table.term_index )
+		where = ( matrix.topic_index == topic_index )
+		rows = self.db( inner_join & where ).select( table.ALL, matrix.ALL, orderby = matrix.rank, limitby = term_limits ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		self.content.update({
+			'TopTerms' : rows
+		})
+		self.table = rows
+		self.header = header
+
+	def LoadTopDocs(self):
+		topic_index = self.GetTopicIndex()
+		doc_limits = self.GetDocLimits()
+		matrix = self.db.doc_topic_matrix
+		table = self.db.docs
+		inner_join = ( matrix.doc_index == table.doc_index )
+		where = ( matrix.topic_index == topic_index )
+		rows = self.db( inner_join & where ).select( table.ALL, matrix.ALL, orderby = matrix.rank, limitby = doc_limits ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		self.content.update({
+			'TopDocs' : rows
+		})
+		self.table = rows
 		self.header = header
