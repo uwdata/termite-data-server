@@ -1,0 +1,38 @@
+timestamp: 2014-04-26T08:54:05.620189
+CREATE TABLE options(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key CHAR(512) UNIQUE,
+    value CHAR(512)
+);
+success!
+timestamp: 2014-04-26T08:54:05.626601
+CREATE TABLE models(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    model_key CHAR(512) UNIQUE,
+    model_desc CHAR(512)
+);
+success!
+timestamp: 2014-04-26T08:54:05.628835
+CREATE TABLE corpus(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    doc_index INTEGER UNIQUE,
+    doc_id CHAR(512) UNIQUE,
+    doc_content TEXT
+);
+success!
+timestamp: 2014-04-26T08:54:05.631467
+CREATE TABLE fields(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    field_index INTEGER UNIQUE,
+    field_name CHAR(512) UNIQUE,
+    field_type CHAR(512)
+);
+success!
+timestamp: 2014-04-26T08:54:05.634685
+CREATE TABLE metadata(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    doc_index INTEGER,
+    field_index INTEGER,
+    value TEXT
+);
+success!
