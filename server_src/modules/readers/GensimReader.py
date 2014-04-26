@@ -1,93 +1,71 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import logging
+from LDAReader import LDAReader
 from gensim import corpora, models
 
-class GensimReader():
+class GensimReader(LDAReader):
 	"""
+	lda_db = a SQLite3 database
 	modelPath = a model folder containing files dictionary.gensim, corpus.gensim, and lda.gensim
-	LDA_DB = a SQLite3 database
 	"""
 	
 	DICTIONARY_FILENAME = 'dictionary.gensim'
 	CORPUS_FILENAME = 'corpus.gensim'
 	MODEL_FILENAME = 'lda.gensim'
 
-	def __init__( self, modelPath, LDA_DB ):
-		self.logger = logging.getLogger('termite')
+	def __init__( self, lda_db, modelPath, corpus_db ):
+		super(GensimReader, self).__init__(lda_db)
 		self.modelPath = modelPath
 		self.dictionaryInGensim = '{}/{}'.format( self.modelPath, GensimReader.DICTIONARY_FILENAME )
 		self.corpusInGensim = '{}/{}'.format( self.modelPath, GensimReader.CORPUS_FILENAME )
 		self.modelInGensim = '{}/{}'.format( self.modelPath, GensimReader.MODEL_FILENAME )
-		self.ldaDB = LDA_DB
+		self.corpus = corpus_db.db
 		
 	def Execute( self ):
+		self.logger.info( 'Reading gensim LDA output...' )
 		self.ReadDictionaryAndModel()
+		self.logger.info( 'Writing to database...' )
 		self.SaveToDB()
 	
 	def ReadDictionaryAndModel( self ):
-		self.logger.info( 'Reading dictionary from: %s', self.dictionaryInGensim )
+		self.logger.debug( '    Loading dictionary: %s', self.dictionaryInGensim )
 		self.dictionary = corpora.Dictionary.load( self.dictionaryInGensim )
-		self.logger.info( 'Reading corpus from: %s', self.corpusInGensim )
-		self.corpus = corpora.TextCorpus.load( self.corpusInGensim )
-		self.logger.info( 'Reading model from: %s', self.modelInGensim )
+		self.logger.debug( '    Loading corpus: %s', self.corpusInGensim )
+		self.text_corpus = corpora.TextCorpus.load( self.corpusInGensim )
+		self.logger.debug( '    Loading model: %s', self.modelInGensim )
 		self.model = models.LdaModel.load( self.modelInGensim )
-	
-	def SaveToDB( self ):
-		topicsAndFreqsTerms = self.model.show_topics( topics = -1, topn = len(self.dictionary), formatted = False )
-		docsAndDocBOWs = self.corpus
+		
+		self.termList = [ self.dictionary[index] for index in self.dictionary ]
+		self.docList = [ d.doc_id for d in self.corpus().select(self.corpus.corpus.doc_id, orderby=self.corpus.corpus.doc_index) ]
 
-		termTable = []
-		docTable = []
-		topicTable = []
-		termLookup = {}
-		for index in self.dictionary:
-			term = self.dictionary[index]
-			termTable.append({
-				'term_index' : index,
-				'term_text' : term
-			})
-			termLookup[term] = index
-		for doc, _ in enumerate(docsAndDocBOWs):
-			docTable.append({
-				'doc_index' : doc
-			})
-		for topic, freqsTerms in enumerate(topicsAndFreqsTerms):
-			topicTable.append({
-				'topic_index' : topic,
-				'topic_freq' : sum( freq for freq, term in freqsTerms ),
-				'topic_desc' : u', '.join( term for freq, term in freqsTerms[:5] ),
-				'topic_top_terms' : [ term for freq, term in freqsTerms[:30] ]
-			})
-		termIndexes = self.ldaDB.db.terms.bulk_insert(termTable)
-		docIndexes = self.ldaDB.db.docs.bulk_insert(docTable)
-		topicIndexes = self.ldaDB.db.topics.bulk_insert(topicTable)
-
-		termTopicMatrix = []
-		docTopicMatrix = []
+		self.termTopicMatrix = []
+		topicsAndFreqsTerms = self.model.show_topics(topics=-1, topn=len(self.dictionary), formatted=False)
 		for topicIndex, freqsTerms in enumerate(topicsAndFreqsTerms):
 			for value, term in freqsTerms:
-				termTopicMatrix.append({
-					'term_index' : termLookup[term],
-				 	'topic_index' : topicIndex,
+				self.termTopicMatrix.append({
+					'term_index' : term,
+					'topic_index' : topicIndex,
 					'value' : value,
 					'rank' : 0
 				})
+		termLookup = { term : termIndex for termIndex, term in enumerate(self.termList) }
+		self.termTopicMatrix.sort( key = lambda d : -d['value'] )
+		for index, d in enumerate(self.termTopicMatrix):
+			d['term_index'] = termLookup[d['term_index']]
+			d['rank'] = index + 1
+		
+		self.docTopicMatrix = []
+		docsAndDocBOWs = self.text_corpus
 		for docIndex, docBOW in enumerate(docsAndDocBOWs):
 			topicsProbs = self.model[docBOW]
 			for topicIndex, value in topicsProbs:
-				docTopicMatrix.append({
+				self.docTopicMatrix.append({
 					'doc_index' : docIndex,
 					'topic_index' : topicIndex,
 					'value' : value,
 					'rank' : 0
 				})
-		termTopicMatrix.sort( key = lambda x : -x['value'] )
-		docTopicMatrix.sort( key = lambda x : -x['value'] )
-		for rank, d in enumerate(termTopicMatrix):
-			d['rank'] = rank+1
-		for rank, d in enumerate(docTopicMatrix):
-			d['rank'] = rank+1
-		self.ldaDB.db.term_topic_matrix.bulk_insert(termTopicMatrix)
-		self.ldaDB.db.doc_topic_matrix.bulk_insert(docTopicMatrix)
+		self.docTopicMatrix.sort( key = lambda d : -d['value'] )
+		for index, d in enumerate(self.docTopicMatrix):
+			d['rank'] = index + 1

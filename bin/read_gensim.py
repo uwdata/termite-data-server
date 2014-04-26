@@ -73,7 +73,7 @@ def ImportGensimLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 			
 				# Compute derived-statistics about the model
 				with LDA_DB(db_path, isInit=True) as lda_db:
-					reader = GensimReader( app_model_path, lda_db )
+					reader = GensimReader( lda_db, app_model_path, corpus_db )
 					reader.Execute()
 					with LDAStats_DB(db_path, isInit=True) as ldaStats_db:
 						computer = ComputeLDAStats( lda_db, ldaStats_db )
