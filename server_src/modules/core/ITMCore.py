@@ -8,10 +8,9 @@ from readers.TreeTMReader import TreeTMReader
 from topic_models.TreeTM import RefineLDA
 
 class ITMCore(HomeCore):
-	def __init__(self, request, response, lda_db, ldaStats_db):
+	def __init__(self, request, response, lda_db):
 		super( ITMCore, self ).__init__( request, response )
 		self.db = lda_db.db
-		self.stats = ldaStats_db.db
 
 	def GetIterCount(self, app_model_path):
 		filename = '{}/index.json'.format(app_model_path)
@@ -78,7 +77,7 @@ class ITMCore(HomeCore):
 		app_path = self.request.folder
 		app_model_path = '{}/data/treetm'.format(app_path)
 		iterCount = self.GetIterCount(app_model_path)
-		iters = self.GetIters()
+		iters = self.GetIters(iterCount)
 		mustLinks, cannotLinks, keepTerms, removeTerms = self.GetConstraints()
 		if iters is None:
 			self.content.update({
@@ -97,7 +96,7 @@ class ITMCore(HomeCore):
 				computer = ComputeLDAStats( lda_db )
 				computer.Execute()
 			self.content.update({
-				'IterCount' : iters,
+				'IterCount' : iterCount,
 				'MustLinks' : mustLinks,
 				'CannotLinks' : cannotLinks,
 				'KeepTerms' : keepTerms,

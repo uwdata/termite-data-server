@@ -3,9 +3,7 @@
 from core.HomeCore import HomeCore
 from vis.GroupInABox import GroupInABox as GroupInABoxModel
 from db.Corpus_DB import Corpus_DB
-from db.CorpusStats_DB import CorpusStats_DB
 from db.LDA_DB import LDA_DB
-from db.LDAStats_DB import LDAStats_DB
 
 def index():
 	core = HomeCore(request, response)

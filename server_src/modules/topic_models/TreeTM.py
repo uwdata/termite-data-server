@@ -19,7 +19,6 @@ class RefineLDA(object):
 	def __init__( self, modelPath, numIters = 1000, prevEntry = None,
 			mustLinks = None, cannotLinks = None, keepTerms = None, removeTerms = None,
 			MALLET_PATH = 'tools/mallet' ):
-		print "after", mustLinks, cannotLinks, keepTerms, removeTerms
 		with TreeTM( modelsPath = modelPath, resume = True, finalIter = numIters, prevEntryID = prevEntry ) as treeTM:
 			treeTM.ResumeTraining()
 			if mustLinks is not None:
@@ -329,7 +328,6 @@ class TreeTM(object):
 			lines.append( u'SPLIT_\t{}'.format( u'\t'.join(term for term in cannotLink) ) )
 		with open( self.filenameConstraints, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
-		print lines
 	
 	def WriteKeepTermsFile( self ):
 		lines = []
@@ -338,7 +336,6 @@ class TreeTM(object):
 				lines.append( u'{}\t{}'.format(term, topic) )
 		with open( self.filenameKeepTerms, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
-		print lines
 
 	def ReadRemoveTermsFile( self ):
 		with open( self.filenameRemoveTermsPrevious, 'r' ) as f:
@@ -352,7 +349,6 @@ class TreeTM(object):
 		lines = [ term for term in self.removeTermsNew ]
 		with open( self.filenameRemoveTermsNew, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
-		print lines
 	
 	def WriteExecuteBashScript( self ):
 		with open( self.filenameExecute, 'w' ) as f:
