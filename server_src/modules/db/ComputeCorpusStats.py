@@ -26,9 +26,11 @@ class ComputeCorpusStats():
 		self.stopwords = self.LoadStopwords( STOPWORDS if STOPWORDS is not None else ComputeCorpusStats.DEFAULT_STOPWORDS )
 	
 	def Execute( self ):
+		self.logger.info( 'Computing document-level statistics...' )
 		self.ComputeAndSaveDocumentLevelStatistics()
+		self.logger.info( 'Computing sentence-level term statistics...' )
 		self.ComputeAndSaveSentenceLevelStatistics()
-	
+			
 	def LoadStopwords( self, filename ):
 		stopwords = []
 		with open( filename, 'r' ) as f:
@@ -73,8 +75,6 @@ class ComputeCorpusStats():
 		return data[:self.maxCoTermCount]
 	
 	def ComputeAndSaveDocumentLevelStatistics( self ):
-		self.logger.info( 'Computing document-level statistics...' )
-
 		reader = self.ReadCorpus( self.corpusFilename )
 		corpus = { docID : docTokens for docID, docTokens in reader }
 		termStats = self.ComputeTermFreqs( corpus )
@@ -99,8 +99,6 @@ class ComputeCorpusStats():
 		self.corpusStatsDB.db.term_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
 	
 	def ComputeAndSaveSentenceLevelStatistics( self ):
-		self.logger.info( 'Computing sentence-level term statistics...' )
-
 		reader = self.ReadCorpus( self.sentencesFilename )
 		corpus = { docID : docTokens for docID, docTokens in reader }
 		termStats = self.ComputeTermFreqs( corpus )
