@@ -13,7 +13,7 @@ from modules.db.Corpus_DB import Corpus_DB
 def ImportCorpus(corpus_filename_or_folder, database_path):
 	database_filename = '{}/corpus.db'.format(database_path)
 	
-	with Corpus_DB(database_path, isDistribution=True) as corpus_db:
+	with Corpus_DB(database_path, isImport=True) as corpus_db:
 		if os.path.isfile(corpus_filename_or_folder):
 			print 'Importing file [{}] into database [{}]'.format(corpus_filename_or_folder, database_filename)
 			corpus_db.ImportFromFile(corpus_filename_or_folder)
