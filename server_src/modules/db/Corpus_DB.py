@@ -15,8 +15,9 @@ class Corpus_DB():
 		'token_regex' : r'\w{3,}',
 		'min_freq' : 5,
 		'min_doc_freq' : 3,
-		'max_term_count' : 2500,
-		'max_co_term_count' : 100000
+		'max_term_count' : 4000,
+		'max_co_term_count' : 160000,
+		'max_co_term_percentage' : 0.1
 	}
 	
 	def __init__(self, path = None, isInit = False, isImport = False, isReset = False):
@@ -55,17 +56,51 @@ class Corpus_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isImport
 		)
-		if self.db(self.db.options).count() == 0:
-			for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
-				self.db.options.insert( key = key, value = value )
+		for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
+			if self.db(self.db.options.key == key).count() == 0:
+				self.db.options.insert(key = key, value = value)
 	
+	def SetOption(self, key, value):
+		keyValue = self.db( self.db.options.key == key ).select().first()
+		if keyValue:
+			keyValue.update_record( value = value )
+		else:
+			self.db.options.insert( key = key, value = value )
+
+	def GetOption(self, key):
+		keyValue = self.db( self.db.options.key == key ).select( self.db.options.value ).first()
+		if keyValue:
+			return keyValue.value
+		else:
+			return None
+
 	def DefineModelsTable(self):
 		self.db.define_table( 'models',
 			Field( 'model_key' , 'string', required = True, unique = True ),
 			Field( 'model_desc', 'string', required = True ),
 			migrate = self.isImport
 		)
-		
+
+	def AddModel(self, model_key, model_desc):
+		model = self.db( self.db.models.model_key == model_key ).select().first()
+		if model:
+			self.db.update_record( model_desc = model_desc )
+		else:
+			self.db.models.insert( model_key = model_key, model_desc = model_desc )
+
+	def GetModels(self):
+		models = self.db( self.db.models ).select( self.db.models.model_key )
+		return [ model.model_key for model in models ]
+
+	def GetModelDescription(self, model_key):
+		model = self.db( self.db.models.model_key == model_key ).select().first()
+		if model:
+			return model.model_desc
+		else:
+			return None
+
+################################################################################
+
 	def DefineCorpusTable(self):
 		self.db.define_table( 'corpus',
 			Field( 'doc_index'  , 'integer', required = True, unique = True, default = -1 ),
@@ -300,38 +335,6 @@ class Corpus_DB():
 			WriteCSV(rows)
 		else:
 			WriteTSV(rows)
-
-	def SetOption(self, key, value):
-		keyValue = self.db( self.db.options.key == key ).select().first()
-		if keyValue:
-			keyValue.update_record( value = value )
-		else:
-			self.db.options.insert( key = key, value = value )
-	
-	def GetOption(self, key):
-		keyValue = self.db( self.db.options.key == key ).select( self.db.options.value ).first()
-		if keyValue:
-			return keyValue.value
-		else:
-			return None
-
-	def AddModel(self, model_key, model_desc):
-		model = self.db( self.db.models.model_key == model_key ).select().first()
-		if model:
-			self.db.update_record( model_desc = model_desc )
-		else:
-			self.db.models.insert( model_key = model_key, model_desc = model_desc )
-
-	def GetModels(self):
-		models = self.db( self.db.models ).select( self.db.models.model_key )
-		return [ model.model_key for model in models ]
-	
-	def GetModelDescription(self, model_key):
-		model = self.db( self.db.models.model_key == model_key ).select().first()
-		if model:
-			return model.model_desc
-		else:
-			return None
 
 ################################################################################
 

@@ -10,18 +10,19 @@ class ComputeCorpus():
 	
 	DEFAULT_STOPWORDS = 'tools/mallet/stoplists/en.txt'
 	
-	def __init__( self, corpusDB, corpusFilename, sentencesFilename, STOPWORDS = None ):
+	def __init__( self, corpus_db, corpusFilename, sentencesFilename, STOPWORDS = None ):
 		self.logger = logging.getLogger('termite')
-		self.db = corpusDB.db
+		self.db = corpus_db.db
 		self.corpusFilename = corpusFilename
 		self.sentencesFilename = sentencesFilename
 		
-		self.tokenRegexStr = corpusDB.GetOption('token_regex')
+		self.tokenRegexStr = corpus_db.GetOption('token_regex')
 		self.tokenRegex = re.compile(self.tokenRegexStr)
-		self.minFreq = int(corpusDB.GetOption('min_freq'))
-		self.minDocFreq = int(corpusDB.GetOption('min_doc_freq'))
-		self.maxTermCount = int(corpusDB.GetOption('max_term_count'))
-		self.maxCoTermCount = int(corpusDB.GetOption('max_co_term_count'))
+		self.minFreq = int(corpus_db.GetOption('min_freq'))
+		self.minDocFreq = int(corpus_db.GetOption('min_doc_freq'))
+		self.maxTermCount = int(corpus_db.GetOption('max_term_count'))
+		self.maxCoTermCount = int(corpus_db.GetOption('max_co_term_count'))
+		self.maxCoTermPercetage = float(corpus_db.GetOption('max_co_term_percentage'))
 		self.stopwords = self.LoadStopwords( STOPWORDS if STOPWORDS is not None else ComputeCorpus.DEFAULT_STOPWORDS )
 	
 	def Execute( self ):
@@ -80,21 +81,21 @@ class ComputeCorpus():
 		self.ComputeVocabulary( termStats )
 		termCoStats = self.ComputeTermCoFreqs( corpus, termStats )
 		
-		self.logger.debug( '    Saving term_texts...' )
+		self.logger.debug( '    Saving term_texts (%d terms)...', len(self.vocab) )
 		self.db.term_texts.bulk_insert( self.UnfoldVocab() )
-		self.logger.debug( '    Saving term_freqs...' )
+		self.logger.debug( '    Saving term_freqs (%d terms)...', len(self.vocab) )
 		self.db.term_freqs.bulk_insert( self.UnfoldStats(termStats['term_freqs']) )
-		self.logger.debug( '    Saving term_probs...' )
+		self.logger.debug( '    Saving term_probs (%d terms)...', len(self.vocab) )
 		self.db.term_probs.bulk_insert( self.UnfoldStats(termStats['term_probs']) )
-		self.logger.debug( '    Saving term_doc_freqs...' )
+		self.logger.debug( '    Saving term_doc_freqs (%d terms)...', len(self.vocab) )
 		self.db.term_doc_freqs.bulk_insert( self.UnfoldStats(termStats['term_doc_freqs']) )
-		self.logger.debug( '    Saving term_co_freqs...' )
+		self.logger.debug( '    Saving term_co_freqs (max %d term pairs)...', self.maxCoTermCount )
 		self.db.term_co_freqs.bulk_insert( self.UnfoldCoStats(termCoStats['co_freqs']) )
-		self.logger.debug( '    Saving term_co_probs...' )
+		self.logger.debug( '    Saving term_co_probs (max %d term pairs)...', self.maxCoTermCount )
 		self.db.term_co_probs.bulk_insert( self.UnfoldCoStats(termCoStats['co_probs']) )
-		self.logger.debug( '    Saving term_pmi...' )
+		self.logger.debug( '    Saving term_pmi (max %d term pairs)...', self.maxCoTermCount )
 		self.db.term_pmi.bulk_insert( self.UnfoldCoStats(termCoStats['pmi']) )
-		self.logger.debug( '    Saving term_g2...' )
+		self.logger.debug( '    Saving term_g2 (max %d term pairs)...', self.maxCoTermCount )
 		self.db.term_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
 	
 	def ComputeAndSaveSentenceLevelStatistics( self ):
@@ -103,13 +104,13 @@ class ComputeCorpus():
 		termStats = self.ComputeTermFreqs( corpus )
 		termCoStats = self.ComputeTermCoFreqs( corpus, termStats )
 		
-		self.logger.debug( '    Saving sentences_co_freqs...' )
+		self.logger.debug( '    Saving sentences_co_freqs (max %d term pairs)...', self.maxCoTermCount )
 		self.db.sentences_co_freqs.bulk_insert( self.UnfoldCoStats(termCoStats['co_freqs']) )
-		self.logger.debug( '    Saving sentences_co_probs...' )
+		self.logger.debug( '    Saving sentences_co_probs (max %d term pairs)...', self.maxCoTermCount )
 		self.db.sentences_co_probs.bulk_insert( self.UnfoldCoStats(termCoStats['co_probs']) )
-		self.logger.debug( '    Saving sentences_pmi...' )
+		self.logger.debug( '    Saving sentences_pmi (max %d term pairs)...', self.maxCoTermCount )
 		self.db.sentences_pmi.bulk_insert( self.UnfoldCoStats(termCoStats['pmi']) )
-		self.logger.debug( '    Saving sentences_g2...' )
+		self.logger.debug( '    Saving sentences_g2 (max %d term pairs)...', self.maxCoTermCount )
 		self.db.sentences_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
 	
 	def ComputeTermFreqs( self, corpus ):
@@ -141,25 +142,15 @@ class ComputeCorpus():
 			tfIdfs = { term : freq * idfs[term] for term, freq in freqs.iteritems() }
 			return tfIdfs
 		
-		self.logger.info( '    Computing term freqs (%d)...', len(corpus) )
+		self.logger.info( '    Computing term freqs (%d docs)...', len(corpus) )
 		termFreqs = ComputeFreqs( corpus )
 		termDocFreqs = ComputeDocFreqs( corpus )
 		termProbs = NormalizeFreqs( termFreqs )
-#		termIdfs = ComputeIdfs( corpus, termDocFreqs )
-#		termTfIdfs = ComputeTfIdfs( termFreqs, termIdfs )
-		
 		termStats = {
 			'term_freqs' : termFreqs,
 			'term_probs' : termProbs,
 			'term_doc_freqs' : termDocFreqs
 		}
-#		termStats = {
-#			'term_freq' : termFreqs,
-#			'term_prob' : termProbs,
-#			'term_doc_freq' : termDocFreqs,
-#			'term_idf' : termIdfs,
-#			'term_tfidf' : termTfIdfs
-#		}
 		return termStats
 	
 	def ComputeVocabulary( self, termStats ):
@@ -170,6 +161,7 @@ class ComputeCorpus():
 		termDocFreqs = termStats['term_doc_freqs']
 		keys = [ term for term in termFreqs if termFreqs[term] >= minFreq and termDocFreqs[term] >= minDocFreq ]
 		keys = sorted( keys, key = lambda x : -termFreqs[x] )
+		self.maxCoTermCount = min( self.maxCoTermCount, round(self.maxCoTermPercetage * len(keys) * len(keys)) )
 		keys = keys[:maxTermCount]
 		self.vocab = frozenset(keys)
 		self.termLookup = { key : index for index, key in enumerate(keys) }
@@ -265,7 +257,7 @@ class ComputeCorpus():
 					g2_stats[ firstToken ][ secondToken ] = GetG2Stats( freq_all, freq_ab, freq_a, freq_b )
 			return g2_stats
 		
-		self.logger.info( '    Computing term co-occurrences (%d)...', len(corpus) )
+		self.logger.info( '    Computing term co-occurrences (%d docs)...', len(corpus) )
 		
 		# Count co-occurrences
 		termCoFreqs, allFreq, allCoFreq = ComputeJointFreqs( corpus, self.vocab )
