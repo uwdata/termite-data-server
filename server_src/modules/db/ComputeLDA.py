@@ -9,7 +9,6 @@ class ComputeLDA():
 		self.logger = logging.getLogger('termite')
 		self.db = lda_db.db
 		
-		self.maxTopicCount = int(lda_db.GetOption('max_topic_count'))
 		self.maxCoTopicCount = int(lda_db.GetOption('max_co_topic_count'))
 
 	def Execute(self):

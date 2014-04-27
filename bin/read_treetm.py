@@ -17,7 +17,7 @@ from modules.db.ComputeLDA import ComputeLDA
 
 from modules.apps.CreateApp import CreateApp
 from modules.apps.SplitSentences import SplitSentences
-from modules.readers.TreeTMReader import TreeTMReader
+from modules.lda_readers.TreeTMReader import TreeTMReader
 
 def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )

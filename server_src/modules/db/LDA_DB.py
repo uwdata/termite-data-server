@@ -7,7 +7,6 @@ class LDA_DB():
 	FILENAME = 'lda.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DEFAULT_OPTIONS = {
-		'max_topic_count' : 2000,
 		'max_co_topic_count' : 40000
 	}
 	

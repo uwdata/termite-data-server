@@ -6,7 +6,7 @@ from core.HomeCore import HomeCore
 from json import encoder as JsonEncoder
 from db.LDA_DB import LDA_DB
 from db.ComputeLDAStats import ComputeLDAStats
-from readers.TreeTMReader import TreeTMReader
+from lda_readers.TreeTMReader import TreeTMReader
 from topic_models.TreeTM import RefineLDA
 
 class GroupInABox(HomeCore):
