@@ -17,7 +17,7 @@ def Update():
 		handler.UpdateModel()
 	return handler.GenerateResponse()
 
-def GIB():
+def gib():
 	with Corpus_DB() as corpus_db:
 		with LDA_DB() as lda_db:
 			gib = ITM_GroupInBox(request, response, corpus_db, lda_db)

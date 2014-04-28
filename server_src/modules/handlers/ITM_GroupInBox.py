@@ -44,10 +44,10 @@ class ITM_GroupInBox(Home_Core):
 		return iters
 
 	def GetConstraints(self):
-		mustLinksStr = self.GetStringParam( 'mustLinks' )
-		cannotLinksStr = self.GetStringParam( 'cannotLinks' )
-		keepTermsStr = self.GetStringParam( 'keepTerms' )
-		removeTermsStr =  self.GetStringParam( 'removeTerms' )
+		mustLinksStr = self.GetStringParam('mustLinks')
+		cannotLinksStr = self.GetStringParam('cannotLinks')
+		keepTermsStr = self.GetStringParam('keepTerms')
+		removeTermsStr =  self.GetStringParam('removeTerms')
 		mustLinks = []
 		cannotLinks = []
 		keepTerms = {}
@@ -94,6 +94,7 @@ class ITM_GroupInBox(Home_Core):
 		mustLinks, cannotLinks, keepTerms, removeTerms = self.GetConstraints()
 		action = self.GetAction()
 		if action != 'train' or iters is None:
+			iterCount = self.GetIterCount(app_model_path)
 			self.content.update({
 				'IterCount' : iterCount,
 				'MustLinks' : mustLinks,
@@ -109,6 +110,7 @@ class ITM_GroupInBox(Home_Core):
 				reader.Execute()
 				computer = LDA_ComputeStats( lda_db )
 				computer.Execute()
+			iterCount = self.GetIterCount(app_model_path)
 			self.content.update({
 				'IterCount' : iterCount,
 				'MustLinks' : mustLinks,
