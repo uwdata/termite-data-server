@@ -93,7 +93,8 @@ class Home_Core(object):
 			]
 		if model == 'itm':
 			return [
-				'Update'
+				'Update',
+				'GIB'
 			]
 		if model == 'corpus':
 			return [

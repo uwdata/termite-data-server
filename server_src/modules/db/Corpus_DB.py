@@ -497,9 +497,9 @@ class Corpus_DB():
 		self.db.define_table( 'vocab',
 			Field( 'term_index', 'integer', required = True, unique = True, default = -1 ),
 			Field( 'term_text', 'string', required = True ),
-			migrate = self.isImport
+			migrate = self.isInit
 		)
 		self.db.define_table( 'vocab_text',
 			Field( 'term_text', 'string', required = True, unique = True, default = -1 ),
-			migrate = self.isImport
+			migrate = self.isInit
 		)
