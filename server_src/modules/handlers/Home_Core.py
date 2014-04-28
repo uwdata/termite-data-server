@@ -94,7 +94,7 @@ class Home_Core(object):
 		if model == 'itm':
 			return [
 				'Update',
-				'GIB'
+				'gib'
 			]
 		if model == 'corpus':
 			return [
@@ -111,10 +111,6 @@ class Home_Core(object):
 				'SentenceCoProbs',
 				'SentencePMI',
 				'SentenceG2'
-			]
-		if model == 'vis':
-			return [
-				'GroupInABox'
 			]
 		return []
 	
