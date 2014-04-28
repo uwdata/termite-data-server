@@ -239,14 +239,22 @@ class Corpus_ComputeStats():
 			return 2 * ( g2a + g2b )
 		
 		def GetG2Stats(freq_all, freq_ab, freq_a, freq_b):
-			assert freq_all >= freq_a
-			assert freq_all >= freq_b
-			assert freq_a >= freq_ab
-			assert freq_b >= freq_ab
-			assert freq_all >= 0
-			assert freq_ab >= 0
-			assert freq_a >= 0
-			assert freq_b >= 0
+#			assert freq_all >= freq_a
+#			assert freq_all >= freq_b
+#			assert freq_a >= freq_ab
+#			assert freq_b >= freq_ab
+#			assert freq_all >= 0
+#			assert freq_ab >= 0
+#			assert freq_a >= 0
+#			assert freq_b >= 0
+			if not (freq_ab >= 0):
+				freq_ab = 0
+			if not (freq_a >= freq_ab):
+				freq_a = freq_ab
+			if not (freq_b >= freq_ab):
+				freq_b = freq_ab
+			if not (freq_all >= freq_a and freq_all >= freq_b):
+				freq_all = max(freq_a, freq_b)
 			
 			B_given_A = freq_ab
 			B_given_notA = freq_b - freq_ab
