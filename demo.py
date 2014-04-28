@@ -33,6 +33,10 @@ def Demonstrate(dataset, model, is_quiet, force_overwrite):
 		Shell(command)
 	
 	def PrepareOthers():
+		executable = 'bin/setup_mallet.sh'
+		command = [executable]
+		Shell(command)
+
 		executable = 'bin/setup_corenlp.sh'
 		command = [executable]
 		Shell(command)
