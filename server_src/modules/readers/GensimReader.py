@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from LDAReader import LDAReader
 from gensim import corpora, models
+from LDAReader import LDAReader
 
 class GensimReader(LDAReader):
 	"""

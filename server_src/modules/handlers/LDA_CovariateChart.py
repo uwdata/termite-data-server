@@ -2,11 +2,11 @@
 
 import os
 import json
-from core import TermiteCore
+from handlers import Home_Core
 
-class CovariateChart( TermiteCore ):
-	def __init__( self, request, response ):
-		super( CovariateChart, self ).__init__( request, response )
+class LDA_CovariateChart(Home_Core):
+	def __init__(self, request, response):
+		super(LDA_CovariateChart, self).__init__(request, response)
 
 	def GetParam( self, key ):
 		if key == 'docLimit':

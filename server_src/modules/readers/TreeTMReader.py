@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from LDAReader import LDAReader
 import os
+from LDAReader import LDAReader
 
 class TreeTMReader(LDAReader):
 	"""

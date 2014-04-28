@@ -6,11 +6,11 @@ import math
 import re
 from collections import Counter
 
-class ComputeCorpus():
+class Corpus_ComputeStats():
 	
 	DEFAULT_STOPWORDS = 'tools/mallet/stoplists/en.txt'
 	
-	def __init__( self, corpus_db, corpusFilename, sentencesFilename, STOPWORDS = None ):
+	def __init__(self, corpus_db, corpusFilename, sentencesFilename, STOPWORDS = None):
 		self.logger = logging.getLogger('termite')
 		self.db = corpus_db.db
 		self.corpusFilename = corpusFilename
@@ -23,21 +23,21 @@ class ComputeCorpus():
 		self.maxTermCount = int(corpus_db.GetOption('max_term_count'))
 		self.maxCoTermCount = int(corpus_db.GetOption('max_co_term_count'))
 		self.maxCoTermPercetage = float(corpus_db.GetOption('max_co_term_percentage'))
-		self.stopwords = self.LoadStopwords( STOPWORDS if STOPWORDS is not None else ComputeCorpus.DEFAULT_STOPWORDS )
+		self.stopwords = self.LoadStopwords(STOPWORDS if STOPWORDS is not None else Corpus_ComputeStats.DEFAULT_STOPWORDS)
 	
-	def Execute( self ):
+	def Execute(self):
 		self.logger.info( 'Computing document-level statistics...' )
 		self.ComputeAndSaveDocumentLevelStatistics()
 		self.logger.info( 'Computing sentence-level term statistics...' )
 		self.ComputeAndSaveSentenceLevelStatistics()
 			
-	def LoadStopwords( self, filename ):
+	def LoadStopwords(self, filename):
 		stopwords = []
 		with open( filename, 'r' ) as f:
 			stopwords = f.read().decode('utf-8', 'ignore').splitlines()
 		return frozenset(stopwords)
 	
-	def ReadCorpus( self, filename ):
+	def ReadCorpus(self, filename):
 		self.logger.debug( '    Loading corpus: %s', filename )
 		with open( filename, 'r' ) as f:
 			for line in f:
@@ -46,13 +46,13 @@ class ComputeCorpus():
 				docTokens = [ token.lower() for token in docTokens if token not in self.stopwords ]
 				yield docID, docTokens
 	
-	def UnfoldVocab( self ):
+	def UnfoldVocab(self):
 		data = []
 		for term, index in self.termLookup.iteritems():
 			data.append({ 'term_index' : index, 'term_text' : term })
 		return data
 	
-	def UnfoldStats( self, stats ):
+	def UnfoldStats(self, stats):
 		data = []
 		for term, index in self.termLookup.iteritems():
 			if term in stats:
@@ -62,7 +62,7 @@ class ComputeCorpus():
 			d['rank'] = rank+1
 		return data
 	
-	def UnfoldCoStats( self, coStats ):
+	def UnfoldCoStats(self, coStats):
 		data = []
 		for first_term, stats in coStats.iteritems():
 			first_term_index = self.termLookup[first_term]
@@ -74,7 +74,7 @@ class ComputeCorpus():
 			d['rank'] = rank+1
 		return data[:self.maxCoTermCount]
 	
-	def ComputeAndSaveDocumentLevelStatistics( self ):
+	def ComputeAndSaveDocumentLevelStatistics(self):
 		reader = self.ReadCorpus( self.corpusFilename )
 		corpus = { docID : docTokens for docID, docTokens in reader }
 		termStats = self.ComputeTermFreqs( corpus )
@@ -89,51 +89,60 @@ class ComputeCorpus():
 		self.db.term_probs.bulk_insert( self.UnfoldStats(termStats['term_probs']) )
 		self.logger.debug( '    Saving term_doc_freqs (%d terms)...', len(self.vocab) )
 		self.db.term_doc_freqs.bulk_insert( self.UnfoldStats(termStats['term_doc_freqs']) )
-		self.logger.debug( '    Saving term_co_freqs (max %d term pairs)...', self.maxCoTermCount )
-		self.db.term_co_freqs.bulk_insert( self.UnfoldCoStats(termCoStats['co_freqs']) )
-		self.logger.debug( '    Saving term_co_probs (max %d term pairs)...', self.maxCoTermCount )
-		self.db.term_co_probs.bulk_insert( self.UnfoldCoStats(termCoStats['co_probs']) )
-		self.logger.debug( '    Saving term_pmi (max %d term pairs)...', self.maxCoTermCount )
-		self.db.term_pmi.bulk_insert( self.UnfoldCoStats(termCoStats['pmi']) )
-		self.logger.debug( '    Saving term_g2 (max %d term pairs)...', self.maxCoTermCount )
-		self.db.term_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
+		
+		coStats = termCoStats['co_freqs']
+		self.logger.debug( '    Saving term_co_freqs (%d term pairs)...', min(sum(len(stats) for stats in coStats), self.maxCoTermCount) )
+		self.db.term_co_freqs.bulk_insert( self.UnfoldCoStats(coStats) )
+		coStats = termCoStats['co_probs']
+		self.logger.debug( '    Saving term_co_probs (%d term pairs)...', min(sum(len(stats) for stats in coStats), self.maxCoTermCount) )
+		self.db.term_co_probs.bulk_insert( self.UnfoldCoStats(coStats) )
+		coStats = termCoStats['pmi']
+		self.logger.debug( '    Saving term_pmi (%d term pairs)...', min(sum(len(stats) for stats in coStats), self.maxCoTermCount) )
+		self.db.term_pmi.bulk_insert( self.UnfoldCoStats(coStats) )
+		coStats = termCoStats['g2']
+		self.logger.debug( '    Saving term_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats), self.maxCoTermCount) )
+		self.db.term_g2.bulk_insert( self.UnfoldCoStats(coStats) )
 	
-	def ComputeAndSaveSentenceLevelStatistics( self ):
+	def ComputeAndSaveSentenceLevelStatistics(self):
 		reader = self.ReadCorpus( self.sentencesFilename )
 		corpus = { docID : docTokens for docID, docTokens in reader }
 		termStats = self.ComputeTermFreqs( corpus )
 		termCoStats = self.ComputeTermCoFreqs( corpus, termStats )
-		
-		self.logger.debug( '    Saving sentences_co_freqs (max %d term pairs)...', self.maxCoTermCount )
-		self.db.sentences_co_freqs.bulk_insert( self.UnfoldCoStats(termCoStats['co_freqs']) )
-		self.logger.debug( '    Saving sentences_co_probs (max %d term pairs)...', self.maxCoTermCount )
-		self.db.sentences_co_probs.bulk_insert( self.UnfoldCoStats(termCoStats['co_probs']) )
-		self.logger.debug( '    Saving sentences_pmi (max %d term pairs)...', self.maxCoTermCount )
-		self.db.sentences_pmi.bulk_insert( self.UnfoldCoStats(termCoStats['pmi']) )
-		self.logger.debug( '    Saving sentences_g2 (max %d term pairs)...', self.maxCoTermCount )
-		self.db.sentences_g2.bulk_insert( self.UnfoldCoStats(termCoStats['g2']) )
+
+		coStats = termCoStats['co_freqs']
+		self.logger.debug( '    Saving sentences_co_freqs (%d term pairs)...', min(sum(len(stats) for stats in coStats), self.maxCoTermCount) )
+		self.db.sentences_co_freqs.bulk_insert( self.UnfoldCoStats(coStats) )
+		coStats = termCoStats['co_probs']
+		self.logger.debug( '    Saving sentences_co_probs (%d term pairs)...', min(sum(len(stats) for stats in coStats), self.maxCoTermCount) )
+		self.db.sentences_co_probs.bulk_insert( self.UnfoldCoStats(coStats) )
+		coStats = termCoStats['pmi']
+		self.logger.debug( '    Saving sentences_pmi (%d term pairs)...', min(sum(len(stats) for stats in coStats), self.maxCoTermCount) )
+		self.db.sentences_pmi.bulk_insert( self.UnfoldCoStats(coStats) )
+		coStats = termCoStats['g2']
+		self.logger.debug( '    Saving sentences_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats), self.maxCoTermCount) )
+		self.db.sentences_g2.bulk_insert( self.UnfoldCoStats(coStats) )
 	
-	def ComputeTermFreqs( self, corpus ):
-		def ComputeFreqs( corpus ):
+	def ComputeTermFreqs(self, corpus):
+		def ComputeFreqs(corpus):
 			freqs = Counter()
 			for docID, docTokens in corpus.iteritems():
 				freqs.update( docTokens )
 			return freqs
 		
-		def ComputeDocFreqs( corpus ):
+		def ComputeDocFreqs(corpus):
 			docFreqs = Counter()
 			for docID, docTokens in corpus.iteritems():
 				uniqueTokens = frozenset( docTokens )
 				docFreqs.update( uniqueTokens )
 			return docFreqs
 		
-		def NormalizeFreqs( freqs ):
+		def NormalizeFreqs(freqs):
 			normalization = sum( freqs.itervalues() )
 			normalization = 1.0 / normalization if normalization > 1.0 else 1.0
 			probs = { term : freq * normalization for term, freq in freqs.iteritems() }
 			return probs
 		
-		def ComputeIdfs( corpus, docFreqs ):
+		def ComputeIdfs(corpus, docFreqs):
 			N = len( corpus )
 			idfs = { term : math.log( 1.0 * N / docFreq ) for term, docFreq in docFreqs.iteritems() }
 			return idfs
@@ -153,7 +162,7 @@ class ComputeCorpus():
 		}
 		return termStats
 	
-	def ComputeVocabulary( self, termStats ):
+	def ComputeVocabulary(self, termStats):
 		minFreq = self.minFreq
 		minDocFreq = self.minDocFreq
 		maxTermCount = self.maxTermCount
@@ -166,16 +175,16 @@ class ComputeCorpus():
 		self.vocab = frozenset(keys)
 		self.termLookup = { key : index for index, key in enumerate(keys) }
 		
-	def ComputeTermCoFreqs( self, corpus, termStats ):
+	def ComputeTermCoFreqs(self, corpus, termStats):
 		termProbs = termStats['term_probs']
 		
-		def GetTokenPairs( firstToken, secondToken ):
+		def GetTokenPairs(firstToken, secondToken):
 			if firstToken < secondToken:
 				return firstToken, secondToken
 			else:
 				return secondToken, firstToken
 		
-		def ComputeJointFreqs( corpus, vocab ):
+		def ComputeJointFreqs(corpus, vocab):
 			jointFreqs = {}
 			allFreq = 0
 			allCoFreq = 0
@@ -195,14 +204,14 @@ class ComputeCorpus():
 								jointFreqs[firstToken][secondToken] += coFreq
 			return jointFreqs, allFreq, allCoFreq
 		
-		def NormalizeJointFreqs( jointFreqs, normalization = None ):
+		def NormalizeJointFreqs(jointFreqs, normalization=None):
 			if normalization is None:
 				normalization = sum( sum( d.itervalues() ) for d in jointFreqs.itervalues() )
 				normalization = 1.0 / normalization if normalization > 1.0 else 1.0
 			jointProbs = { term : { t : f * normalization for t, f in freqs.iteritems() } for term, freqs in jointFreqs.iteritems() }
 			return jointProbs
 		
-		def ComputePMI( marginalProbs, jointProbs ):
+		def ComputePMI(marginalProbs, jointProbs):
 			pmi = {}
 			for x, probs in jointProbs.iteritems():
 				pmi[x] = {}
@@ -213,7 +222,7 @@ class ComputeCorpus():
 						pmi[x][y] = 0.0
 			return pmi
 		
-		def GetBinomial( B_given_A, any_given_A, B_given_notA, any_given_notA ):
+		def GetBinomial(B_given_A, any_given_A, B_given_notA, any_given_notA):
 			assert B_given_A >= 0
 			assert B_given_notA >= 0
 			assert any_given_A >= B_given_A
@@ -229,7 +238,7 @@ class ComputeCorpus():
 			g2b = b * math.log( b / E2 ) if b > 0 else 0
 			return 2 * ( g2a + g2b )
 		
-		def GetG2Stats( freq_all, freq_ab, freq_a, freq_b ):
+		def GetG2Stats(freq_all, freq_ab, freq_a, freq_b):
 			assert freq_all >= freq_a
 			assert freq_all >= freq_b
 			assert freq_a >= freq_ab
@@ -245,7 +254,7 @@ class ComputeCorpus():
 			any_given_notA = freq_all - freq_a
 			return GetBinomial( B_given_A, any_given_A, B_given_notA, any_given_notA )
 		
-		def ComputeG2Stats( allFreq, marginalProbs, jointProbs ):
+		def ComputeG2Stats(allFreq, marginalProbs, jointProbs):
 			g2_stats = {}
 			freq_all = allFreq
 			for firstToken, d in jointProbs.iteritems():

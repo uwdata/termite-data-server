@@ -2,11 +2,11 @@
 
 import os
 import json
-from core.HomeCore import HomeCore
+from handlers.Home_Core import Home_Core
 
-class LDACore(HomeCore):
+class LDA_Core(Home_Core):
 	def __init__(self, request, response, lda_db):
-		super( LDACore, self ).__init__( request, response )
+		super(LDA_Core, self).__init__(request, response)
 		self.db = lda_db.db
 	
 	def GetDocLimits(self):

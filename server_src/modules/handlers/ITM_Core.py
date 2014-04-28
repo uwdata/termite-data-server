@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 import json
-from core.HomeCore import HomeCore
 from db.LDA_DB import LDA_DB
-from db.ComputeLDAStats import ComputeLDAStats
-from lda_readers.TreeTMReader import TreeTMReader
-from topic_models.TreeTM import RefineLDA
+from db.LDA_ComputeStats import LDA_ComputeStats
+from handlers.Home_Core import Home_Core
+from modellers.TreeTM import RefineLDA
+from readers.TreeTMReader import TreeTMReader
 
-class ITMCore(HomeCore):
+class ITM_Core(Home_Core):
 	def __init__(self, request, response, lda_db):
-		super( ITMCore, self ).__init__( request, response )
+		super(ITM_Core, self).__init__(request, response)
 		self.db = lda_db.db
 
 	def GetAction(self):
@@ -101,7 +101,7 @@ class ITMCore(HomeCore):
 			with LDA_DB( isReset = True ) as lda_db:
 				reader = TreeTMReader( lda_db, app_model_path )
 				reader.Execute()
-				computer = ComputeLDAStats( lda_db )
+				computer = LDA_ComputeStats( lda_db )
 				computer.Execute()
 			self.content.update({
 				'IterCount' : iterCount,

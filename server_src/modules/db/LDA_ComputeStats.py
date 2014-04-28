@@ -3,7 +3,7 @@
 
 import logging
 
-class ComputeLDA():
+class LDA_ComputeStats():
 
 	def __init__(self, lda_db):
 		self.logger = logging.getLogger('termite')

@@ -4,7 +4,7 @@
 import argparse
 import logging
 import os
-from modules.topic_models.MalletLDA import BuildMultipleLDAs
+from modellers.MalletLDA import BuildMultipleLDAs
 
 def TrainMalletN( corpus_path, model_path, token_regex, num_topics, num_iters, num_models, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )

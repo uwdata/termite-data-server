@@ -7,8 +7,8 @@ import cStringIO
 from utils.UnicodeIO import UnicodeReader, UnicodeWriter
 from db.Corpus_DB import Corpus_DB
 
-class HomeCore( object ):
-	def __init__( self, request, response ):
+class Home_Core(object):
+	def __init__(self, request, response):
 		self.request = request
 		self.response = response
 		self.configs = self.GetConfigs()
@@ -22,7 +22,7 @@ class HomeCore( object ):
 
 	EXCLUDED_FOLDERS = frozenset( [ 'admin', 'examples', 'welcome', 'init', 'data' ] )
 	def IsExcluded( self, folder ):
-		if folder in HomeCore.EXCLUDED_FOLDERS:
+		if folder in Home_Core.EXCLUDED_FOLDERS:
 			return True
 		if folder[:5] == 'temp_':
 			return True
@@ -68,7 +68,7 @@ class HomeCore( object ):
 	def GetModels( self, dataset ):
 		if self.IsExcluded(dataset):
 			return None
-		folders = [ 'vis' ]
+		folders = []
 		with Corpus_DB() as corpus_db:
 			folders += corpus_db.GetModels()
 		folders = sorted( folders )

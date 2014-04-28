@@ -3,11 +3,11 @@
 import re
 import os
 import json
-from core.HomeCore import HomeCore
+from handlers.Home_Core import Home_Core
 
-class CorpusCore( HomeCore ):
+class Corpus_Core( Home_Core ):
 	def __init__( self, request, response, corpus_db ):
-		super( CorpusCore, self ).__init__( request, response )
+		super( Corpus_Core, self ).__init__( request, response )
 		self.db = corpus_db.db
 	
 	def GetDocLimits(self):

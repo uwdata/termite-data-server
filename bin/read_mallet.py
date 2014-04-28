@@ -3,21 +3,19 @@
 
 import sys
 sys.path.append("web2py")
-sys.path.append("bin/modules")
 
 import argparse
 import logging
 import os
 import shutil
 
-from modules.db.Corpus_DB import Corpus_DB
-from modules.db.LDA_DB import LDA_DB
-from modules.db.ComputeCorpus import ComputeCorpus
-from modules.db.ComputeLDA import ComputeLDA
-
-from modules.apps.CreateApp import CreateApp
-from modules.apps.SplitSentences import SplitSentences
-from modules.lda_readers.MalletReader import MalletReader
+from apps.CreateApp import CreateApp
+from apps.SplitSentences import SplitSentences
+from db.Corpus_DB import Corpus_DB
+from db.Corpus_ComputeStats import Corpus_ComputeStats
+from db.LDA_DB import LDA_DB
+from db.LDA_ComputeStats import LDA_ComputeStats
+from readers.MalletReader import MalletReader
 
 def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )
@@ -57,7 +55,7 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 			# Compute derived-statistics about the corpus
 			db_path = app.GetDatabasePath()
 			with Corpus_DB(db_path, isInit=True) as corpus_db:
-				computer = ComputeCorpus( corpus_db, app_corpus_filename, app_sentences_filename )
+				computer = Corpus_ComputeStats( corpus_db, app_corpus_filename, app_sentences_filename )
 				computer.Execute()
 			
 				# Mark 'corpus' as available
@@ -72,7 +70,7 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 				with LDA_DB(db_path, isInit=True) as lda_db:
 					reader = MalletReader( lda_db, app_model_path )
 					reader.Execute()
-					computer = ComputeLDA( lda_db )
+					computer = LDA_ComputeStats( lda_db )
 					computer.Execute()
 				
 					# Mark 'lda' as available

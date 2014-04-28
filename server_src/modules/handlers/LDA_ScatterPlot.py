@@ -2,11 +2,11 @@
 
 import os
 import json
-from core import TermiteCore
+from handlers import TermiteCore
 
-class ScatterPlot( TermiteCore ):
+class LDA_ScatterPlot( TermiteCore ):
 	def __init__( self, request, response ):
-		super( ScatterPlot, self ).__init__( request, response )
+		super( LDA_ScatterPlot, self ).__init__( request, response )
 	
 	def GetParam( self, key ):
 		if key == 'docOffset':
@@ -154,7 +154,7 @@ class ScatterPlot( TermiteCore ):
 		docMaxCount = len(fullTable)
 		
 		self.content.update({
-			'ScatterPlot' : table,
+			'LDA_ScatterPlot' : table,
 			'Axes' : header,
 			'AvailableXDims' : xDimensions,
 			'AvailableYDims' : yDimensions

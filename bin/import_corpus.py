@@ -3,12 +3,10 @@
 
 import sys
 sys.path.append("web2py")
-sys.path.append("bin/modules")
 
 import argparse
 import os
-
-from modules.db.Corpus_DB import Corpus_DB
+from db.Corpus_DB import Corpus_DB
 
 def ImportCorpus(corpus_filename_or_folder, database_path):
 	database_filename = '{}/corpus.db'.format(database_path)

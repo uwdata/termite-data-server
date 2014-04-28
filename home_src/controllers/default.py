@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from core.HomeCore import HomeCore
+from handlers.Home_Core import Home_Core
 
 def index():
-	core = HomeCore(request, response)
-	return core.GenerateResponse()
+	handler = Home_Core(request, response)
+	return handler.GenerateResponse()

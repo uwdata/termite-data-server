@@ -4,7 +4,7 @@
 import argparse
 import logging
 import os
-from modules.topic_models.TreeTM import BuildLDA, RefineLDA
+from modellers.TreeTM import BuildLDA, RefineLDA
 
 def TrainTreeTM( corpus_path, model_path, token_regex, num_topics, num_iters, is_quiet, force_overwrite, resume_training ):
 	logger = logging.getLogger( 'termite' )

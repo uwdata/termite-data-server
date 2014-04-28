@@ -4,7 +4,7 @@
 import argparse
 import logging
 import os
-from modules.topic_models.GensimLDA import BuildLDA
+from modellers.GensimLDA import BuildLDA
 
 def TrainGensim( corpus_path, model_path, token_regex, num_topics, num_passes, is_quiet, force_overwrite ):
 	logger = logging.getLogger( 'termite' )
