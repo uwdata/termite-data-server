@@ -158,14 +158,14 @@ class ITM_GroupInBox(Home_Core):
 		})
 
 	def LoadTopicCovariance( self ):
-		topicCount = self.ldaDB(self.ldaDB.topics).count()
-		table = self.ldaDB.topic_covariance
-		rows = self.ldaDB().select( table.ALL, orderby = table.rank )
-		data = [ [0.0] * topicCount for _ in range(topicCount) ]
-		for row in rows:
-			data[row.first_topic_index][row.second_topic_index] = row.value
+		query = """SELECT first_topic_index AS source, second_topic_index AS target, value
+		FROM {MATRIX} AS matrix
+		WHERE source != target""".format(MATRIX=self.ldaDB.topic_covariance)
+		rows = self.ldaDB.executesql(query, as_dict=True)
+		for index, row in enumerate(rows):
+			row['rank'] = index+1
 		self.content.update({
-			'TopicCovariance' : data
+			'TopicCovariance' : rows
 		})
 	
 	def CreateTempVocabTable( self ):
@@ -190,6 +190,8 @@ class ITM_GroupInBox(Home_Core):
 		ORDER BY matrix.rank
 		LIMIT 2500""".format(MATRIX=self.corpusDB.term_pmi, VOCAB=self.corpusDB.vocab)
 		rows = self.corpusDB.executesql(query, as_dict=True)
+		for index, row in enumerate(rows):
+			row['rank'] = index+1
 		self.content.update({
 			'TermPMI' : rows
 		})
@@ -202,6 +204,8 @@ class ITM_GroupInBox(Home_Core):
 		ORDER BY matrix.rank
 		LIMIT 2500""".format(MATRIX=self.corpusDB.sentences_pmi, VOCAB=self.corpusDB.vocab)
 		rows = self.corpusDB.executesql(query, as_dict=True)
+		for index, row in enumerate(rows):
+			row['rank'] = index+1
 		self.content.update({
 			'SentencePMI' : rows
 		})
