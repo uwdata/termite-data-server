@@ -33,7 +33,15 @@ class LDA_Core(Home_Core):
 			'topicIndex' : topicIndex
 		})
 		return topicIndex
-	
+
+	def LoadVocab(self):
+		table = self.db.terms
+		rows = self.db().select( table.term_text, orderby = table.rank )
+		data = [ row.term_text for row in rows ]
+		self.content.update({
+			'Vocab' : data,
+		})
+
 	def LoadTerms(self):
 		term_limits = self.GetTermLimits()
 		table = self.db.terms

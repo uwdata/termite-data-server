@@ -10,6 +10,12 @@ def index():
 		handler = LDA_Core(request, response, lda_db)
 	return handler.GenerateResponse()
 
+def Vocab():
+	with LDA_DB() as lda_db:
+		handler = LDA_Core(request, response, lda_db)
+		handler.LoadVocab()
+	return handler.GenerateResponse()
+	
 def TermIndex():
 	with LDA_DB() as lda_db:
 		handler = LDA_Core(request, response, lda_db)

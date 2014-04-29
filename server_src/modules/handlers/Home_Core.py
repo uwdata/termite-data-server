@@ -81,6 +81,7 @@ class Home_Core(object):
 			return None
 		if model == 'lda':
 			return [
+				'Vocab',
 				'DocIndex',
 				'TermIndex',
 				'TopicIndex',
