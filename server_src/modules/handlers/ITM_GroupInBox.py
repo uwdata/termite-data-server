@@ -143,7 +143,7 @@ class ITM_GroupInBox(Home_Core):
 		data = []
 		self.vocab = set()
 		for topicIndex in range(topicCount):
-			query = """SELECT matrix.value AS freq, terms.term_text AS term
+			query = """SELECT matrix.value AS value, terms.term_text AS term
 			FROM {MATRIX} AS matrix
 			INNER JOIN {TERMS} AS terms ON matrix.term_index = terms.term_index
 			WHERE matrix.topic_index = {TOPIC_INDEX}
