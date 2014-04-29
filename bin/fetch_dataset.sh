@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! -d "server_src" ] || [ $# -lt 1 ]
+if [ ! -d "bin" ] || [ $# -lt 1 ]
 then
 	echo "Usage: bin/fetch_dataset.sh"
 	echo "    Download a demonstration dataset."

@@ -3,7 +3,7 @@
 EXTERNALS_PATH=externals
 TOOLS_PATH=tools
 
-if [ ! -d "server_src" ]
+if [ ! -d "bin" ]
 then
 	echo "Usage: bin/setup_corenlp.sh"
 	echo "    Download and set up Stanford CoreNLP tools."

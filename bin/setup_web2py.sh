@@ -4,7 +4,7 @@ EXTERNALS_PATH=externals
 WEB2PY_PATH=web2py
 APPS_PATH=apps
 
-if [ ! -d "server_src" ]
+if [ ! -d "bin" ]
 then
 	echo "Usage: bin/setup_web2py.sh"
 	echo "    Download and set up the web2py framework."
