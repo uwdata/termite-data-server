@@ -182,7 +182,7 @@ class ITM_GroupInBox(Home_Core):
 		pass
 
 	def LoadTermPMI( self ):
-		query = """SELECT ref1.term_text AS first_term, ref2.term_text AS second_term, matrix.value
+		query = """SELECT ref1.term_text AS source, ref2.term_text AS target, matrix.value
 		FROM {MATRIX} AS matrix
 		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
 		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
@@ -194,7 +194,7 @@ class ITM_GroupInBox(Home_Core):
 		})
 
 	def LoadSentencePMI( self ):
-		query = """SELECT ref1.term_text AS first_term, ref2.term_text AS second_term, matrix.value
+		query = """SELECT ref1.term_text AS source, ref2.term_text AS target, matrix.value
 		FROM {MATRIX} AS matrix
 		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
 		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
