@@ -153,7 +153,8 @@ class ITM_GroupInBox(Home_Core):
 			data.append(rows)
 			self.vocab.update(row['term'] for row in rows)
 		self.content.update({
-			'TopTermsPerTopic' : data
+			'TopTermsPerTopic' : data,
+			'TopicCount' : topicCount
 		})
 
 	def LoadTopicCovariance( self ):
