@@ -4,6 +4,9 @@
 import sys
 sys.path.append("web2py")
 
+import csv
+csv.field_size_limit(sys.maxsize)
+
 import argparse
 from db.Corpus_DB import Corpus_DB
 
