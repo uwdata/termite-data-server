@@ -22,7 +22,6 @@ class Corpus_ComputeStats():
 		self.minDocFreq = int(corpus_db.GetOption('min_doc_freq'))
 		self.maxTermCount = int(corpus_db.GetOption('max_term_count'))
 		self.maxCoTermCount = int(corpus_db.GetOption('max_co_term_count'))
-		self.maxCoTermPercetage = float(corpus_db.GetOption('max_co_term_percentage'))
 		self.stopwords = self.LoadStopwords(STOPWORDS if STOPWORDS is not None else Corpus_ComputeStats.DEFAULT_STOPWORDS)
 	
 	def Execute(self):
@@ -170,7 +169,6 @@ class Corpus_ComputeStats():
 		termDocFreqs = termStats['term_doc_freqs']
 		keys = [ term for term in termFreqs if termFreqs[term] >= minFreq and termDocFreqs[term] >= minDocFreq ]
 		keys = sorted( keys, key = lambda x : -termFreqs[x] )
-		self.maxCoTermCount = min( self.maxCoTermCount, round(self.maxCoTermPercetage * len(keys) * len(keys)) )
 		keys = keys[:maxTermCount]
 		self.vocab = frozenset(keys)
 		self.termLookup = { key : index for index, key in enumerate(keys) }
