@@ -5,7 +5,7 @@ import argparse
 import subprocess
 
 DEFAULT_DATASET = 'infovis'
-DATASETS = [ DEFAULT_DATASET, '20newsgroups', 'nsfgrants', 'nsf25k', 'nsf10k', 'nsf1k', 'poliblogs', 'fomc' ]
+DATASETS = [ DEFAULT_DATASET, '20newsgroups', 'nsfgrants', 'nsf25k', 'nsf10k', 'nsf1k', 'poliblogs', 'fomc', 'CR_financial_collapse', 'CR_stock_market_plunge', 'FCIC_final_report', 'FCIC_first_hearing', 'FR_federal_open_market_committee', 'FR_monetary_policy_hearings' ]
 
 DEFAULT_MODEL = 'mallet'
 MODELS = [ DEFAULT_MODEL, 'treetm', 'stmt', 'stm', 'gensim' ]

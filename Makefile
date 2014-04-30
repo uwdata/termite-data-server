@@ -55,25 +55,37 @@ demos:
 	./demo.py poliblogs stm
 	./demo.py infovis treetm
 
-all-demos:
-	./demo.py infovis mallet
-	./demo.py infovis gensim
-	./demo.py infovis treetm
-	./demo.py nsf1k mallet
-	./demo.py nsf1k treetm
-	./demo.py nsf10k mallet
-	./demo.py nsf10k treetm
-	./demo.py nsf25k mallet
-	./demo.py nsf25k treetm
+more-demos:
 	./demo.py poliblogs mallet
-	./demo.py poliblogs gensim
-	./demo.py poliblogs stm
 	./demo.py fomc mallet
-	./demo.py fomc gensim
-	./demo.py fomc stm
 	./demo.py 20newsgroups mallet
-	./demo.py 20newsgroups gensim
+
+nsf-demos:
+	./demo.py nsf1k mallet
+	./demo.py nsf10k mallet
+	./demo.py nsf25k mallet
+
+cappp-demos:
+	./demo.py CR_financial_collapse
+	./demo.py CR_stock_market_plunge
+	./demo.py FCIC_final_report
+	./demo.py FCIC_first_hearing
+	./demo.py FR_federal_open_market_committee
+	./demo.py FR_monetary_policy_hearings
+
+itm-demos:
+	./demo.py nsf1k treetm
+	./demo.py nsf10k treetm
+	./demo.py nsf25k treetm
+
+stm-demos:
+	./demo.py poliblogs stm
+	./demo.py fomc stm
+
+large-demos:
 	./demo.py nsfgrants mallet
+	./demo.py congress_bills
+	./demo.py major_legislations
 
 ################################################################################
 # Other utilities
