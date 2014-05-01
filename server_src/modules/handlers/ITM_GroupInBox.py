@@ -103,21 +103,21 @@ class ITM_GroupInBox(Home_Core):
 				'RemoveTerms' : removeTerms
 			})
 		else:
-			RefineLDA( app_model_path, numIters = iters, 
-				mustLinks = mustLinks, cannotLinks = cannotLinks, keepTerms = keepTerms, removeTerms = removeTerms )
-			with LDA_DB( isReset = True ) as lda_db:
-				reader = TreeTMReader( lda_db, app_model_path )
-				reader.Execute()
-				computer = LDA_ComputeStats( lda_db )
-				computer.Execute()
-			iterCount = self.GetIterCount(app_model_path)
-			self.content.update({
-				'IterCount' : iterCount,
-				'MustLinks' : mustLinks,
-				'CannotLinks' : cannotLinks,
-				'KeepTerms' : keepTerms,
-				'RemoveTerms' : removeTerms
-			})
+			RefineLDA( app_model_path, numIters = iters, mustLinks = mustLinks, cannotLinks = cannotLinks, keepTerms = keepTerms, removeTerms = removeTerms )
+			with Corpus_DB() as corpsu_db:
+				with LDA_DB( isReset = True ) as lda_db:
+					reader = TreeTMReader( lda_db, app_model_path )
+					reader.Execute()
+					computer = LDA_ComputeStats( lda_db, corpus_db )
+					computer.Execute()
+				iterCount = self.GetIterCount(app_model_path)
+				self.content.update({
+					'IterCount' : iterCount,
+					'MustLinks' : mustLinks,
+					'CannotLinks' : cannotLinks,
+					'KeepTerms' : keepTerms,
+					'RemoveTerms' : removeTerms
+				})
 
 ################################################################################
 
@@ -134,7 +134,7 @@ class ITM_GroupInBox(Home_Core):
 		self.LoadTopicCovariance()
 		self.CreateTempVocabTable()
 		self.LoadTermPMI()
-		self.LoadSentencePMI()
+#		self.LoadSentencePMI()
 		self.DeleteTempVocabTable()
 		
 	def LoadTopTermsPerTopic( self ):
@@ -188,7 +188,7 @@ class ITM_GroupInBox(Home_Core):
 		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
 		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
 		ORDER BY matrix.rank
-		LIMIT 2500""".format(MATRIX=self.corpusDB.term_pmi, VOCAB=self.corpusDB.vocab)
+		LIMIT 2000""".format(MATRIX=self.corpusDB.term_pmi, VOCAB=self.corpusDB.vocab)
 		rows = self.corpusDB.executesql(query, as_dict=True)
 		for index, row in enumerate(rows):
 			row['rank'] = index+1
@@ -202,7 +202,7 @@ class ITM_GroupInBox(Home_Core):
 		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
 		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
 		ORDER BY matrix.rank
-		LIMIT 2500""".format(MATRIX=self.corpusDB.sentences_pmi, VOCAB=self.corpusDB.vocab)
+		LIMIT 2000""".format(MATRIX=self.corpusDB.sentences_pmi, VOCAB=self.corpusDB.vocab)
 		rows = self.corpusDB.executesql(query, as_dict=True)
 		for index, row in enumerate(rows):
 			row['rank'] = index+1

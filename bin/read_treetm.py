@@ -15,6 +15,8 @@ from db.Corpus_DB import Corpus_DB
 from db.Corpus_ComputeStats import Corpus_ComputeStats
 from db.LDA_DB import LDA_DB
 from db.LDA_ComputeStats import LDA_ComputeStats
+from db.ITM_DB import ITM_DB
+from db.ITM_ComputeStats import ITM_ComputeStats
 from readers.TreeTMReader import TreeTMReader
 
 def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet, force_overwrite ):
@@ -57,9 +59,6 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 			with Corpus_DB(db_path, isInit=True) as corpus_db:
 				computer = Corpus_ComputeStats( corpus_db, app_corpus_filename, app_sentences_filename )
 				computer.Execute()
-					
-				# Mark 'corpus' as available
-				corpus_db.AddModel('corpus', 'Text corpus')
 			
 				# Import model
 				app_model_path = '{}/treetm'.format( app.GetDataPath() )
@@ -70,13 +69,11 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 				with LDA_DB(db_path, isInit=True) as lda_db:
 					reader = TreeTMReader( lda_db, app_model_path )
 					reader.Execute()
-					computer = LDA_ComputeStats( lda_db )
+					computer = LDA_ComputeStats( lda_db, corpus_db )
 					computer.Execute()
-				
-					# Mark 'lda' as available
-					corpus_db.AddModel('lda', 'ITM topic model')
-					corpus_db.AddModel('itm', 'interactive topic modeling')
-				
+					with ITM_DB(db_path, isInit=True) as itm_db:
+						computer = ITM_ComputeStats( itm_db, corpus_db )
+						computer.Execute()
 	else:
 		logger.info( '    Already available: %s', app_path )
 

@@ -5,9 +5,11 @@ import logging
 
 class LDA_ComputeStats():
 
-	def __init__(self, lda_db):
+	def __init__(self, lda_db, corpus_db):
 		self.logger = logging.getLogger('termite')
 		self.db = lda_db.db
+		self.lda_db = lda_db
+		self.corpus_db = corpus_db
 		
 		self.maxCoTopicCount = int(lda_db.GetOption('max_co_topic_count'))
 
@@ -18,6 +20,7 @@ class LDA_ComputeStats():
 		self.ReadDocTopicMatrix()
 		self.ComputeTopicCooccurrences()
 		self.ComputeTopicCovariance()
+		self.corpus_db.AddModel('lda', 'LDA model')
 	
 	def ReadDocCount(self):
 		count = self.db(self.db.docs).count()

@@ -57,9 +57,6 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 			with Corpus_DB(db_path, isInit=True) as corpus_db:
 				computer = Corpus_ComputeStats( corpus_db, app_corpus_filename, app_sentences_filename )
 				computer.Execute()
-			
-				# Mark 'corpus' as available
-				corpus_db.AddModel('corpus', 'Text corpus')
 				
 				# Import model
 				app_model_path = '{}/mallet-lda'.format( app.GetDataPath() )
@@ -70,12 +67,8 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 				with LDA_DB(db_path, isInit=True) as lda_db:
 					reader = MalletReader( lda_db, app_model_path )
 					reader.Execute()
-					computer = LDA_ComputeStats( lda_db )
-					computer.Execute()
-				
-					# Mark 'lda' as available
-					corpus_db.AddModel('lda', 'LDA model')
-			
+					computer = LDA_ComputeStats( lda_db, corpus_db )
+					computer.Execute()			
 	else:
 		logger.info( '    Already available: %s', app_path )
 

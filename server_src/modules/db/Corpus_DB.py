@@ -15,8 +15,10 @@ class Corpus_DB():
 		'token_regex' : r'\w{3,}',
 		'min_freq' : 5,
 		'min_doc_freq' : 3,
-		'max_term_count' : 4000,
-		'max_co_term_count' : 160000
+		'max_freq_count'    :     4000,
+		'max_co_freq_count' :   160000,
+		'max_g2_count'      :  1600000,
+		'max_pmi_count'     : 16000000
 	}
 	
 	def __init__(self, path = None, isInit = False, isImport = False, isReset = False):
@@ -81,9 +83,9 @@ class Corpus_DB():
 		)
 
 	def AddModel(self, model_key, model_desc):
-		model = self.db( self.db.models.model_key == model_key ).select().first()
-		if model:
-			self.db.update_record( model_desc = model_desc )
+		keyDesc = self.db( self.db.models.model_key == model_key ).select().first()
+		if keyDesc:
+			keyDesc.update_record( model_desc = model_desc )
 		else:
 			self.db.models.insert( model_key = model_key, model_desc = model_desc )
 
