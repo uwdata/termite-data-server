@@ -16,8 +16,7 @@ class Corpus_DB():
 		'min_freq' : 5,
 		'min_doc_freq' : 3,
 		'max_term_count' : 4000,
-		'max_co_term_count' : 160000,
-		'max_co_term_percentage' : 0.1
+		'max_co_term_count' : 160000
 	}
 	
 	def __init__(self, path = None, isInit = False, isImport = False, isReset = False):

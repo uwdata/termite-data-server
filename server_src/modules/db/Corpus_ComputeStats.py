@@ -25,6 +25,12 @@ class Corpus_ComputeStats():
 		self.stopwords = self.LoadStopwords(STOPWORDS if STOPWORDS is not None else Corpus_ComputeStats.DEFAULT_STOPWORDS)
 	
 	def Execute(self):
+		self.logger.info( 'Corpus statistics' )
+		self.logger.info( '          token_regex = %s', self.tokenRegexStr )
+		self.logger.info( '             min_freq = %d', self.minFreq )
+		self.logger.info( '         min_doc_freq = %d', self.minDocFreq )
+		self.logger.info( '       max_term_count = %d', self.maxTermCount )
+		self.logger.info( '    max_co_term_count = %d', self.maxCoTermCount )
 		self.logger.info( 'Computing document-level statistics...' )
 		self.ComputeAndSaveDocumentLevelStatistics()
 		self.logger.info( 'Computing sentence-level term statistics...' )
