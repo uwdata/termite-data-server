@@ -1,5 +1,11 @@
 {{extend 'template.html'}}
-{{include 'dataset.html'}}
+
+<div class="head">
+	<div class="title">Termite Data Server</div>
+	{{include 'select_server.html'}}
+	{{include 'select_dataset.html'}}
+	{{include 'select_model.html'}}
+</div>
 
 <div class="body">
 	<div class="heading">Server Response
