@@ -3,6 +3,7 @@
 import os
 import json
 from json import encoder as JsonEncoder
+from db.Corpus_DB import Corpus_DB
 from db.LDA_DB import LDA_DB
 from db.LDA_ComputeStats import LDA_ComputeStats
 from handlers.Home_Core import Home_Core
@@ -106,7 +107,7 @@ class ITM_GroupInBox(Home_Core):
 			})
 		else:
 			RefineLDA( app_model_path, numIters = iters, mustLinks = mustLinks, cannotLinks = cannotLinks, keepTerms = keepTerms, removeTerms = removeTerms )
-			with Corpus_DB() as corpsu_db:
+			with Corpus_DB() as corpus_db:
 				with LDA_DB( isReset = True ) as lda_db:
 					reader = TreeTMReader( lda_db, app_model_path )
 					reader.Execute()

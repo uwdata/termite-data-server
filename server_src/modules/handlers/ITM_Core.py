@@ -98,18 +98,18 @@ class ITM_Core(Home_Core):
 				'RemoveTerms' : removeTerms
 			})
 		else:
-			RefineLDA( app_model_path, numIters = iters, 
-				mustLinks = mustLinks, cannotLinks = cannotLinks, keepTerms = keepTerms, removeTerms = removeTerms )
-			with LDA_DB( isReset = True ) as lda_db:
-				reader = TreeTMReader( lda_db, app_model_path )
-				reader.Execute()
-				computer = LDA_ComputeStats( lda_db )
-				computer.Execute()
-			self.content.update({
-				'IterCount' : iterCount,
-				'Action' : action,
-				'MustLinks' : mustLinks,
-				'CannotLinks' : cannotLinks,
-				'KeepTerms' : keepTerms,
-				'RemoveTerms' : removeTerms
-			})
+			RefineLDA( app_model_path, numIters = iters, mustLinks = mustLinks, cannotLinks = cannotLinks, keepTerms = keepTerms, removeTerms = removeTerms )
+			with Corpus_DB() as corpus_db:
+				with LDA_DB( isReset = True ) as lda_db:
+					reader = TreeTMReader( lda_db, app_model_path )
+					reader.Execute()
+					computer = LDA_ComputeStats( lda_db, corpus_db )
+					computer.Execute()
+				self.content.update({
+					'IterCount' : iterCount,
+					'Action' : action,
+					'MustLinks' : mustLinks,
+					'CannotLinks' : cannotLinks,
+					'KeepTerms' : keepTerms,
+					'RemoveTerms' : removeTerms
+				})

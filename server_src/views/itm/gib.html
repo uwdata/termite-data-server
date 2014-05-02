@@ -31,28 +31,28 @@
 		</p>
 		<p>
 			<span class="key">mustLinks = </span>
-			<span class="value">{{MakeParamTextArea('mustLinks', json.dumps(MustLinks,encoding='utf-8'))}}</span>
+			<span class="value">{{MakeParamTextArea('mustLinks', json.dumps(MustLinks,encoding='utf-8') if len(MustLinks) > 0 else '')}}</span>
 		</p>
 		<p class="desc">
 			A list of list of words
 		</p>
 		<p>
 			<span class="key">cannotLinks = </span>
-			<span class="value">{{MakeParamTextArea('cannotLinks', json.dumps(CannotLinks,encoding='utf-8'))}}</span>
+			<span class="value">{{MakeParamTextArea('cannotLinks', json.dumps(CannotLinks,encoding='utf-8') if len(CannotLinks) > 0 else '')}}</span>
 		</p>
 		<p class="desc">
 			A list of list of words
 		</p>
 		<p>
 			<span class="key">keepTerms = </span>
-			<span class="value">{{MakeParamTextArea('keepTerms', json.dumps(KeepTerms,encoding='utf-8'))}}</span>
+			<span class="value">{{MakeParamTextArea('keepTerms', json.dumps(KeepTerms,encoding='utf-8') if len(KeepTerms) > 0 else '')}}</span>
 		</p>
 		<p class="desc">
 			A dict with integer keys and a list of words as values
 		</p>
 		<p>
 			<span class="key">removeTerms = </span>
-			<span class="value">{{MakeParamTextArea('removeTerms', json.dumps(RemoveTerms,encoding='utf-8'))}}</span>
+			<span class="value">{{MakeParamTextArea('removeTerms', json.dumps(RemoveTerms,encoding='utf-8') if len(RemoveTerms) > 0 else '')}}</span>
 		</p>
 		<p class="desc">
 			A list of words
