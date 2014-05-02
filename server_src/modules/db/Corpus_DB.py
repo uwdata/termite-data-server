@@ -15,10 +15,9 @@ class Corpus_DB():
 		'token_regex' : r'\w{3,}',
 		'min_freq' : 5,
 		'min_doc_freq' : 3,
-		'max_freq_count'    :     4000,
-		'max_co_freq_count' :   160000,
-		'max_g2_count'      :  1600000,
-		'max_pmi_count'     : 16000000
+		'max_freq_count'    :   4000,
+		'max_co_freq_count' : 160000,
+		'max_g2_count'      : 160000
 	}
 	
 	def __init__(self, path = None, isInit = False, isImport = False, isReset = False):
@@ -58,8 +57,11 @@ class Corpus_DB():
 			migrate = self.isImport
 		)
 		for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
-			if self.db(self.db.options.key == key).count() == 0:
-				self.db.options.insert(key = key, value = value)
+			keyValue = self.db( self.db.options.key == key ).select().first()
+			if keyValue:
+				keyValue.update_record( value = value )
+			else:
+				self.db.options.insert( key = key, value = value )
 	
 	def SetOption(self, key, value):
 		keyValue = self.db( self.db.options.key == key ).select().first()
@@ -403,18 +405,6 @@ class Corpus_DB():
 			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_co_probs_value ON term_co_probs (value);' )
 			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_co_probs_rank ON term_co_probs (rank);' )
 
-		self.db.define_table( 'term_pmi',
-			Field( 'first_term_index' , 'integer', required = True, default = -1 ),
-			Field( 'second_term_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS term_pmi_indexes ON term_pmi (first_term_index, second_term_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_pmi_value ON term_pmi (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_pmi_rank ON term_pmi (rank);' )
-
 		self.db.define_table( 'term_g2',
 			Field( 'first_term_index' , 'integer', required = True, default = -1 ),
 			Field( 'second_term_index', 'integer', required = True, default = -1 ),
@@ -452,18 +442,6 @@ class Corpus_DB():
 			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_co_probs_value ON sentences_co_probs (value);' )
 			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_co_probs_rank ON sentences_co_probs (rank);' )
 
-		self.db.define_table( 'sentences_pmi',
-			Field( 'first_term_index' , 'integer', required = True, default = -1 ),
-			Field( 'second_term_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS sentences_pmi_indexes ON sentences_pmi (first_term_index, second_term_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_pmi_value ON sentences_pmi (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_pmi_rank ON sentences_pmi (rank);' )
-
 		self.db.define_table( 'sentences_g2',
 			Field( 'first_term_index', 'integer', required = True, default = -1 ),
 			Field( 'second_term_index', 'integer', required = True, default = -1 ),
@@ -485,11 +463,9 @@ class Corpus_DB():
 		self.db.executesql( 'DELETE FROM term_doc_freqs;' )
 		self.db.executesql( 'DELETE FROM term_co_freqs;' )
 		self.db.executesql( 'DELETE FROM term_co_probs;' )
-		self.db.executesql( 'DELETE FROM term_pmi;' )
 		self.db.executesql( 'DELETE FROM term_g2;' )
 		self.db.executesql( 'DELETE FROM sentences_co_freqs;' )
 		self.db.executesql( 'DELETE FROM sentences_co_probs;' )
-		self.db.executesql( 'DELETE FROM sentences_pmi;' )
 		self.db.executesql( 'DELETE FROM sentences_g2;' )
 
 ################################################################################

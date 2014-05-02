@@ -134,7 +134,7 @@ class ITM_GroupInBox(Home_Core):
 		self.LoadTopicCovariance()
 		self.CreateTempVocabTable()
 		self.LoadTermPMI()
-#		self.LoadSentencePMI()
+		self.LoadSentencePMI()
 		self.DeleteTempVocabTable()
 		
 	def LoadTopTermsPerTopic( self ):
@@ -182,30 +182,57 @@ class ITM_GroupInBox(Home_Core):
 	def DeleteTempVocabTable( self ):
 		pass
 
-	def LoadTermPMI( self ):
-		query = """SELECT ref1.term_text AS source, ref2.term_text AS target, matrix.value
+	def GetMarginalProbs( self, table ):
+		query = """SELECT probs.term_index AS term_index, probs.value AS term_prob
+		FROM {PROBS} AS probs
+		INNER JOIN {VOCAB} AS vocab ON probs.term_index = vocab.term_index
+		WHERE term_prob > 0""".format(PROBS = table, VOCAB = self.corpusDB.vocab)
+		rows = self.corpusDB.executesql( query, as_dict = True )
+		probs = { row['term_index'] : row['term_prob'] for row in rows }
+		return probs
+	
+	def GetSparseJointProbs( self, table ):
+		query = """SELECT ref1.term_text AS source, ref2.term_text AS target, matrix.first_term_index AS source_index, matrix.second_term_index AS target_index, matrix.value AS value
 		FROM {MATRIX} AS matrix
 		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
 		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
 		ORDER BY matrix.rank
-		LIMIT 2000""".format(MATRIX=self.corpusDB.term_pmi, VOCAB=self.corpusDB.vocab)
-		rows = self.corpusDB.executesql(query, as_dict=True)
-		for index, row in enumerate(rows):
-			row['rank'] = index+1
+		LIMIT 2000""".format(MATRIX = table, VOCAB = self.corpusDB.vocab)
+		rows = self.corpusDB.executesql( query, as_dict = True )
+		return rows
+	
+	def ComputePMI( self, marginalProbs, sparseJointProbs ):
+		data = []
+		for d in sparseJointProbs:
+			source = d['source_index']
+			target = d['target_index']
+			value = d['value']
+			if source in marginalProbs:
+				if target in marginalProbs:
+					pmi = value / marginalProbs[source] / marginalProbs[target]
+					data.append({
+						'source' : d['source'],
+						'target' : d['target'],
+						'value' : pmi,
+						'rank' : 0
+					})
+		data.sort( key = lambda d : -d['value'] )
+		for index, d in enumerate(data):
+			d['rank'] = index+1
+		return data
+		
+	def LoadTermPMI(self):
+		marginals = self.GetMarginalProbs( self.corpusDB.term_probs )
+		joints = self.GetSparseJointProbs( self.corpusDB.term_co_probs )
+		rows = self.ComputePMI( marginals, joints )
 		self.content.update({
 			'TermPMI' : rows
 		})
 
-	def LoadSentencePMI( self ):
-		query = """SELECT ref1.term_text AS source, ref2.term_text AS target, matrix.value
-		FROM {MATRIX} AS matrix
-		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
-		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
-		ORDER BY matrix.rank
-		LIMIT 2000""".format(MATRIX=self.corpusDB.sentences_pmi, VOCAB=self.corpusDB.vocab)
-		rows = self.corpusDB.executesql(query, as_dict=True)
-		for index, row in enumerate(rows):
-			row['rank'] = index+1
+	def LoadSentencePMI(self):
+		marginals = self.GetMarginalProbs( self.corpusDB.term_probs )
+		joints = self.GetSparseJointProbs( self.corpusDB.sentences_co_probs )
+		rows = self.ComputePMI( marginals, joints )
 		self.content.update({
 			'SentencePMI' : rows
 		})

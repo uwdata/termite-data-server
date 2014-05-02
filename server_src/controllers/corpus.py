@@ -63,12 +63,6 @@ def TermCoProbs():
 		handler.LoadTermCoProbs()
 	return handler.GenerateResponse()
 
-def TermPMI():
-	with Corpus_DB() as corpus_db:
-		handler = Corpus_Core(request, response, corpus_db)
-		handler.LoadTermPMI()
-	return handler.GenerateResponse()
-
 def TermG2():
 	with Corpus_DB() as corpus_db:
 		handler = Corpus_Core(request, response, corpus_db)
@@ -85,12 +79,6 @@ def SentenceCoProbs():
 	with Corpus_DB() as corpus_db:
 		handler = Corpus_Core(request, response, corpus_db)
 		handler.LoadSentenceCoProbs()
-	return handler.GenerateResponse()
-
-def SentencePMI():
-	with Corpus_DB() as corpus_db:
-		handler = Corpus_Core(request, response, corpus_db)
-		handler.LoadSentencePMI()
 	return handler.GenerateResponse()
 
 def SentenceG2():

@@ -6,6 +6,7 @@ from gluon.sql import DAL, Field
 class ITM_DB():
 	FILENAME = 'itm.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
+	DEFAULT_OPTIONS = {}
 	
 	def __init__(self, path = None, isInit = False, isReset = False):
 		self.isInit = isInit

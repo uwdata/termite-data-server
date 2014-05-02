@@ -106,11 +106,9 @@ class Home_Core(object):
 				'TermProbs',
 				'TermCoFreqs',
 				'TermCoProbs',
-				'TermPMI',
 				'TermG2',
 				'SentenceCoFreqs',
 				'SentenceCoProbs',
-				'SentencePMI',
 				'SentenceG2'
 			]
 		return []

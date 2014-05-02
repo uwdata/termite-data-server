@@ -151,9 +151,6 @@ class Corpus_Core( Home_Core ):
 	def LoadTermCoProbs( self ):
 		self.LoadCoTermStats( self.db.term_co_probs, 'TermCoProbs' )
 
-	def LoadTermPMI( self ):
-		self.LoadCoTermStats( self.db.term_pmi, 'TermPMI' )
-
 	def LoadTermG2( self ):
 		self.LoadCoTermStats( self.db.term_g2, 'TermG2' )
 
@@ -162,9 +159,6 @@ class Corpus_Core( Home_Core ):
 
 	def LoadSentenceCoProbs( self ):
 		self.LoadCoTermStats( self.db.sentences_co_probs, 'SentenceCoProbs' )
-
-	def LoadSentencePMI( self ):
-		self.LoadCoTermStats( self.db.sentences_pmi, 'SentencePMI' )
 
 	def LoadSentenceG2( self ):
 		self.LoadCoTermStats( self.db.sentences_g2, 'SentenceG2' )

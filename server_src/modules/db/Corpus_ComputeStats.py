@@ -23,8 +23,6 @@ class Corpus_ComputeStats():
 		self.minDocFreq = int(self.corpus_db.GetOption('min_doc_freq'))
 		self.maxFreqCount = int(self.corpus_db.GetOption('max_freq_count'))
 		self.maxCoFreqCount = int(self.corpus_db.GetOption('max_co_freq_count'))
-		self.maxG2Count = int(self.corpus_db.GetOption('max_g2_count'))
-		self.maxPMICount = int(self.corpus_db.GetOption('max_pmi_count'))
 		self.stopwords = self.LoadStopwords(STOPWORDS if STOPWORDS is not None else Corpus_ComputeStats.DEFAULT_STOPWORDS)
 	
 	def Execute(self):
@@ -34,8 +32,6 @@ class Corpus_ComputeStats():
 		self.logger.info( '         min_doc_freq = %d', self.minDocFreq )
 		self.logger.info( '       max_freq_count = %d', self.maxFreqCount )
 		self.logger.info( '    max_co_freq_count = %d', self.maxCoFreqCount )
-		self.logger.info( '         max_g2_count = %d', self.maxG2Count )
-		self.logger.info( '        max_pmi_count = %d', self.maxPMICount )
 		self.logger.info( 'Computing document-level statistics...' )
 		self.ComputeAndSaveDocumentLevelStatistics()
 		self.logger.info( 'Computing sentence-level term statistics...' )
@@ -83,7 +79,7 @@ class Corpus_ComputeStats():
 		data.sort( key = lambda x : -x['value'] )
 		for rank, d in enumerate(data):
 			d['rank'] = rank+1
-		return data
+		return data[:self.maxCoFreqCount]
 	
 	def ComputeAndSaveDocumentLevelStatistics(self):
 		reader = self.ReadCorpus( self.corpusFilename )
@@ -111,24 +107,19 @@ class Corpus_ComputeStats():
 		
 		coStats = termCoStats['co_freqs']
 		self.logger.debug( '    Saving term_co_freqs (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
-		rows = self.UnfoldCoStats(coStats)[:self.maxCoFreqCount]
+		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.term_co_freqs.bulk_insert(rows)
 		coStats = termCoStats['co_probs']
 		self.logger.debug( '    Saving term_co_probs (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
-		rows = self.UnfoldCoStats(coStats)[:self.maxCoFreqCount]
+		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.term_co_probs.bulk_insert(rows)
 		coStats = termCoStats['g2']
-		self.logger.debug( '    Saving term_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxG2Count) )
-		rows = self.UnfoldCoStats(coStats)[:self.maxG2Count]
+		self.logger.debug( '    Saving term_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
+		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.term_g2.bulk_insert(rows)
-		coStats = termCoStats['pmi']
-		self.logger.debug( '    Saving term_pmi (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxPMICount) )
-		rows = self.UnfoldCoStats(coStats)[:self.maxPMICount]
-		self.logger.debug( '        inserting %d rows...', len(rows) )
-		self.db.term_pmi.bulk_insert(rows)
 	
 	def ComputeAndSaveSentenceLevelStatistics(self):
 		reader = self.ReadCorpus( self.sentencesFilename )
@@ -138,24 +129,19 @@ class Corpus_ComputeStats():
 
 		coStats = termCoStats['co_freqs']
 		self.logger.debug( '    Saving sentences_co_freqs (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
-		rows = self.UnfoldCoStats(coStats)[:self.maxCoFreqCount]
+		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.sentences_co_freqs.bulk_insert(rows)
 		coStats = termCoStats['co_probs']
 		self.logger.debug( '    Saving sentences_co_probs (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
-		rows = self.UnfoldCoStats(coStats)[:self.maxCoFreqCount]
+		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.sentences_co_probs.bulk_insert(rows)
 		coStats = termCoStats['g2']
-		self.logger.debug( '    Saving sentences_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxG2Count) )
-		rows = self.UnfoldCoStats(coStats)[:self.maxG2Count]
+		self.logger.debug( '    Saving sentences_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
+		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.sentences_g2.bulk_insert(rows)
-		coStats = termCoStats['pmi']
-		self.logger.debug( '    Saving sentences_pmi (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxPMICount) )
-		rows = self.UnfoldCoStats(coStats)[:self.maxPMICount]
-		self.logger.debug( '        inserting %d rows...', len(rows) )
-		self.db.sentences_pmi.bulk_insert(rows)
 	
 	def ComputeTermFreqs(self, corpus):
 		def ComputeFreqs(corpus):
@@ -245,20 +231,6 @@ class Corpus_ComputeStats():
 			jointProbs = { term : { t : f * normalization for t, f in freqs.iteritems() } for term, freqs in jointFreqs.iteritems() }
 			return jointProbs
 		
-		def ComputePMI(marginalProbs, jointProbs):
-			pmi = {}
-			for firstToken, d in jointProbs.iteritems():
-				if firstToken in marginalProbs:
-					firstDenominator = 1.0 / marginalProbs[firstToken] if marginalProbs[firstToken] > 0.0 else 0.0
-					pmi[ firstToken ] = {}
-					for secondToken, prob in d.iteritems():
-						if secondToken in marginalProbs:
-							secondDenominator = 1.0 / marginalProbs[secondToken] if marginalProbs[secondToken] > 0.0 else 0.0
-							pmi[ firstToken ][ secondToken ] = prob * firstDenominator * secondDenominator
-#							if firstToken == 'data' or secondToken == 'data':
-#								print '{} + {} :: {} * {} * {} --> {}'.format( firstToken, secondToken, prob, firstDenominator, secondDenominator, pmi[ firstToken ][ secondToken ] )
-			return pmi
-		
 		def GetBinomial(B_given_A, any_given_A, B_given_notA, any_given_notA):
 			assert B_given_A >= 0
 			assert B_given_notA >= 0
@@ -325,16 +297,12 @@ class Corpus_ComputeStats():
 		# Normalize to create joint probability distribution
 		termCoProbs = NormalizeJointFreqs( termCoFreqs, 1.0 / allCoFreq if allCoFreq > 1.0 else 1.0 )
 		
-		# Compute pointwise mutual information from marginal/joint probability distributions
-		termPMI = ComputePMI( termProbs, termCoProbs )
-		
 		# Compute G2 statistics
 		termG2 = ComputeG2Stats( allFreq, termProbs, termCoProbs )
 		
 		termCoStats = {
 			'co_freqs' : termCoFreqs,
 			'co_probs' : termCoProbs,
-			'pmi' : termPMI,
 			'g2' : termG2
 		}
 		return termCoStats
