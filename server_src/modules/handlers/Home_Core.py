@@ -2,6 +2,7 @@
 
 import os
 import json
+import re
 import urllib
 import cStringIO
 from utils.UnicodeIO import UnicodeReader, UnicodeWriter
@@ -65,10 +66,10 @@ class Home_Core(object):
 		model = self.configs['model']
 		attribute = self.configs['attribute']
 
-		operations = self.GetOperations()
+		operations = self.GetOperations(server)
 		datasets = self.GetDatasets(server)
+		views = self.GetViews(server)
 		models = self.GetModels(server, dataset)
-		views = self.GetViews(server, dataset, model, attribute)
 		attributes = self.GetAttributes(server, dataset, model, attribute)
 		menus = {
 			'server' : server,
@@ -84,18 +85,34 @@ class Home_Core(object):
 		}
 		return menus
 
-	def GetOperations(self):
-		return [
+	def GetOperations(self, server):
+		operations = [
 			{ 'value' : 'dataset', 'name' : 'Upload a new dataset' }
 		]
+		self.configs.update({
+			'AvailableOperations' : operations
+		})
+		return operations
+
+	def GetViews(self, server):
+		views = []
+		self.configs.update({
+			'AvailableVisualizations' : views
+		})
+		return views
 		
-	EXCLUDED_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset' ])
+	EXCLUDE_SYSTEM_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset' ])
+	EXCLUDE_VIS_FOLDERS = frozenset([])
+	EXCLUDE_TEMP_FOLDERS = re.compile(r'^temp_.*$')
 	def IsExcludedDataset(self, folder):
-		if folder in Home_Core.EXCLUDED_FOLDERS:
+		if folder in Home_Core.EXCLUDE_SYSTEM_FOLDERS:
 			return True
-		if folder[:5] == 'temp_':
+		elif folder in Home_Core.EXCLUDE_VIS_FOLDERS:
 			return True
-		return False
+		elif Home_Core.EXCLUDE_TEMP_FOLDERS.match(folder) is not None:
+			return True
+		else:
+			return False
 
 	def GetDatasets(self, server):
 		folders = []
@@ -126,25 +143,6 @@ class Home_Core(object):
 					'AvailableModels' : models
 				})
 		return models
-	
-	def GetViews(self, server, dataset, model, attribute):
-		views = []
-		if not self.IsExcludedDataset(dataset):
-			if model != 'default':
-				if model == 'lda':
-					views = [
-					]
-				if model == 'itm':
-					views = [
-					]
-				if model == 'corpus':
-					views = [
-					]
-				if self.configs['attribute'] == 'index':
-					self.content.update({
-						'AvailableViews' : views
-					})
-		return views
 	
 	def GetAttributes(self, server, dataset, model, attribute):
 		attributes = []
