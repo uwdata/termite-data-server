@@ -17,6 +17,8 @@ class ITM_Core(Home_Core):
 		self.params.update({
 			'action' : action
 		})
+		if action is None or action != 'train':
+			action = ''
 		return action
 
 	def GetIterCount(self, app_model_path):
@@ -31,17 +33,23 @@ class ITM_Core(Home_Core):
 		return iterCount
 
 	def GetIters(self, iterCount):
-		iters = self.GetNonNegativeIntegerParam( 'iters', None )
+		iters = self.GetNonNegativeIntegerParam('iters')
 		self.params.update({
 			'iters' : iters if iters is not None else iterCount
 		})
 		return iters
 
 	def GetConstraints(self):
-		mustLinksStr = self.GetStringParam( 'mustLinks' )
-		cannotLinksStr = self.GetStringParam( 'cannotLinks' )
-		keepTermsStr = self.GetStringParam( 'keepTerms' )
-		removeTermsStr =  self.GetStringParam( 'removeTerms' )
+		mustLinksStr = self.GetStringParam('mustLinks')
+		cannotLinksStr = self.GetStringParam('cannotLinks')
+		keepTermsStr = self.GetStringParam('keepTerms')
+		removeTermsStr =  self.GetStringParam('removeTerms')
+		self.params.update({
+			'mustLinks' : mustLinksStr,
+			'cannotLinks' : cannotLinksStr,
+			'keepTerms' : keepTermsStr,
+			'removeTerms' : removeTermsStr
+		})
 		mustLinks = []
 		cannotLinks = []
 		keepTerms = {}
@@ -71,13 +79,6 @@ class ITM_Core(Home_Core):
 				removeTerms = [ d for d in data if type(d) is unicode ]
 		except (ValueError, KeyError, TypeError):
 			pass
-
-		self.params.update({
-			'mustLinks' : mustLinksStr,
-			'cannotLinks' : cannotLinksStr,
-			'keepTerms' : keepTermsStr,
-			'removeTerms' : removeTermsStr
-		})
 		return mustLinks, cannotLinks, keepTerms, removeTerms
 
 	def UpdateModel(self):
@@ -90,6 +91,7 @@ class ITM_Core(Home_Core):
 		if action != 'train' or iters is None:
 			self.content.update({
 				'IterCount' : iterCount,
+				'Action' : action,
 				'MustLinks' : mustLinks,
 				'CannotLinks' : cannotLinks,
 				'KeepTerms' : keepTerms,
@@ -105,6 +107,7 @@ class ITM_Core(Home_Core):
 				computer.Execute()
 			self.content.update({
 				'IterCount' : iterCount,
+				'Action' : action,
 				'MustLinks' : mustLinks,
 				'CannotLinks' : cannotLinks,
 				'KeepTerms' : keepTerms,

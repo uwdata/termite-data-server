@@ -157,6 +157,11 @@ div.body div.params p span.value {
 	text-align: left;
 	vertical-align: baseline;
 }
+div.body div.params p.desc {
+	padding-left: 110px;
+	margin-bottom: 2em;
+	color: #999;
+}
 
 div.body div.response {
 	display: inline-block;

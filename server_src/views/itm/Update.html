@@ -1,68 +1,66 @@
 {{extend 'template.html'}}
-{{include 'attribute.html'}}
 
-<script type="text/javascript">
-var onSubmitParams = function() {
-	var query = {{WriteJSON({ key : request.vars[key] for key in request.vars })}}
-	var keys = [ "action", "iters", "mustLinks", "cannotLinks", "keepTerms", "removeTerms" ];
-	keys.forEach( function(key) {
-		var value = $("."+key).val();
-		if ( value.length > 0 ) {
-			var text = value.replace( /[\n\r\f]+/g, ";" ).replace( /[ ]+/g, ":" );
-			query[key] = text;
-		}
-	});
-	var queryString = []
-	for ( var key in query ) {
-		var value = query[key];
-		queryString.push( key + "=" + escape(value) );
-	}
-	if ( queryString.length > 0 )
-		queryString = "?" + queryString.join("&");
-	else
-		queryString = "";
-	window.location.href = "http://{{=configs['server']}}/{{=configs['dataset']}}/{{=configs['model']}}/{{=configs['attribute']}}" + queryString;
-};
-</script>
+<div class="head">
+	<div class="title">Termite Data Server</div>
+	{{include 'select_server.html'}}
+	{{include 'select_dataset.html'}}
+	{{include 'select_model.html'}}
+	{{include 'select_attribute.html'}}
+</div>
 
 <div class="body">
-	<div class="heading">Request Parameters</div>
+	<div class="heading">Method: <b>itm/Update</b></div>
+	<div class="info">
+		Refine a topic model.
+	</div>
+	{{include 'insert_request.html'}}
 	<div class="params">
-		<div class="param">action = <input type="text" class="action" value="{{=params['action']}}"></input> 
-			<span style="color: #999">(enter &ldquo;train&rdquo; to enable training)</span>
-		</div>
-		<div class="param">iters = <input type="text" class="iters" value="{{=IterCount}}"></input>
-			<span style="color: #999">(a non-negative integer)</span>
-		</div>
-		<div class="param">mustLinks = <textarea type="text" class="mustLinks">{{=params['mustLinks']}}</textarea> 
-			<span style="color: #999">(a list of list of words)</span>
-		</div>
-		<div class="param">cannotLinks = <textarea type="text" class="cannotLinks">{{=params['cannotLinks']}}</textarea> 
-			<span style="color: #999">(a list of list of words)</span>
-		</div>
-		<div class="param">keepTerms = <textarea type="text" class="keepTerms">{{=params['keepTerms']}}</textarea> 
-			<span style="color: #999">(a dict with integer keys and a list of words as values)</span>
-		</div>
-		<div class="param">removeTerms = <textarea type="text" class="removeTerms">{{=params['removeTerms']}}</textarea> 
-			<span style="color: #999">(a list of words)</span>
-		</div>	
-		<div class="param">
-			<input type="button" value="Update Model" onclick="onSubmitParams()" />
-		</div>
-		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
+		<p>
+			<span class="key">action = </span>
+			<span class="value">{{MakeParamTextInput('action', Action)}}</span>
+		</p>
+		<p class="desc">
+			Enter &ldquo;train&rdquo; to enable training.
+		</p>
+		<p>
+			<span class="key">iters = </span>
+			<span class="value">{{MakeParamTextInput('iters', IterCount)}}</span>
+		</p>
+		<p class="desc">
+			Enter an integer equal to or greater than the current iteration.
+		</p>
+		<p>
+			<span class="key">mustLinks = </span>
+			<span class="value">{{MakeParamTextArea('mustLinks', json.dumps(MustLinks,encoding='utf-8'))}}</span>
+		</p>
+		<p class="desc">
+			A list of list of words
+		</p>
+		<p>
+			<span class="key">cannotLinks = </span>
+			<span class="value">{{MakeParamTextArea('cannotLinks', json.dumps(CannotLinks,encoding='utf-8'))}}</span>
+		</p>
+		<p class="desc">
+			A list of list of words
+		</p>
+		<p>
+			<span class="key">keepTerms = </span>
+			<span class="value">{{MakeParamTextArea('keepTerms', json.dumps(KeepTerms,encoding='utf-8'))}}</span>
+		</p>
+		<p class="desc">
+			A dict with integer keys and a list of words as values
+		</p>
+		<p>
+			<span class="key">removeTerms = </span>
+			<span class="value">{{MakeParamTextArea('removeTerms', json.dumps(RemoveTerms,encoding='utf-8'))}}</span>
+		</p>
+		<p class="desc">
+			A list of words
+		</p>
+		<p>
+			<span class="key">format = </span>
+			<span class="value">{{MakeParamFormat(json_only=True)}}</span>
+		</p>
 	</div>
-
-	<div class="heading">Server Response
-		<span class="format">(
-			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> 
-		)</span>
-	</div>
-	
-{{if configs['is_text']:}}
-	<div class="content">{{=content}}</div>
-{{pass}}
-{{if configs['is_graph']:}}
-	<div class="content"><div id="view" class="view"></div></div>
-{{pass}}
+	{{include 'insert_response.html'}}
 </div>

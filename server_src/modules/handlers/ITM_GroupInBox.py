@@ -19,10 +19,12 @@ class ITM_GroupInBox(Home_Core):
 ################################################################################
 
 	def GetAction(self):
-		action = self.GetStringParam( 'action' )
+		action = self.GetStringParam('action')
 		self.params.update({
 			'action' : action
 		})
+		if action is None or action != 'train':
+			action = ''
 		return action
 
 	def GetIterCount(self, app_model_path):
@@ -37,7 +39,7 @@ class ITM_GroupInBox(Home_Core):
 		return iterCount
 
 	def GetIters(self, iterCount):
-		iters = self.GetNonNegativeIntegerParam( 'iters', None )
+		iters = self.GetNonNegativeIntegerParam('iters')
 		self.params.update({
 			'iters' : iters if iters is not None else iterCount
 		})
@@ -48,6 +50,12 @@ class ITM_GroupInBox(Home_Core):
 		cannotLinksStr = self.GetStringParam('cannotLinks')
 		keepTermsStr = self.GetStringParam('keepTerms')
 		removeTermsStr =  self.GetStringParam('removeTerms')
+		self.params.update({
+			'mustLinks' : mustLinksStr,
+			'cannotLinks' : cannotLinksStr,
+			'keepTerms' : keepTermsStr,
+			'removeTerms' : removeTermsStr
+		})
 		mustLinks = []
 		cannotLinks = []
 		keepTerms = {}
@@ -77,13 +85,6 @@ class ITM_GroupInBox(Home_Core):
 				removeTerms = [ d for d in data if type(d) is unicode ]
 		except (ValueError, KeyError, TypeError):
 			pass
-
-		self.params.update({
-			'mustLinks' : mustLinksStr,
-			'cannotLinks' : cannotLinksStr,
-			'keepTerms' : keepTermsStr,
-			'removeTerms' : removeTermsStr
-		})
 		return mustLinks, cannotLinks, keepTerms, removeTerms
 
 	def UpdateModel(self):
@@ -97,6 +98,7 @@ class ITM_GroupInBox(Home_Core):
 			iterCount = self.GetIterCount(app_model_path)
 			self.content.update({
 				'IterCount' : iterCount,
+				'Action' : action,
 				'MustLinks' : mustLinks,
 				'CannotLinks' : cannotLinks,
 				'KeepTerms' : keepTerms,
@@ -113,6 +115,7 @@ class ITM_GroupInBox(Home_Core):
 				iterCount = self.GetIterCount(app_model_path)
 				self.content.update({
 					'IterCount' : iterCount,
+					'Action' : action,
 					'MustLinks' : mustLinks,
 					'CannotLinks' : cannotLinks,
 					'KeepTerms' : keepTerms,
@@ -122,10 +125,12 @@ class ITM_GroupInBox(Home_Core):
 ################################################################################
 
 	def GetTermLimit(self):
-		termLimit = self.GetNonNegativeIntegerParam( 'termLimit', 100 if self.IsMachineFormat() else 5 )
+		termLimit = self.GetNonNegativeIntegerParam('termLimit')
 		self.params.update({
 			'termLimit' : termLimit
 		})
+		if termLimit is None:
+			termLimit = 5
 		return termLimit
 
 	def Load(self):

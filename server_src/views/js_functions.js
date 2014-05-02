@@ -1,6 +1,11 @@
 var configs = {{WriteJSON(configs)}};
 var params = {{WriteJSON({key : value for key, value in params.iteritems() if value is not None})}};
 
+var updateParamTextArea = function(name, srcElement) {
+	var value = srcElement.value;
+	changeParam(name, value);
+};
+
 var updateParamTextInput = function(name, srcElement) {
 	var value = srcElement.value;
 	changeParam(name, value);

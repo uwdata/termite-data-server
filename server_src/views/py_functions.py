@@ -1,5 +1,14 @@
 {{
 	import math
+	import urllib
+	import json
+
+	def MakeParamTextArea(name, value, width = 200, height = 50):
+		HTML = """<textarea name="{NAME}" onkeyup="updateParamTextInput('{NAME}',this)" style="width: {WIDTH}px; height: {HEIGHT}px; vertical-align: -{THIRD_HEIGHT}px; margin-bottom: 10px">{VALUE}</textarea>"""
+		html = HTML.format(NAME = name, VALUE=value, WIDTH=width, HEIGHT=height, THIRD_HEIGHT=height/2-10)
+		response.write(html, escape=False)
+	pass
+
 	def MakeParamTextInput(name, value, width = 200):
 		HTML = """<input type="text" name="{NAME}" value="{VALUE}" onkeyup="updateParamTextInput('{NAME}',this)" style="width: {WIDTH}px; vertical-align: -4px"/>"""
 		html = HTML.format(NAME = name, VALUE=value, WIDTH=width)
@@ -57,7 +66,6 @@
 		response.write(html, escape=False)
 	pass
 
-	import urllib
 	def WriteURL( keysAndValues = {} ):
 		urlStr = configs['url']
 		queryStr = urllib.urlencode({key : value for key, value in params.iteritems() if value is not None})
@@ -65,7 +73,6 @@
 		response.write(s, escape=False)
 	pass
 
-	import json
 	def WriteJSON( data ):
 		response.write( json.dumps(data, encoding='utf-8', indent=2, sort_keys=True), escape=False )
 	pass
