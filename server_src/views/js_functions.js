@@ -1,6 +1,11 @@
 var configs = {{WriteJSON(configs)}};
 var params = {{WriteJSON({key : value for key, value in params.iteritems() if value is not None})}};
 
+var updateParamTextInput = function(name, srcElement) {
+	var value = srcElement.value;
+	changeParam(name, value);
+};
+
 var updateParamRange = function(name, srcElement) {
 	var valueSqrt = parseInt(srcElement.value, 10);
 	var valueNum = valueSqrt === -1 ? -1 : parseInt(valueSqrt*valueSqrt/1000/1000);

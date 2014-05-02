@@ -172,6 +172,7 @@ class Home_Core(object):
 						'DocumentByIndex',
 						'DocumentById',
 						'SearchDocuments',
+						'Metadata',
 						'TermFreqs',
 						'TermProbs',
 						'TermCoFreqs',
@@ -289,18 +290,14 @@ class Home_Core(object):
 		return dataStr
 
 	def GenerateNormalResponse( self ):
-		data = {
-			'configs' : self.configs,
-			'menus' : self.menus,
-			'params' : self.params
-		}
-		data.update( self.content )
-
 		if self.IsJsonFormat():
+			data = { 'configs' : self.configs }
+			data.update(self.content)
+			dataStr = json.dumps( self.content, encoding = 'utf-8', indent = 2, sort_keys = True )
 			self.response.headers['Content-Type'] = 'application/json'
 			if self.HasAllowedOrigin():
 				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
-			return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+			return dataStr
 
 		if self.IsCSVFormat():
 			f = cStringIO.StringIO()
@@ -328,6 +325,12 @@ class Home_Core(object):
 				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
 			return dataStr
 	
-		self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+		data = {
+			'configs' : self.configs,
+			'menus' : self.menus,
+			'params' : self.params
+		}
+		data.update( self.content )
 		data['content'] = json.dumps( self.content, encoding = 'utf-8', indent = 2, sort_keys = True )
+		self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
 		return data

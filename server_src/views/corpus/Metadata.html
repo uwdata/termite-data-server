@@ -9,20 +9,12 @@
 </div>
 
 <div class="body">
-	<div class="heading">Method: <b>corpus/SentenceG2</b></div>
+	<div class="heading">Method: <b>corpus/TermG2</b></div>
 	<div class="info">
-		Compute the G2 statistics for the likelihood of a pair of terms occurring in the same sentence.
+		Compute the G2 statistics for the likelihood of a pair of terms occurring in the same document.
 	</div>
 	{{include 'insert_request.html'}}
 	<div class="params">
-		<p>
-			<span class="key">termLimit = </span>
-			<span class="value">{{MakeParamRange('termLimit', TermLimit, TermCount)}}</span>
-		</p>
-		<p>
-			<span class="key">termOffset = </span>
-			<span class="value">{{MakeParamRange('termOffset', TermOffset, TermCount)}}</span>
-		</p>
 		<p>
 			<span class="key">format = </span>
 			<span class="value">{{MakeParamFormat()}}</span>

@@ -9,7 +9,7 @@ def index():
 		handler = Corpus_Core(request, response, corpus_db)
 	return handler.GenerateResponse()
 
-def MetadataFields():
+def Metadata():
 	with Corpus_DB() as corpus_db:
 		handler = Corpus_Core(request, response, corpus_db)
 		handler.LoadMetadataFields()

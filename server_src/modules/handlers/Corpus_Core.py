@@ -11,35 +11,56 @@ class Corpus_Core( Home_Core ):
 		self.db = corpus_db.db
 	
 	def GetDocLimits(self):
-		docOffset = self.GetNonNegativeIntegerParam( 'docOffset', 0 )
-		docLimit = self.GetNonNegativeIntegerParam( 'docLimit', 100 if self.IsMachineFormat() else 5 )
+		docOffset = self.GetNonNegativeIntegerParam('docOffset')
+		docLimit = self.GetNonNegativeIntegerParam('docLimit')
 		self.params.update({
 			'docOffset' : docOffset,
 			'docLimit' : docLimit
 		})
-		return docOffset, docOffset+docLimit
+		if docOffset is None:
+			docOffset = 0
+		if docLimit is None:
+			docLimit = 5
+		return docOffset, docLimit
 
 	def GetTermLimits(self):
-		termOffset = self.GetNonNegativeIntegerParam( 'termOffset', 0 )
-		termLimit = self.GetNonNegativeIntegerParam( 'termLimit', 100 if self.IsMachineFormat() else 5 )
+		termOffset = self.GetNonNegativeIntegerParam('termOffset')
+		termLimit = self.GetNonNegativeIntegerParam('termLimit')
 		self.params.update({
 			'termOffset' : termOffset,
 			'termLimit' : termLimit
 		})
-		return termOffset, termOffset+termLimit
+		if termOffset is None:
+			termOffset = 0
+		if termLimit is None:
+			termLimit = 5
+		return termOffset, termLimit
+
+	def GetCellLimits(self):
+		cellLimit = self.GetNonNegativeIntegerParam('cellLimit')
+		self.params.update({
+			'cellLimit' : cellLimit
+		})
+		if cellLimit is None:
+			cellLimit = 100
+		return cellLimit
 
 	def GetDocIndex(self):
-		docIndex = self.GetNonNegativeIntegerParam( 'docIndex', 0 )
+		docIndex = self.GetNonNegativeIntegerParam('docIndex')
 		self.params.update({
 			'docIndex' : docIndex
 		})
+		if docIndex is None:
+			docIndex = 0
 		return docIndex
 
 	def GetDocId(self):
-		docId = self.GetStringParam( 'docId' )
+		docId = self.GetStringParam('docId')
 		self.params.update({
 			'docId' : docId
 		})
+		if docId is None:
+			docId = ''
 		return docId
 
 	def GetSearchPattern(self):
@@ -47,6 +68,8 @@ class Corpus_Core( Home_Core ):
 		self.params.update({
 			'searchPattern' : searchPattern
 		})
+		if searchPattern is None:
+			searchPattern = ''
 		return searchPattern
 	
 	def LoadMetadataFields( self ):
@@ -54,57 +77,64 @@ class Corpus_Core( Home_Core ):
 		rows = self.db().select( table.ALL, orderby = table.field_index ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'Fields' : rows
+			'Metadata' : rows
 		})
 		self.table = rows
 		self.header = header
 	
 	def LoadDocumentByIndex( self ):
-		term_limits = self.GetTermLimits()
-		doc_index = self.GetDocIndex()
+		docIndex = self.GetDocIndex()
+		docCount = self.db(self.db.corpus).count()
 		table = self.db.corpus
-		where = (table.doc_index == doc_index)
-		rows = self.db( where ).select( table.ALL, orderby = table.doc_index, limitby = term_limits ).as_list()
+		where = (table.doc_index == docIndex)
+		rows = self.db( where ).select( table.ALL, orderby = table.doc_index ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'Document' : rows
+			'Document' : rows,
+			'DocIndex' : docIndex,
+			'DocCount' : docCount
 		})
 		self.table = rows
 		self.header = header
 	
 	def LoadDocumentById( self ):
-		term_limits = self.GetTermLimits()
-		doc_id = self.GetDocId()
+		docId = self.GetDocId()
 		table = self.db.corpus
-		where = (table.doc_id == doc_id)
-		rows = self.db( where ).select( table.ALL, orderby = table.doc_id, limitby = term_limits ).as_list()
+		where = (table.doc_id == docId)
+		rows = self.db( where ).select( table.ALL, orderby = table.doc_id ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'Document' : rows
+			'Document' : rows,
+			'DocId' : docId
 		})
 		self.table = rows
 		self.header = header
 	
 	def SearchDocuments( self ):
-		doc_limits = self.GetDocLimits()
-		search_pattern = self.GetSearchPattern()
+		docOffset, docLimit = self.GetDocLimits()
+		docCount = self.db(self.db.corpus).count()
+		searchPattern = self.GetSearchPattern()
 		table = self.db.corpus
-		where = table.doc_content.like('' if len(search_pattern) == 0 else '%'+search_pattern+'%')
-		rows = self.db( where ).select( table.ALL, orderby = table.doc_index, limitby = doc_limits ).as_list()
+		where = table.doc_content.like('' if len(searchPattern) == 0 else '%'+searchPattern+'%')
+		rows = self.db( where ).select( table.ALL, orderby = table.doc_index, limitby = (docOffset, docOffset+docLimit) ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'Documents' : rows
+			'Documents' : rows,
+			'SearchPattern' : searchPattern,
+			'DocOffset' : docOffset,
+			'DocLimit' : docLimit,
+			'DocCount' : docCount
 		})
 		self.table = rows
 		self.header = header
 		
 	def LoadTermStats( self, table_name, var_name, field_name ):
-		term_limits = self.GetTermLimits()
+		termOffset, termLimit = self.GetTermLimits()
 		query = """SELECT stats.value AS {FIELD}, ref.term_text AS term_text 
 		FROM {TABLE} AS stats 
 		INNER JOIN term_texts as ref ON stats.term_index = ref.term_index 
 		ORDER BY stats.rank LIMIT {LIMIT} OFFSET {OFFSET}""".format(
-			FIELD = field_name, TABLE = table_name, LIMIT = term_limits[1]-term_limits[0], OFFSET = term_limits[0] )
+			FIELD = field_name, TABLE = table_name, LIMIT = termLimit, OFFSET = termOffset )
 		rows = self.db.executesql( query, as_dict = True )
 		header = [
 			{ 'name' : 'term_text', 'type' : self.db.term_texts.term_text.type },
@@ -112,19 +142,21 @@ class Corpus_Core( Home_Core ):
 		]
 		self.content.update({
 			var_name : rows,
+			'TermLimit' : termLimit,
+			'TermOffset' : termOffset,
 			'TermCount' : self.db(self.db.term_texts).count()
 		})
 		self.table = rows
 		self.header = header
 	
 	def LoadCoTermStats( self, table_name, var_name ):
-		term_limits = self.GetTermLimits()
+		termOffset, termLimit = self.GetTermLimits()
 		query = """SELECT stats.value AS value, ref1.term_text AS first_term, ref2.term_text as second_term 
 		FROM {TABLE} AS stats 
 		INNER JOIN term_texts as ref1 ON stats.first_term_index = ref1.term_index 
 		INNER JOIN term_texts as ref2 ON stats.second_term_index = ref2.term_index 
 		ORDER BY stats.rank LIMIT {LIMIT} OFFSET {OFFSET}""".format(
-			TABLE = table_name, LIMIT = term_limits[1]-term_limits[0], OFFSET = term_limits[0] )
+			TABLE = table_name, LIMIT = termLimit, OFFSET = termOffset )
 		rows = self.db.executesql( query, as_dict = True )
 		header = [
 			{ 'name' : 'first_term', 'type' : self.db.term_texts.term_text.type },
@@ -133,6 +165,8 @@ class Corpus_Core( Home_Core ):
 		]
 		self.content.update({
 			var_name : rows,
+			'TermLimit' : termLimit,
+			'TermOffset' : termOffset,
 			'CellCount' : self.db(self.db[table_name]).count(),
 			'TermCount' : self.db(self.db.term_texts).count()
 		})

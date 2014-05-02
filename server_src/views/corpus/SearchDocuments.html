@@ -1,66 +1,36 @@
 {{extend 'template.html'}}
-{{include 'attribute.html'}}
 
-<script type="text/javascript">
-var onSubmitParams = function() {
-	var query = {{WriteJSON({ key : request.vars[key] for key in request.vars })}}
-	var keys = [ "searchPattern" ];
-	keys.forEach( function(key) {
-		var value = $("."+key).val();
-		if ( value.length > 0 ) {
-			var text = value.replace( /[\n\r\f]+/g, ";" ).replace( /[ ]+/g, ":" );
-			query[key] = text;
-		}
-	});
-	var queryString = []
-	for ( var key in query ) {
-		var value = query[key];
-		queryString.push( key + "=" + escape(value) );
-	}
-	if ( queryString.length > 0 )
-		queryString = "?" + queryString.join("&");
-	else
-		queryString = "";
-	window.location.href = "http://{{=configs['server']}}/{{=configs['dataset']}}/{{=configs['model']}}/{{=configs['attribute']}}" + queryString;
-};
-</script>
+<div class="head">
+	<div class="title">Termite Data Server</div>
+	{{include 'select_server.html'}}
+	{{include 'select_dataset.html'}}
+	{{include 'select_model.html'}}
+	{{include 'select_attribute.html'}}
+</div>
 
 <div class="body">
-	<div class="heading">Request Parameters</div>
+	<div class="heading">Method: <b>lda/DocIndex</b></div>
+	<div class="info">
+		Get a list of documents used to train the LDA model.
+	</div>
+	{{include 'insert_request.html'}}
 	<div class="params">
-		<div class="param">docLimit = 
-			<select onchange="onSelectParam(this)">
-				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{WriteURL({'docLimit':n})}}" {{if params['docLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
-		</div>
-		<div class="param">docOffset = 
-			<select onchange="onSelectParam(this)">
-				{{for n in range(0,100,5):}}
-					<option value="{{WriteURL({'docOffset':n})}}" {{if params['docOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
-		</div>
-		<div class="param">searchPattern = 
-			<input type="text" class="searchPattern" value="{{=params['searchPattern']}}" style="width:150px"/> <input type="button" value="Refresh" onclick="onSubmitParams()" />
-		</div>
-		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
+		<p>
+			<span class="key">searchPattern = </span>
+			<span class="value">{{MakeParamTextInput('searchPattern', SearchPattern)}}</span>
+		</p>
+		<p>
+			<span class="key">docLimit = </span>
+			<span class="value">{{MakeParamRange('docLimit', DocLimit, DocCount)}}</span>
+		</p>
+		<p>
+			<span class="key">docOffset = </span>
+			<span class="value">{{MakeParamRange('docOffset', DocOffset, DocCount)}}</span>
+		</p>
+		<p>
+			<span class="key">format = </span>
+			<span class="value">{{MakeParamFormat(json_only=True)}}</span>
+		</p>
 	</div>
-
-	<div class="heading">Server Response
-		<span class="format">(
-			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
-			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
-			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> 
-		)</span>
-	</div>
-
-{{if configs['is_text']:}}
-	<div class="content">{{=content}}</div>
-{{pass}}
-{{if configs['is_graph']:}}
-	<div class="content"><div id="view" class="view"></div></div>
-{{pass}}
+	{{include 'insert_response.html'}}
 </div>

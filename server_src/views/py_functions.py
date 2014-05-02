@@ -1,5 +1,11 @@
 {{
 	import math
+	def MakeParamTextInput(name, value, width = 200):
+		HTML = """<input type="text" name="{NAME}" value="{VALUE}" onkeyup="updateParamTextInput('{NAME}',this)" style="width: {WIDTH}px; vertical-align: -4px"/>"""
+		html = HTML.format(NAME = name, VALUE=value, WIDTH=width)
+		response.write(html, escape=False)
+	pass
+	
 	def MakeParamRange(name, value, count, width = 200):
 		HTML = """
 		<input type="range" name="{NAME}" value="{VALUE_NUM}" min="-1" max="{COUNT}" onchange="updateParamRange('{NAME}',this)" style="width: {WIDTH}px; vertical-align: -4px"/>
@@ -9,7 +15,7 @@
 		value_str = value if value is not None else "&mdash;"
 		count_num = int(math.sqrt(count) * 1000)
 		html = HTML.format(NAME = name, VALUE_NUM=value_num, VALUE_STR=value_str, COUNT=count_num, WIDTH=width)
-		response.write(html, escape = False)
+		response.write(html, escape=False)
 	pass
 	
 	def MakeParamSelect(name, value, options, width = 200):
@@ -26,7 +32,7 @@
 		pass
 		s.append( FOOT )
 		html = '\n'.join(s)
-		response.write(html, escape = False)
+		response.write(html, escape=False)
 	pass
 	
 	def MakeParamFormat(json_only=False):
@@ -48,7 +54,7 @@
 			"""
 		pass
 		html = HTML.format(NAME = 'format')
-		response.write(html, escape = False)
+		response.write(html, escape=False)
 	pass
 
 	import urllib
@@ -56,13 +62,11 @@
 		urlStr = configs['url']
 		queryStr = urllib.urlencode({key : value for key, value in params.iteritems() if value is not None})
 		s = urlStr if len(queryStr) == 0 else '{}?{}'.format(urlStr, queryStr)
-		response.write(s, escape = False)
+		response.write(s, escape=False)
 	pass
-}}
 
-{{
 	import json
 	def WriteJSON( data ):
-		response.write( json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True ), escape = False )
+		response.write( json.dumps(data, encoding='utf-8', indent=2, sort_keys=True), escape=False )
 	pass
 }}
