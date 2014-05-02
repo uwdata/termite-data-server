@@ -52,91 +52,46 @@ div.head a:hover {
 
 div.body {
 	margin: 80px 50px 30px 50px;
-	color: #aaa;
-}
-div.body div.heading {
-	margin: 20px 0 2px 0;
-	font-size: 14pt;
-}
-div.body div.heading span.format {
-	margin: 0 0 0 0.2em;
-	font-size: 10pt;
-}
-div.body div.heading span.format b {
-	color: #999;
-}
-div.body div.heading span.extra {
-	font-size: 8pt;
-}
-div.body div.params {
-	display: inline-block;
-	padding: 15px;
-	margin: 5px 0;
-	border: 1px solid #ccc;
-	min-width: 320px;
-	color: #000;
-}
-div.body div.params div.param {
-	font-size: 10pt;
-}
-div.body div.params div.param textarea {
-	vertical-align: top;
-	margin: 0 0 10px 0;
-}
-div.body div.params div.extra {
-	margin: 10px 0 0 0;
-	color: #999;
-	font-size: 10pt;
-}
-div.body div.content {
-	display: inline-block;
-	padding: 15px;
-	margin: 5px 0;
-	border: 1px solid #ccc;
-	min-width: 640px;
-	min-height: 320px;
-	overflow: scroll;
-	white-space: pre;
-	font-family: monospace;
-	font-size: 10pt;
-	color: #000;
-}
-div.body a {
-	color: #aaa;
-	text-decoration: none;
-}
-div.body a:hover {
-	color: #933;
-	text-decoration: underline;
-}
-
-div.info {
-	margin: 100px 50px 30px 50px;
-	line-height: 1.35em;
 	color: #333;
 }
-div.info div.heading {
+
+div.body div.heading {
 	margin: 2em 0 0 0;
+	
+	color: #333;
 	font-size: 14pt;
+}
+div.body div.heading b {
+	margin: 0 4px;
+	
 	color: #000;
+	font-family: monospace;
+	font-size: 12pt;
 }
-div.info div.content {
+
+div.body div.info {
 	margin: 1em 0 0 0;
-	width: 400px;
+	padding: 15px 20px;
+	border: 1px solid #999;
+	width: 640px;
+
+	color: #333;
+	background: #eee;
 	font-size: 10pt;
+	line-height: 1.35em;
 }
-div.info div.code {
-	display: inline-block;
-	margin: 0.8em 0 0 0;
-	padding: 15px;
-	min-width: 640px;
+div.body div.info p {
+	margin: 1em 0 0.25em 0;
+}
+div.body div.info p:first-child {
+	margin-top: 0.25em;
+}
+div.body div.info p.code {
 	white-space: pre;
 	font-family: monospace;
 	font-size: 10pt;
-	border: 1px solid #ccc;
-	background: #eee;
 }
-div.info span.code {
+div.body div.info span.code {
 	margin: 0 2px;
 	padding: 0 1px;
 	font-family: monospace;
@@ -144,11 +99,76 @@ div.info span.code {
 	border: 1px solid #ccc;
 	background: #eee;
 }
-div.info a {
+div.body div.info a {
 	color: #c66;
 	text-decoration: none;
 }
-div.info a:hover {
+div.body div.info a:hover {
 	color: #933;
 	text-decoration: underline;
+}
+
+div.body div.request {
+	display: inline-block;
+	margin: 1em 0 0 0;
+	padding: 15px 25px 15px 20px;
+	border: 1px solid #999;
+	min-width: 635px;
+
+	color: #333;
+	font-size: 10pt;
+	font-family: monospace;
+	white-space: pre;
+}
+div.body div.request a {
+	color: #c66;
+	text-decoration: none;
+}
+div.body div.request a:hover {
+	color: #933;
+	text-decoration: underline;
+}
+
+div.body div.params {
+	display: inline-block;
+	margin: 0;
+	padding: 15px 20px;
+	border: 1px solid #999;
+	border-top: none;
+	min-width: 640px;
+	
+	color: #666;
+	font-size: 10pt;
+}
+div.body div.params p {
+	margin: 0;
+}
+div.body div.params p span.key {
+	display: inline-block;
+	width: 100px;
+	height: 25px;
+	text-align: right;
+	vertical-align: baseline;
+}
+div.body div.params p span.value {
+	display: inline-block;
+	height: 25px;
+	padding: 0 8px;
+	text-align: left;
+	vertical-align: baseline;
+}
+
+div.body div.response {
+	display: inline-block;
+	margin: 1em 0 0 0;
+	padding: 15px 20px;
+	border: 1px solid #999;
+	min-width: 640px;
+	min-height: 320px;
+	overflow: scroll;
+
+	color: #333;
+	font-size: 10pt;
+	font-family: monospace;
+	white-space: pre;
 }

@@ -16,19 +16,19 @@ def Vocab():
 		handler.LoadVocab()
 	return handler.GenerateResponse()
 	
-def TermIndex():
+def TermList():
 	with LDA_DB() as lda_db:
 		handler = LDA_Core(request, response, lda_db)
 		handler.LoadTerms()
 	return handler.GenerateResponse()
 
-def DocIndex():
+def DocList():
 	with LDA_DB() as lda_db:
 		handler = LDA_Core(request, response, lda_db)
 		handler.LoadDocs()
 	return handler.GenerateResponse()
 
-def TopicIndex():
+def TopicList():
 	with LDA_DB() as lda_db:
 		handler = LDA_Core(request, response, lda_db)
 		handler.LoadTopics()
@@ -44,12 +44,6 @@ def DocTopicMatrix():
 	with LDA_DB() as lda_db:
 		handler = LDA_Core(request, response, lda_db)
 		handler.LoadDocTopicMatrix()
-	return handler.GenerateResponse()
-
-def TopicCooccurrences():
-	with LDA_DB() as lda_db:
-		handler = LDA_Core(request, response, lda_db)
-		handler.LoadTopicCooccurrences()
 	return handler.GenerateResponse()
 
 def TopicCovariance():

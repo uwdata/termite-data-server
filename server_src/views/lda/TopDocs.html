@@ -1,7 +1,7 @@
 {{extend 'template.html'}}
 
 <div class="head">
-	<div class="title">Termite Data Server</div>
+	<div class="title">Docite Data Server</div>
 	{{include 'select_server.html'}}
 	{{include 'select_dataset.html'}}
 	{{include 'select_model.html'}}
@@ -9,43 +9,28 @@
 </div>
 
 <div class="body">
-	<div class="heading">Request Parameters</div>
+	<div class="heading">Method: <b>lda/DocIndex</b></div>
+	<div class="info">
+		Get a list of top documents most representative of a topic.
+	</div>
+	{{include 'insert_request.html'}}
 	<div class="params">
-		<div class="param">topicIndex = 
-			<select onchange="onSelectParam(this)">
-				{{for n in range(TopicCount):}}
-					<option value="{{WriteURL({'topicIndex':n})}}" {{if params['topicIndex'] == n:}}selected="selected"{{pass}}>#{{=TopicIndex[n]['topic_index']+1}}: {{=TopicIndex[n]['topic_label']}}</option>
-				{{pass}}
-			</select>
-		</div>
-		<div class="param">docLimit = 
-			<select onchange="onSelectParam(this)">
-				{{for n in [5,10,20,50,100,200,500]:}}
-					<option value="{{WriteURL({'docLimit':n})}}" {{if params['docLimit'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
-		</div>
-		<div class="param">docOffset = 
-			<select onchange="onSelectParam(this)">
-				{{for n in range(0,100,5):}}
-					<option value="{{WriteURL({'docOffset':n})}}" {{if params['docOffset'] == n:}}selected="selected"{{pass}}>{{=n}}</option>
-				{{pass}}
-			</select>
-		</div>
-		<div class="extra"><i>Or simply type in a URL into your browser</i> &nbsp; <i class="fa fa-level-up fa-2x"></i></div>
+		<p>
+			<span class="key">topicIndex = </span>
+			<span class="value">{{MakeParamSelect('topicIndex', TopicIndex, [{'value':d['topic_index'], 'name':d['topic_label']} for d in TopicList], width=320)}}</span>
+		</p>
+		<p>
+			<span class="key">docLimit = </span>
+			<span class="value">{{MakeParamRange('docLimit', DocLimit, DocCount)}}</span>
+		</p>
+		<p>
+			<span class="key">docOffset = </span>
+			<span class="value">{{MakeParamRange('docOffset', DocOffset, DocCount)}}</span>
+		</p>
+		<p>
+			<span class="key">format = </span>
+			<span class="value">{{MakeParamFormat()}}</span>
+		</p>
 	</div>
-
-	<div class="heading">Server Response
-		<span class="format">(
-			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> 
-		)</span>
-	</div>
-
-{{if configs['is_text']:}}
-	<div class="content">{{=content}}</div>
-{{pass}}
-{{if configs['is_graph']:}}
-	<div class="content"><div id="view" class="view"></div></div>
-{{pass}}
+	{{include 'insert_response.html'}}
 </div>

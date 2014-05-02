@@ -9,12 +9,10 @@
 </div>
 
 <div class="body">
-	<div class="heading">Server Response
-		<span class="format">(
-			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> 
-		)</span>
+	<div class="heading">Method: <b>corpus</b></div>
+	<div class="info">
+		Retrieve a list of attributes and views available for a pre-processed text corpus.
 	</div>
-
-	<div class="content">{{=content}}</div>
+	{{include 'insert_request.html'}}
+	{{include 'insert_response.html'}}
 </div>

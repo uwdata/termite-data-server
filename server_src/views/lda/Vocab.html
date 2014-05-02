@@ -9,17 +9,16 @@
 </div>
 
 <div class="body">
-	<div class="heading">Server Response
-		<span class="format">(
-			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a>
-		)</span>
+	<div class="heading">Method: <b>lda/Vocab</b></div>
+	<div class="info">
+		Get a list of terms known to the LDA model.
 	</div>
-
-{{if configs['is_text']:}}
-	<div class="content">{{=content}}</div>
-{{pass}}
-{{if configs['is_graph']:}}
-	<div class="content"><div id="view" class="view"></div></div>
-{{pass}}
+	{{include 'insert_request.html'}}
+	<div class="params">
+		<p>
+			<span class="key">format = </span>
+			<span class="value">{{MakeParamFormat(json_only=True)}}</span>
+		</p>
+	</div>
+	{{include 'insert_response.html'}}
 </div>

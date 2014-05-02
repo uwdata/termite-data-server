@@ -1,4 +1,26 @@
 /**
+ * @param {string} [dataset]
+ * @param {string} [model]
+ * @param {string} [attribute]
+ * @return {string}
+ **/
+var loadPage = function(dataset, model, attribute) {
+	var server = configs.server;
+	if (dataset && model && attribute) {
+		window.location.href = "http://" + server + "/" + dataset + "/" + model + "/" + attribute;
+	}
+	else if (dataset && model) {
+		window.location.href = "http://" + server + "/" + dataset + "/" + model;
+	}
+	else if (dataset) {
+		window.location.href = "http://" + server + "/" + dataset;
+	}
+	else {
+		window.location.href = "http://" + server;
+	}
+};
+
+/**
  * @param{SELECT} srcElement
  **/
 var onSelectDataset = function(srcElement) {
@@ -20,25 +42,10 @@ var onSelectAttribute = function(srcElement) {
 };
 
 /**
- * @param {string} [dataset]
- * @param {string} [model]
- * @param {string} [attribute]
- * @return {string}
- **/
-var loadPage = function(dataset, model, attribute) {
-	var server = configs.server;
-	if (dataset && model && attribute) {
-		window.location.href = "http://" + server + "/" + dataset + "/" + model + "/" + attribute;
-	}
-	else if (dataset && model) {
-		window.location.href = "http://" + server + "/" + dataset + "/" + model;
-	}
-	else if (dataset) {
-		window.location.href = "http://" + server + "/" + dataset;
-	}
-	else {
-		window.location.href = "http://" + server;
-	}
+ * @param{INPUT} srcElement
+ */
+var onChangeParam = function(srcElement) {
+	changeParam(srcElement.name, srcElement.value);
 };
 
 /**
@@ -76,3 +83,23 @@ var selectAttribute = function(attribute) {
 		loadPage(configs.dataset, configs.model);
 	}
 };
+
+/**
+ * @param {string} key
+ * @param {string} value
+ **/
+var changeParam = function(key, value) {
+	if (value === null) {
+		delete params[key];
+	}
+	else {
+		params[key] = value;
+	}
+	var urlStr = configs.url;
+	var paramStr = $.param(params);
+	var s = urlStr + (paramStr.length > 0 ? "?"+paramStr : "");
+	d3.selectAll(".RequestURL")
+		.attr("href", s)
+		.text(s);
+	console.log(params, s);
+}

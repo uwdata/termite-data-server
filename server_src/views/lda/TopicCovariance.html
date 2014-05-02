@@ -9,21 +9,16 @@
 </div>
 
 <div class="body">
-	<div class="heading">Server Response
-		<span class="format">(
-			{{if configs['is_text']:}}<b>Text format</b>{{else:}}<a href="{{=GenerateURL({'format':None})}}">Text format</a>{{pass}} | 
-			{{if configs['is_graph']:}}<b>Graph format</b>{{else:}}<a href="{{=GenerateURL({'format':'graph'})}}">Graph format</a>{{pass}} | 
-			<a href="{{=GenerateURL({'format':'json'})}}">Save as JSON</a> | 
-			<a href="{{=GenerateURL({'format':'csv'})}}">Save as CSV</a> | 
-			<a href="{{=GenerateURL({'format':'tsv'})}}">Save as TSV</a> | 
-			<a id="SaveAsPNG" style="cursor:pointer">Save as PNG</a> 
-		)</span>
+	<div class="heading">Method: <b>lda/TopicCovariance</b></div>
+	<div class="info">
+		Get a sparse matrix representing the topic covariance.
 	</div>
-
-{{if configs['is_text']:}}
-	<div class="content">{{=content}}</div>
-{{pass}}
-{{if configs['is_graph']:}}
-	<div class="content"><div id="view" class="view"></div></div>
-{{pass}}
+	{{include 'insert_request.html'}}
+	<div class="params">
+		<p>
+			<span class="key">format = </span>
+			<span class="value">{{MakeParamFormat()}}</span>
+		</p>
+	</div>
+	{{include 'insert_response.html'}}
 </div>

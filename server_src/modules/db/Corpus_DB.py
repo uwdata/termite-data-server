@@ -93,15 +93,8 @@ class Corpus_DB():
 			self.db.models.insert( model_key = model_key, model_desc = model_desc )
 
 	def GetModels(self):
-		models = self.db( self.db.models ).select( self.db.models.model_key )
-		return [ model.model_key for model in models ]
-
-	def GetModelDescription(self, model_key):
-		model = self.db( self.db.models.model_key == model_key ).select().first()
-		if model:
-			return model.model_desc
-		else:
-			return None
+		rows = self.db( self.db.models ).select( self.db.models.model_key, self.db.models.model_desc ).as_list()
+		return rows
 
 ################################################################################
 

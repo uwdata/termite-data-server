@@ -11,12 +11,12 @@ class Home_Core(object):
 	def __init__(self, request, response):
 		self.request = request
 		self.response = response
-		self.configs = self.GetConfigs()
-		self.menus = self.GetMenus()
 		self.params = {}
 		self.content = {}   # All variables returned by an API call
 		self.table = []     # Primary variable returned by an API call as rows of records
 		self.header = []    # Header for primary variable
+		self.configs = self.GetConfigs()
+		self.menus = self.GetMenus()
 
 ################################################################################
 # Server, Dataset, Model, and Attribute
@@ -40,14 +40,6 @@ class Home_Core(object):
 			'is_tsv' : self.IsTSVFormat()
 		}
 		return configs
-
-	EXCLUDED_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset' ])
-	def IsExcluded(self, folder):
-		if folder in Home_Core.EXCLUDED_FOLDERS:
-			return True
-		if folder[:5] == 'temp_':
-			return True
-		return False
 
 	def GetServer(self):
 		return self.request.env['HTTP_HOST']
@@ -97,96 +89,132 @@ class Home_Core(object):
 			{ 'value' : 'dataset', 'name' : 'Upload a new dataset' }
 		]
 		
+	EXCLUDED_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset' ])
+	def IsExcludedDataset(self, folder):
+		if folder in Home_Core.EXCLUDED_FOLDERS:
+			return True
+		if folder[:5] == 'temp_':
+			return True
+		return False
+
 	def GetDatasets(self, server):
 		folders = []
-		applications_path = '{}/applications'.format( self.request.env['applications_parent'] )
-		for folder in os.listdir( applications_path ):
-			if not self.IsExcluded(folder):
-				applications_subpath = '{}/{}'.format( applications_path, folder )
-				if os.path.isdir( applications_subpath ):
-					folders.append( folder )
-		folders = sorted( folders )
-		return folders
+		applications_path = '{}/applications'.format(self.request.env['applications_parent'])
+		for folder in os.listdir(applications_path):
+			if not self.IsExcludedDataset(folder):
+				applications_subpath = '{}/{}'.format(applications_path, folder)
+				if os.path.isdir(applications_subpath):
+					folders.append(folder)
+		datasets = sorted(folders)
+		if self.configs['dataset'] == 'init':
+			self.content.update({
+				'AvailableDatasets' : datasets
+			})
+		return datasets
 
-	def GetModels( self, server, dataset ):
-		if self.IsExcluded(dataset):
-			return None
-		folders = []
-		with Corpus_DB() as corpus_db:
-			folders += corpus_db.GetModels()
-		folders = sorted( folders )
-		return folders
+	def GetModels(self, server, dataset):
+		models = []
+		if not self.IsExcludedDataset(dataset):
+			with Corpus_DB() as corpus_db:
+				rows = corpus_db.GetModels()
+			models = [{
+				'value' : row['model_key'],
+				'name' : row['model_desc']
+			} for row in rows ]
+			if self.configs['model'] == 'default':
+				self.content.update({
+					'AvailableModels' : models
+				})
+		return models
 	
 	def GetViews(self, server, dataset, model, attribute):
-		return []
+		views = []
+		if not self.IsExcludedDataset(dataset):
+			if model != 'default':
+				if model == 'lda':
+					views = [
+					]
+				if model == 'itm':
+					views = [
+					]
+				if model == 'corpus':
+					views = [
+					]
+				if self.configs['attribute'] == 'index':
+					self.content.update({
+						'AvailableViews' : views
+					})
+		return views
 	
 	def GetAttributes(self, server, dataset, model, attribute):
-		if self.IsExcluded(dataset):
-			return None
-		if model == 'default':
-			return None
-		if model == 'lda':
-			return [
-				'Vocab',
-				'DocIndex',
-				'TermIndex',
-				'TopicIndex',
-				'TermTopicMatrix',
-				'DocTopicMatrix',
-				'TopicCooccurrences',
-				'TopicCovariance',
-				'TopTerms',
-				'TopDocs'
-			]
-		if model == 'itm':
-			return [
-				'Update',
-				'gib'
-			]
-		if model == 'corpus':
-			return [
-				'DocumentByIndex',
-				'DocumentById',
-				'SearchDocuments',
-				'TermFreqs',
-				'TermProbs',
-				'TermCoFreqs',
-				'TermCoProbs',
-				'TermG2',
-				'SentenceCoFreqs',
-				'SentenceCoProbs',
-				'SentenceG2'
-			]
-		return []
+		attributes = []
+		if not self.IsExcludedDataset(dataset):
+			if model != 'default':
+				if model == 'lda':
+					attributes = [
+						'Vocab',
+						'DocList',
+						'TermList',
+						'TopicList',
+						'TermTopicMatrix',
+						'DocTopicMatrix',
+						'TopicCovariance',
+						'TopTerms',
+						'TopDocs'
+					]
+				if model == 'itm':
+					attributes = [
+						'Update',
+						'gib'
+					]
+				if model == 'corpus':
+					attributes = [
+						'DocumentByIndex',
+						'DocumentById',
+						'SearchDocuments',
+						'TermFreqs',
+						'TermProbs',
+						'TermCoFreqs',
+						'TermCoProbs',
+						'TermG2',
+						'SentenceCoFreqs',
+						'SentenceCoProbs',
+						'SentenceG2'
+					]
+				if self.configs['attribute'] == 'index':
+					self.content.update({
+						'AvailableAttributes' : attributes
+					})
+		return attributes
 
 ################################################################################
 # Parameters
 
 	def GetStringParam( self, key ):
 		if key in self.request.vars:
-			return unicode( self.request.vars[key] )
+			return unicode(self.request.vars[key])
 		else:
-			return u''
+			return None
 		
-	def GetNonNegativeIntegerParam( self, key, defaultValue ):
+	def GetNonNegativeIntegerParam( self, key ):
 		try:
-			n = int( self.request.vars[ key ] )
+			n = int(self.request.vars[key])
 			if n >= 0:
 				return n
 			else:
 				return 0
 		except:
-			return defaultValue
+			return None
 
-	def GetNonNegativeFloatParam( self, key, defaultValue ):
+	def GetNonNegativeFloatParam( self, key ):
 		try:
-			n = float( self.request.vars[ key ] )
+			n = float(self.request.vars[key])
 			if n >= 0:
 				return n
 			else:
 				return 0.0
 		except:
-			return defaultValue
+			return None
 	
 ################################################################################
 # Generate a response
@@ -301,5 +329,5 @@ class Home_Core(object):
 			return dataStr
 	
 		self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
-		data['content'] = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+		data['content'] = json.dumps( self.content, encoding = 'utf-8', indent = 2, sort_keys = True )
 		return data
