@@ -1,1 +1,1 @@
-underscore-1.5.2.min.js
+underscore-1.5.2.js

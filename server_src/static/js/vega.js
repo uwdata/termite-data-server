@@ -1,1 +1,1 @@
-vega-1.3.3.min.js
+vega-1.3.3.js
