@@ -52,8 +52,8 @@ demo:
 
 demos:
 	./demo.py infovis gensim
-	./demo.py poliblogs stm
 	./demo.py infovis treetm
+	./demo.py poliblogs stm
 
 more-demos:
 	./demo.py poliblogs mallet
