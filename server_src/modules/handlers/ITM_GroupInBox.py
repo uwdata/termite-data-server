@@ -134,7 +134,7 @@ class ITM_GroupInBox(Home_Core):
 		self.LoadTopicCovariance()
 		self.CreateTempVocabTable()
 		self.LoadTermPMI()
-		self.LoadSentencePMI()
+#		self.LoadSentencePMI()
 		self.DeleteTempVocabTable()
 		
 	def LoadTopTermsPerTopic( self ):
