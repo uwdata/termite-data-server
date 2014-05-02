@@ -56,12 +56,13 @@ class Corpus_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isImport
 		)
-		for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
-			keyValue = self.db( self.db.options.key == key ).select().first()
-			if keyValue:
-				keyValue.update_record( value = value )
-			else:
-				self.db.options.insert( key = key, value = value )
+		if self.isInit:
+			for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
+				keyValue = self.db( self.db.options.key == key ).select().first()
+				if keyValue:
+					keyValue.update_record( value = value )
+				else:
+					self.db.options.insert( key = key, value = value )
 	
 	def SetOption(self, key, value):
 		keyValue = self.db( self.db.options.key == key ).select().first()
