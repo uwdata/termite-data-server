@@ -13,4 +13,4 @@ class ITM_ComputeStats():
 
 	def Execute(self):
 		self.logger.info( 'Computing derived ITM statistics...' )
-		self.corpus_db.AddModel('itm', 'Interactive topic modeling')
+		self.corpus_db.AddModel('itm', 'Interactive Topic Model')

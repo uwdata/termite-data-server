@@ -20,7 +20,7 @@ class LDA_ComputeStats():
 		self.ReadDocTopicMatrix()
 		self.ComputeTopicCooccurrences()
 		self.ComputeTopicCovariance()
-		self.corpus_db.AddModel('lda', 'LDA model')
+		self.corpus_db.AddModel('lda', 'LDA Topic Model')
 	
 	def ReadDocCount(self):
 		count = self.db(self.db.docs).count()

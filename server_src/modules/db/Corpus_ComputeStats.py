@@ -36,7 +36,7 @@ class Corpus_ComputeStats():
 		self.ComputeAndSaveDocumentLevelStatistics()
 		self.logger.info( 'Computing sentence-level term statistics...' )
 		self.ComputeAndSaveSentenceLevelStatistics()
-		self.corpus_db.AddModel('corpus', 'Text corpus')
+		self.corpus_db.AddModel('corpus', 'Text Corpus')
 			
 	def LoadStopwords(self, filename):
 		stopwords = []
