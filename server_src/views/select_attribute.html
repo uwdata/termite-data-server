@@ -1,0 +1,18 @@
+<div class="sep">/</div>
+<div class="subtitle">
+	<select onchange="onSelectAttribute(this)">
+		<option value="NONE">&mdash; API Methods &mdash;</option>
+		{{for value in menus['attributes']:}}
+			<option value="{{=value}}" {{if configs['attribute'] == value:}}selected="selected"{{pass}}>{{=value}}</option>
+		{{pass}}
+		<option value="NONE">&nbsp;</option>
+		<option value="NONE" {{if configs['attribute'] == 'index':}}selected="selected"{{pass}}>&mdash; Visualizations &mdash;</option>
+		{{if len(menus['views']) == 0:}}
+			<option value="NONE">(not currently available)</option>
+		{{else:}}
+			{{for value in menus['views']:}}
+				<option value="{{=d['value']}}" {{if configs['dataset'] == d['value']:}}selected="selected"{{pass}}>{{=d['name']}}</option>
+			{{pass}}
+		{{pass}}
+	</select>
+</div>

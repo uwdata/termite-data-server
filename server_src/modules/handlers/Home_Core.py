@@ -12,49 +12,92 @@ class Home_Core(object):
 		self.request = request
 		self.response = response
 		self.configs = self.GetConfigs()
+		self.menus = self.GetMenus()
 		self.params = {}
 		self.content = {}   # All variables returned by an API call
 		self.table = []     # Primary variable returned by an API call as rows of records
 		self.header = []    # Header for primary variable
 
-################################################################################		
+################################################################################
 # Server, Dataset, Model, and Attribute
 
-	EXCLUDED_FOLDERS = frozenset( [ 'admin', 'examples', 'welcome', 'init', 'data' ] )
-	def IsExcluded( self, folder ):
+	def GetConfigs(self):
+		server = self.GetServer()
+		dataset = self.GetDataset(server)
+		model = self.GetModel(server, dataset)
+		attribute = self.GetAttribute(server, dataset, model)
+		url = self.GetURL()
+		configs = {
+			'server' : server,
+			'dataset' : dataset,
+			'model' : model,
+			'attribute' : attribute,
+			'url' : url,
+			'is_text' : self.IsTextFormat(),
+			'is_graph' : self.IsGraphFormat(),
+			'is_json' : self.IsJsonFormat(),
+			'is_csv' : self.IsCSVFormat(),
+			'is_tsv' : self.IsTSVFormat()
+		}
+		return configs
+
+	EXCLUDED_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset' ])
+	def IsExcluded(self, folder):
 		if folder in Home_Core.EXCLUDED_FOLDERS:
 			return True
 		if folder[:5] == 'temp_':
 			return True
 		return False
 
-	def GetServer( self ):
+	def GetServer(self):
 		return self.request.env['HTTP_HOST']
 
-	def GetDataset( self ):
+	def GetDataset(self, server):
 		return self.request.application
 
-	def GetModel( self ):
+	def GetModel(self, server, dataset):
 		return self.request.controller
 
-	def GetAttribute( self ):
+	def GetAttribute(self, server, dataset, model):
 		return self.request.function
 	
-	def GetURL( self ):
+	def GetURL(self):
 		return self.request.env['wsgi_url_scheme'] + '://' + self.request.env['HTTP_HOST'] + self.request.env['PATH_INFO']
 	
-	def GetQueryString( self, keysAndValues = {} ):
-	   	query = { key : self.request.vars[ key ] for key in self.request.vars }
-		query.update( keysAndValues )
-		for key in query.keys():
-			if query[ key ] is None:
-				del query[ key ]
-		if len(query) > 0:
-			return '?' + urllib.urlencode(query)
-		else:
-			return ''
+################################################################################
+# Menus for datasets, models, attributes, etc.
 
-	def GetDatasets( self ):
+	def GetMenus(self):
+		server = self.configs['server']
+		dataset = self.configs['dataset']
+		model = self.configs['model']
+		attribute = self.configs['attribute']
+
+		operations = self.GetOperations()
+		datasets = self.GetDatasets(server)
+		models = self.GetModels(server, dataset)
+		views = self.GetViews(server, dataset, model, attribute)
+		attributes = self.GetAttributes(server, dataset, model, attribute)
+		menus = {
+			'server' : server,
+			'dataset' : dataset,
+			'model' : model,
+			'attribute' : attribute,
+
+			'datasets' : datasets,
+			'operations' : operations,
+			'models' : models,
+			'views' : views,
+			'attributes' : attributes
+		}
+		return menus
+
+	def GetOperations(self):
+		return [
+			{ 'value' : 'dataset', 'name' : 'Upload a new dataset' }
+		]
+		
+	def GetDatasets(self, server):
 		folders = []
 		applications_path = '{}/applications'.format( self.request.env['applications_parent'] )
 		for folder in os.listdir( applications_path ):
@@ -64,8 +107,8 @@ class Home_Core(object):
 					folders.append( folder )
 		folders = sorted( folders )
 		return folders
-	
-	def GetModels( self, dataset ):
+
+	def GetModels( self, server, dataset ):
 		if self.IsExcluded(dataset):
 			return None
 		folders = []
@@ -74,7 +117,10 @@ class Home_Core(object):
 		folders = sorted( folders )
 		return folders
 	
-	def GetAttributes( self, dataset, model ):
+	def GetViews(self, server, dataset, model, attribute):
+		return []
+	
+	def GetAttributes(self, server, dataset, model, attribute):
 		if self.IsExcluded(dataset):
 			return None
 		if model == 'default':
@@ -112,33 +158,7 @@ class Home_Core(object):
 				'SentenceG2'
 			]
 		return []
-	
-	def GetConfigs( self ):
-		server = self.GetServer()
-		dataset = self.GetDataset()
-		datasets = self.GetDatasets()
-		model = self.GetModel()
-		models = self.GetModels( dataset )
-		attribute = self.GetAttribute()
-		attributes = self.GetAttributes( dataset, model )
-		url = self.GetURL()
-		configs = {
-			'server' : server,
-			'dataset' : dataset,
-			'datasets' : datasets,
-			'model' : model,
-			'models' : models,
-			'attribute' : attribute,
-			'attributes' : attributes,
-			'url' : url,
-			'is_text' : self.IsTextFormat(),
-			'is_graph' : self.IsGraphFormat(),
-			'is_json' : self.IsJsonFormat(),
-			'is_csv' : self.IsCSVFormat(),
-			'is_tsv' : self.IsTSVFormat()
-		}
-		return configs
-	
+
 ################################################################################
 # Parameters
 
@@ -243,6 +263,7 @@ class Home_Core(object):
 	def GenerateNormalResponse( self ):
 		data = {
 			'configs' : self.configs,
+			'menus' : self.menus,
 			'params' : self.params
 		}
 		data.update( self.content )

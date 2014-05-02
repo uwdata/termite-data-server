@@ -4,34 +4,18 @@
 	<title>Termite Data Server | {{=configs['server']}}</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" href="{{=URL('static','css/termite.css')}}" />
+	<link rel="stylesheet" href="{{=URL('static','css/font-awesome.min.css')}}" />
+{{include 'py_functions.py'}}
+	<script type="text/javascript">
+{{include 'js_functions.js'}}
+	</script>
+	<script type="text/javascript" src="{{=URL('static','js/jquery.min.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/underscore.min.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/backbone.min.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/d3.min.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/vega.min.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/common.js')}}"></script>
 </head>
-
-{{
-	import urllib
-	def GenerateQueryString( keysAndValues = {} ):
-		query = { key : request.vars[ key ] for key in request.vars }
-		query.update( keysAndValues )
-		for key in query.keys():
-			if query[ key ] is None:
-				del query[ key ]
-			pass
-		if len(query) > 0:
-			return '?' + urllib.urlencode(query)
-		else:
-			return ''
-		pass
-	pass
-	def GenerateURL( keysAndValues = {} ):
-		return configs['url'] + GenerateQueryString( keysAndValues )
-	pass
-}}
-
-{{
-	import json
-	def AsJSON( data ):
-		return json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
-	pass
-}}
 <body>
 	{{include}}
 </body>

@@ -1,0 +1,1 @@
+var configs = {{WriteJSON(configs)}};

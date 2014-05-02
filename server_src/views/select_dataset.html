@@ -1,0 +1,14 @@
+<div class="sep">/</div>
+<div class="subtitle">
+	<select onchange="onSelectDataset(this)">
+		<option value="NONE" {{if configs['dataset'] == 'init':}}selected="selected"{{pass}}>&mdash; Available Datasets &mdash;</option>
+		{{for value in menus['datasets']:}}
+			<option value="{{=value}}" {{if configs['dataset'] == value:}}selected="selected"{{pass}}>{{=value}}</option>
+		{{pass}}
+		<option value="NONE">&nbsp;</option>
+		<option value="NONE">&mdash; Dataset Manager &mdash;</option>
+		{{for d in menus['operations']:}}
+			<option value="{{=d['value']}}" {{if configs['dataset'] == d['value']:}}selected="selected"{{pass}}>{{=d['name']}}</option>
+		{{pass}}
+	</select>
+</div>

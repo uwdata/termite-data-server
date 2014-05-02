@@ -1,0 +1,9 @@
+<div class="sep">/</div>
+<div class="subtitle">
+	<select onchange="onSelectModel(this)">
+		<option value="NONE" {{if configs['model'] == 'default':}}selected="selected"{{pass}}>&mdash; Attributes &mdash;</option>
+		{{for value in menus['models']:}}
+			<option value="{{=value}}" {{if configs['model'] == value:}}selected="selected"{{pass}}>{{=value}}</option>
+		{{pass}}
+	</select>
+</div>
