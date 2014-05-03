@@ -149,4 +149,3 @@ class LDA_DB():
 		self.db.executesql( 'DELETE FROM term_topic_matrix;' )
 		self.db.executesql( 'DELETE FROM doc_topic_matrix;' )
 		self.db.executesql( 'DELETE FROM topic_covariance;' )
-
