@@ -78,7 +78,6 @@ itm-demos:
 	./demo.py nsf10k treetm
 	./demo.py nsf25k treetm
 	./demo.py 20newsgroups treetm
-	./demo.py nsfgrants treetm
 
 stm-demos:
 	./demo.py fomc stm
