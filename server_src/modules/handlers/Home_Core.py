@@ -164,6 +164,7 @@ class Home_Core(object):
 					attributes = [
 						'Update',
 						'Inspect',
+						'GroupInBox',
 						'gib'
 					]
 				if model == 'corpus':

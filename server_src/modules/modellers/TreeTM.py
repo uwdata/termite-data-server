@@ -15,10 +15,10 @@ class InspectLDA(object):
 		with TreeTM( modelsPath = modelPath, resume = True, inspect = True ) as treeTM:
 			treeTM.PrepareToInspect()
 			treeTM.ReadFiles()
-			self.mustLinks = treeTM.GetMustLinks()
-			self.cannotLinks = treeTM.GetCannotLinks()
-			self.keepTerms = treeTM.GetKeepTerms()
-			self.removeTerms = sorted(treeTM.GetRemoveTerms())
+			self.mustLinks = [ sorted(d) for d in treeTM.GetMustLinks() ]
+			self.cannotLinks = [ sorted(d) for d in treeTM.GetCannotLinks() ]
+			self.keepTerms = { key : sorted(d) for key, d in treeTM.GetKeepTerms().iteritems() }
+			self.removeTerms = sorted( treeTM.GetRemoveTerms() )
 			self.iters = treeTM.prevIter
 			self.entryID = treeTM.prevEntryID
 	
@@ -409,9 +409,9 @@ class TreeTM(object):
 				action = values[0]
 				terms = values[1:]
 				if action == 'MERGE_':
-					mustLinkConstraints.append(terms)
+					mustLinkConstraints.append(frozenset(terms))
 				if action == 'SPLIT_':
-					cannotLinkConstraints.append(terms)
+					cannotLinkConstraints.append(frozenset(terms))
 		self.mustLinkConstraints = mustLinkConstraints
 		self.cannotLinkConstraints = cannotLinkConstraints
 
@@ -430,8 +430,8 @@ class TreeTM(object):
 			for line in f.read().decode('utf-8').splitlines():
 				term, topic = line.split('\t')
 				if topic not in keepTerms:
-					keepTerms[topic] = []
-				keepTerms[topic].append(term)
+					keepTerms[topic] = set()
+				keepTerms[topic].add(term)
 		self.keepTerms = keepTerms
 				
 	def WriteKeepTermsFile( self ):

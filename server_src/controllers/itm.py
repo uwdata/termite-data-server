@@ -26,6 +26,13 @@ def Inspect():
 	gib.InspectModel()
 	return gib.GenerateResponse()
 
+def GroupInBox():
+	with Corpus_DB() as corpus_db:
+		with LDA_DB() as lda_db:
+			gib = ITM_GroupInBox(request, response, corpus_db, lda_db)
+	gib.LoadGIB()
+	return gib.GenerateResponse()
+
 def gib():
 	with Corpus_DB() as corpus_db:
 		with LDA_DB() as lda_db:

@@ -1,0 +1,24 @@
+{{extend 'template.html'}}
+
+<div class="head">
+	<div class="title">Termite Data Server</div>
+	{{include 'select_server.html'}}
+	{{include 'select_dataset.html'}}
+	{{include 'select_model.html'}}
+	{{include 'select_attribute.html'}}
+</div>
+
+<div class="body">
+	<div class="heading">Method: <b>itm/GroupInBox</b></div>
+	<div class="info">
+		Retrieve the top terms, term PMI, and topic covariance for the latest run of ITM.
+	</div>
+	{{include 'insert_request.html'}}
+	<div class="params">
+		<p>
+			<span class="key">format = </span>
+			<span class="value">{{MakeParamFormat(json_only=True)}}</span>
+		</p>
+	</div>
+	{{include 'insert_response.html'}}
+</div>
