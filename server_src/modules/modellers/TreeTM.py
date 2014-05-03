@@ -205,7 +205,7 @@ class TreeTM(object):
 				self.numTopics = numTopics
 				self.logger.info( 'Reading an existing interactive topic model: [%s][entry-%06d]', self.modelsPath, self.prevEntryID )
 			else:
-				completedEntryID, nextEntryID, numTopics = self.ReadRunIndexFile()
+				completedEntryID, nextEntryID, numTopics = self.UpdateRunIndexFile()
 				if prevEntryID is None:
 					self.prevEntryID = completedEntryID
 				else:
@@ -350,6 +350,14 @@ class TreeTM(object):
 		return 0, numTopics
 		
 	def ReadRunIndexFile( self ):
+		with open( self.filenameIndex, 'r' ) as f:
+			data = json.load( f, encoding = 'utf-8' )
+		completedEntryID = data['completedEntryID']
+		nextEntryID = data['nextEntryID']
+		numTopics = data['numTopics']
+		return completedEntryID, nextEntryID, numTopics
+
+	def UpdateRunIndexFile( self ):
 		with open( self.filenameIndex, 'r' ) as f:
 			data = json.load( f, encoding = 'utf-8' )
 		completedEntryID = data['completedEntryID']
