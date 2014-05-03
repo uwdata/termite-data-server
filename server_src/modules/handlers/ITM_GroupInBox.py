@@ -7,7 +7,7 @@ from db.Corpus_DB import Corpus_DB
 from db.LDA_DB import LDA_DB
 from db.LDA_ComputeStats import LDA_ComputeStats
 from handlers.Home_Core import Home_Core
-from modellers.TreeTM import RefineLDA
+from modellers.TreeTM import RefineLDA, InspectLDA
 from readers.TreeTMReader import TreeTMReader
 
 class ITM_GroupInBox(Home_Core):
@@ -28,17 +28,6 @@ class ITM_GroupInBox(Home_Core):
 			action = ''
 		return action
 
-	def GetIterCount(self, app_model_path):
-		filename = '{}/index.json'.format(app_model_path)
-		with open(filename, 'r') as f:
-			data = json.load(f, encoding='utf-8')
-			entry = data['completedEntryID']
-		filename = '{}/entry-{:06d}/states.json'.format(app_model_path, entry)
-		with open(filename, 'r') as f:
-			data = json.load(f, encoding='utf-8')
-			iterCount = data['numIters']
-		return iterCount
-
 	def GetIters(self, iterCount):
 		iters = self.GetNonNegativeIntegerParam('iters')
 		self.params.update({
@@ -57,10 +46,10 @@ class ITM_GroupInBox(Home_Core):
 			'keepTerms' : keepTermsStr,
 			'removeTerms' : removeTermsStr
 		})
-		mustLinks = []
-		cannotLinks = []
-		keepTerms = {}
-		removeTerms = []
+		mustLinks = None
+		cannotLinks = None
+		keepTerms = None
+		removeTerms = None
 		try:
 			data = json.loads(mustLinksStr)
 			if type(data) is list:
@@ -91,37 +80,54 @@ class ITM_GroupInBox(Home_Core):
 	def UpdateModel(self):
 		app_path = self.request.folder
 		app_model_path = '{}/data/treetm'.format(app_path)
-		iterCount = self.GetIterCount(app_model_path)
-		iters = self.GetIters(iterCount)
-		mustLinks, cannotLinks, keepTerms, removeTerms = self.GetConstraints()
 		action = self.GetAction()
-		if action != 'train' or iters is None:
-			iterCount = self.GetIterCount(app_model_path)
-			self.content.update({
-				'IterCount' : iterCount,
-				'Action' : action,
-				'MustLinks' : mustLinks,
-				'CannotLinks' : cannotLinks,
-				'KeepTerms' : keepTerms,
-				'RemoveTerms' : removeTerms
-			})
-		else:
-			RefineLDA( app_model_path, numIters = iters, mustLinks = mustLinks, cannotLinks = cannotLinks, keepTerms = keepTerms, removeTerms = removeTerms )
+		reader = InspectLDA( app_model_path )
+		currIter = reader.Iters()
+		finalIter = self.GetIters(currIter)
+		mustLinks, cannotLinks, keepTerms, removeTerms = self.GetConstraints()
+		if mustLinks is None:
+			mustLinks = reader.MustLinks()
+		if cannotLinks is None:
+			cannotLinks = reader.CannotLinks()
+		if keepTerms is None:
+			keepTerms = reader.KeepTerms()
+		if removeTerms is None:
+			removeTerms = reader.RemoveTerms()
+		if action == 'train' and finalIter is not None and finalIter > currIter:
+			RefineLDA( app_model_path, numIters = finalIter, mustLinks = mustLinks, cannotLinks = cannotLinks, keepTerms = keepTerms, removeTerms = removeTerms )
 			with Corpus_DB() as corpus_db:
 				with LDA_DB( isReset = True ) as lda_db:
 					reader = TreeTMReader( lda_db, app_model_path )
 					reader.Execute()
 					computer = LDA_ComputeStats( lda_db, corpus_db )
 					computer.Execute()
-				iterCount = self.GetIterCount(app_model_path)
-				self.content.update({
-					'IterCount' : iterCount,
-					'Action' : action,
-					'MustLinks' : mustLinks,
-					'CannotLinks' : cannotLinks,
-					'KeepTerms' : keepTerms,
-					'RemoveTerms' : removeTerms
-				})
+	
+	def InspectModel(self):
+		app_path = self.request.folder
+		app_model_path = '{}/data/treetm'.format(app_path)
+		action = self.GetAction()
+		reader = InspectLDA( app_model_path )
+		iterCount = reader.Iters()
+		mustLinks = reader.MustLinks()
+		cannotLinks = reader.CannotLinks()
+		keepTerms = reader.KeepTerms()
+		removeTerms = reader.RemoveTerms()
+		self.content.update({
+			'IterCount' : iterCount,
+			'Action' : action,
+			'MustLinks' : mustLinks,
+			'CannotLinks' : cannotLinks,
+			'KeepTerms' : keepTerms,
+			'RemoveTerms' : removeTerms
+		})
+	
+	def LoadGIB(self):
+		self.LoadTopTermsPerTopic()
+		self.LoadTopicCovariance()
+		self.CreateTempVocabTable()
+		self.LoadTermPMI()
+#		self.LoadSentencePMI()
+		self.DeleteTempVocabTable()
 
 ################################################################################
 
@@ -134,15 +140,6 @@ class ITM_GroupInBox(Home_Core):
 			termLimit = 5
 		return termLimit
 
-	def Load(self):
-		self.UpdateModel()
-		self.LoadTopTermsPerTopic()
-		self.LoadTopicCovariance()
-		self.CreateTempVocabTable()
-		self.LoadTermPMI()
-#		self.LoadSentencePMI()
-		self.DeleteTempVocabTable()
-		
 	def LoadTopTermsPerTopic( self ):
 		termLimit = self.GetTermLimit()
 		topicCount = self.ldaDB(self.ldaDB.topics).count()

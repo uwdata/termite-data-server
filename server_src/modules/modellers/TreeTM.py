@@ -7,6 +7,39 @@ import os
 import shutil
 import subprocess
 
+class InspectLDA(object):
+	"""
+	modelPath = Folder for storing all output files
+	"""
+	def __init__( self, modelPath, MALLET_PATH = 'tools/mallet' ):
+		with TreeTM( modelsPath = modelPath, resume = True, inspect = True ) as treeTM:
+			treeTM.PrepareToInspect()
+			treeTM.ReadFiles()
+			self.mustLinks = treeTM.GetMustLinks()
+			self.cannotLinks = treeTM.GetCannotLinks()
+			self.keepTerms = treeTM.GetKeepTerms()
+			self.removeTerms = sorted(treeTM.GetRemoveTerms())
+			self.iters = treeTM.prevIter
+			self.entryID = treeTM.prevEntryID
+	
+	def MustLinks( self ):
+		return self.mustLinks
+	
+	def CannotLinks( self ):
+		return self.cannotLinks
+	
+	def KeepTerms( self ):
+		return self.keepTerms
+	
+	def RemoveTerms( self ):
+		return self.removeTerms
+	
+	def Iters( self ):
+		return self.iters
+	
+	def EntryID( self ):
+		return self.entryID
+	
 class RefineLDA(object):
 	"""
 	modelPath = Folder for storing all output files
@@ -19,12 +52,13 @@ class RefineLDA(object):
 	def __init__( self, modelPath, numIters = 1000, prevEntry = None,
 			mustLinks = None, cannotLinks = None, keepTerms = None, removeTerms = None,
 			MALLET_PATH = 'tools/mallet' ):
-		with TreeTM( modelsPath = modelPath, resume = True, finalIter = numIters, prevEntryID = prevEntry ) as treeTM:
-			treeTM.ResumeTraining()
+		with TreeTM( modelsPath = modelPath, resume = True, nextIter = numIters, prevEntryID = prevEntry ) as treeTM:
+			treeTM.PrepareToResumeTraining()
+			treeTM.ReadFiles()
 			if mustLinks is not None:
-				treeTM.SetMustLinkConstraints( mustLinks )
+				treeTM.SetMustLinks( mustLinks )
 			if cannotLinks is not None:
-				treeTM.SetCannotLinkConstraints( cannotLinks )
+				treeTM.SetCannoLinks( cannotLinks )
 			if keepTerms is not None:
 				treeTM.SetKeepTerms( keepTerms )
 			if removeTerms is not None:
@@ -45,12 +79,13 @@ class BuildLDA(object):
 	def __init__( self, corpusPath, modelPath, tokenRegex = r'\w{3,}', numTopics = 20, numIters = 1000,
 			mustLinks = None, cannotLinks = None, keepTerms = None, removeTerms = None,
 			MALLET_PATH = 'tools/mallet' ):
-		with TreeTM( corpusPath = corpusPath, modelsPath = modelPath, resume = False, tokenRegex = tokenRegex, numTopics = numTopics, finalIter = numIters ) as treeTM:
-			treeTM.StartTraining()
+		with TreeTM( corpusPath = corpusPath, modelsPath = modelPath, resume = False, tokenRegex = tokenRegex, numTopics = numTopics, nextIter = numIters ) as treeTM:
+			treeTM.PrepareToStartTraining()
+			treeTM.ReadFiles()
 			if mustLinks is not None:
-				treeTM.SetMustLinkConstraints( mustLinks )
+				treeTM.SetMustLinks( mustLinks )
 			if cannotLinks is not None:
-				treeTM.SetCannotLinkConstraints( cannotLinks )
+				treeTM.SetCannoLinks( cannotLinks )
 			if keepTerms is not None:
 				treeTM.SetKeepTerms( keepTerms )
 			if removeTerms is not None:
@@ -83,7 +118,7 @@ java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Gen
 echo ">> Start training a topic model..."
 java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
 	--input {filenameMallet} \\
-	--output-interval {finalIter} \\
+	--output-interval {nextIter} \\
 	--output-dir {filenameNextModel} \\
 	--vocab {filenameVocab} \\
 	--tree {filenameWN} \\
@@ -91,7 +126,7 @@ java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vec
 	--inferencer-filename {filenameInferencer} \\
 	--alpha 0.5 \\
 	--num-topics {numTopics} \\
-	--num-iterations {finalIter} \\
+	--num-iterations {nextIter} \\
 	--num-top-words 480 \\
 	--random-seed 0 \\
 	--forget-topics doc \\
@@ -113,7 +148,7 @@ java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Gen
 echo ">> Resume training a topic model..."
 java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vectors2TreeTopics \\
 	--input {filenameMallet} \\
-	--output-interval {finalIter} \\
+	--output-interval {nextIter} \\
 	--output-dir {filenameNextModel} \\
 	--vocab {filenameVocab} \\
 	--tree {filenameWN} \\
@@ -121,7 +156,7 @@ java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vec
 	--inferencer-filename {filenameInferencer} \\
 	--alpha 0.5 \\
 	--num-topics {numTopics} \\
-	--num-iterations {finalIter} \\
+	--num-iterations {nextIter} \\
 	--num-top-words 480 \\
 	--random-seed 0 \\
 	--forget-topics doc \\
@@ -133,19 +168,22 @@ java -Xmx8g -cp {TREETM_PATH}/class:{TREETM_PATH}/lib/* cc.mallet.topics.tui.Vec
 """
 
 class TreeTM(object):
-	def __init__( self, corpusPath = None, modelsPath = None, tokenRegex = None, resume = False, prevEntryID = None, numTopics = None, finalIter = None, MALLET_PATH = 'tools/mallet', TREETM_PATH = 'tools/treetm' ):
+	def __init__( self, corpusPath = None, modelsPath = None, tokenRegex = None, resume = False, inspect = False, prevEntryID = None, numTopics = None, nextIter = None, MALLET_PATH = 'tools/mallet', TREETM_PATH = 'tools/treetm' ):
 		self.logger = logging.getLogger('termite')
 		self.TREETM_PATH = TREETM_PATH
 		self.MALLET_PATH = MALLET_PATH
 		
 		if resume:
-			assert modelsPath is not None
-			assert finalIter is not None
+			if inspect:
+				assert modelsPath is not None
+			else:
+				assert modelsPath is not None
+				assert nextIter is not None
 		else:
 			assert corpusPath is not None
 			assert modelsPath is not None
 			assert tokenRegex is not None
-			assert finalIter is not None
+			assert nextIter is not None
 			assert numTopics is not None
 
 		self.corpusPath = corpusPath
@@ -157,14 +195,24 @@ class TreeTM(object):
 		self.filenameHyperparams = '{modelsPath}/tree_hyperparams'.format( modelsPath = self.modelsPath )
 
 		if resume:
-			completedEntryID, nextEntryID, numTopics = self.ReadRunIndexFile()
-			if prevEntryID is None:
-				self.prevEntryID = completedEntryID
+			if inspect:
+				completedEntryID, nextEntryID, numTopics = self.ReadRunIndexFile()
+				if prevEntryID is None:
+					self.prevEntryID = completedEntryID
+				else:
+					self.prevEntryID = prevEntryID
+				self.nextEntryID = -1
+				self.numTopics = numTopics
+				self.logger.info( 'Reading an existing interactive topic model: [%s][entry-%06d]', self.modelsPath, self.prevEntryID )
 			else:
-				self.prevEntryID = prevEntryID
-			self.nextEntryID = nextEntryID
-			self.numTopics = numTopics
-			self.logger.info( 'Training an existing interactive topic model: [%s][entry-%06d] --> [%s][entry-%06d]', self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
+				completedEntryID, nextEntryID, numTopics = self.ReadRunIndexFile()
+				if prevEntryID is None:
+					self.prevEntryID = completedEntryID
+				else:
+					self.prevEntryID = prevEntryID
+				self.nextEntryID = nextEntryID
+				self.numTopics = numTopics
+				self.logger.info( 'Training an existing interactive topic model: [%s][entry-%06d] --> [%s][entry-%06d]', self.modelsPath, self.prevEntryID, self.modelsPath, self.nextEntryID )
 		else:
 			nextEntryID, numTopics = self.CreateRunIndexFile( numTopics )
 			self.prevEntryID = -1
@@ -174,14 +222,18 @@ class TreeTM(object):
 			self.logger.info( 'Training a new interactive topic model: [%s] --> [%s][entry-%06d]', self.corpusInMallet, self.modelsPath, self.nextEntryID )
 
 		self.resume = resume
-		self.finalIter = finalIter
+		self.inspect = inspect
+		self.prevIter = None
+		self.nextIter = nextIter
 		self.prevEntryPath = '{modelsPath}/entry-{prevEntryID:06d}'.format( modelsPath = self.modelsPath, prevEntryID = self.prevEntryID )
 		self.nextEntryPath = '{modelsPath}/entry-{nextEntryID:06d}'.format( modelsPath = self.modelsPath, nextEntryID = self.nextEntryID )
 		self.filenamePrevStates  = '{prevEntryPath}/states.json'.format( prevEntryPath = self.prevEntryPath )
 		self.filenamePrevModel   = '{prevEntryPath}/model'.format( prevEntryPath = self.prevEntryPath )
 		self.filenameNextStates  = '{nextEntryPath}/states.json'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameNextModel   = '{nextEntryPath}/model'.format( nextEntryPath = self.nextEntryPath )
+		self.filenameConstraintsPrevious = '{prevEntryPath}/constraint.all'.format( prevEntryPath = self.prevEntryPath )
 		self.filenameConstraints         = '{nextEntryPath}/constraint.all'.format( nextEntryPath = self.nextEntryPath )
+		self.filenameKeepTermsPrevious   = '{prevEntryPath}/important.keep'.format( prevEntryPath = self.prevEntryPath )
 		self.filenameKeepTerms           = '{nextEntryPath}/important.keep'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameRemoveTermsPrevious = '{prevEntryPath}/removed.all'.format( prevEntryPath = self.prevEntryPath )
 		self.filenameRemoveTermsPrefix   = '{nextEntryPath}/removed'.format( nextEntryPath = self.nextEntryPath )
@@ -198,26 +250,29 @@ class TreeTM(object):
 			filenameVocab = self.filenameVocab
 		) for s in GENERATE_VOCAB_COMMAND ]
 		if resume:
-			self.EXECUTE_BASH_SCRIPT = RESUME_BASH_SCRIPT.format(
-				TREETM_PATH = self.TREETM_PATH,
-				numTopics = self.numTopics,
-				finalIter = self.finalIter,
-				filenameMallet = self.filenameMallet,
-				filenameVocab = self.filenameVocab,
-				filenameHyperparams = self.filenameHyperparams,
-				filenamePrevModel = self.filenamePrevModel,
-				filenameNextModel = self.filenameNextModel,
-				filenameConstraints = self.filenameConstraints,
-				filenameKeepTerms = self.filenameKeepTerms,
-				filenameRemoveTermsPrefix = self.filenameRemoveTermsPrefix,
-				filenameWN = self.filenameWN,
-				filenameInferencer = self.filenameInferencer
-			)
+			if inspect:
+				self.EXECUTE_BASH_SCRIPT = None
+			else:
+				self.EXECUTE_BASH_SCRIPT = RESUME_BASH_SCRIPT.format(
+					TREETM_PATH = self.TREETM_PATH,
+					numTopics = self.numTopics,
+					nextIter = self.nextIter,
+					filenameMallet = self.filenameMallet,
+					filenameVocab = self.filenameVocab,
+					filenameHyperparams = self.filenameHyperparams,
+					filenamePrevModel = self.filenamePrevModel,
+					filenameNextModel = self.filenameNextModel,
+					filenameConstraints = self.filenameConstraints,
+					filenameKeepTerms = self.filenameKeepTerms,
+					filenameRemoveTermsPrefix = self.filenameRemoveTermsPrefix,
+					filenameWN = self.filenameWN,
+					filenameInferencer = self.filenameInferencer
+				)
 		else:
 			self.EXECUTE_BASH_SCRIPT = INIT_BASH_SCRIPT.format(
 				TREETM_PATH = self.TREETM_PATH,
 				numTopics = self.numTopics,
-				finalIter = self.finalIter,
+				nextIter = self.nextIter,
 				filenameMallet = self.filenameMallet,
 				filenameVocab = self.filenameVocab,
 				filenameHyperparams = self.filenameHyperparams,
@@ -245,11 +300,11 @@ class TreeTM(object):
 ################################################################################
 # Setters (public methods)
 		
-	def SetMustLinkConstraints( self, mustLinkConstraints ):
+	def SetMustLinks( self, mustLinkConstraints ):
 		"""Argument 'mustLinkConstraints' should be a list of lists of words"""
 		self.mustLinkConstraints = [ frozenset(constraint) for constraint in mustLinkConstraints ]
 
-	def SetCannotLinkConstraints( self, cannotLinkConstraints ):
+	def SetCannoLinks( self, cannotLinkConstraints ):
 		"""Argument 'cannotLinkConstraints' should be a list of lists of words"""
 		self.cannotLinkConstraints = [ frozenset(constraint) for constraint in cannotLinkConstraints ]
 
@@ -264,10 +319,22 @@ class TreeTM(object):
 	
 	def SetRemoveTerms( self, removeTerms ):
 		"""Argument 'removeTerms' should be a list of words"""
-		removeTermsPrevious = self.ReadRemoveTermsFile()
+		removeTermsPrevious = self.removeTermsAll
 		self.removeTermsAll = frozenset(removeTerms)
 		self.removeTermsNew = self.removeTermsAll.difference(removeTermsPrevious)
-
+	
+	def GetMustLinks( self ):
+		return self.mustLinkConstraints
+	
+	def GetCannotLinks( self ):
+		return self.cannotLinkConstraints
+	
+	def GetKeepTerms( self ):
+		return self.keepTerms
+	
+	def GetRemoveTerms( self ):
+		return self.removeTermsAll
+	
 ################################################################################
 # File I/O Operations
 
@@ -300,10 +367,15 @@ class TreeTM(object):
 		with open( self.filenameIndex, 'w' ) as f:
 			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
+	def ReadStatesFile( self ):
+		with open( self.filenamePrevStates, 'r' ) as f:
+			states = json.load( f, encoding = 'utf-8' )
+		self.prevIter = states['numIters']
+		
 	def WriteStatesFile( self ):
 		states = {
 			'prevEntryID' : self.prevEntryID,
-			'numIters' : self.finalIter
+			'numIters' : self.nextIter
 		}
 		with open( self.filenameNextStates, 'w' ) as f:
 			json.dump( states, f, encoding = 'utf-8', indent = 2, sort_keys = True )
@@ -319,6 +391,21 @@ class TreeTM(object):
 	def CreateEntryFolder( self ):
 		if not os.path.exists( self.nextEntryPath ):
 			os.makedirs( self.nextEntryPath )
+	
+	def ReadConstraintsFile( self ):
+		mustLinkConstraints = []
+		cannotLinkConstraints = []
+		with open( self.filenameConstraintsPrevious, 'r' ) as f:
+			for line in f.read().decode('utf-8').splitlines():
+				values = line.split('\t')
+				action = values[0]
+				terms = values[1:]
+				if action == 'MERGE_':
+					mustLinkConstraints.append(terms)
+				if action == 'SPLIT_':
+					cannotLinkConstraints.append(terms)
+		self.mustLinkConstraints = mustLinkConstraints
+		self.cannotLinkConstraints = cannotLinkConstraints
 
 	def WriteConstraintsFile( self ):
 		lines = []
@@ -329,6 +416,16 @@ class TreeTM(object):
 		with open( self.filenameConstraints, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
 	
+	def ReadKeepTermsFile( self ):
+		keepTerms = {}
+		with open( self.filenameKeepTermsPrevious, 'r' ) as f:
+			for line in f.read().decode('utf-8').splitlines():
+				term, topic = line.split('\t')
+				if topic not in keepTerms:
+					keepTerms[topic] = []
+				keepTerms[topic].append(term)
+		self.keepTerms = keepTerms
+				
 	def WriteKeepTermsFile( self ):
 		lines = []
 		for topic, terms in self.keepTerms.iteritems():
@@ -340,7 +437,7 @@ class TreeTM(object):
 	def ReadRemoveTermsFile( self ):
 		with open( self.filenameRemoveTermsPrevious, 'r' ) as f:
 			lines = f.read().decode('utf-8').splitlines()
-		return frozenset(lines)
+		self.removeTermsAll = frozenset(lines)
 		
 	def WriteRemoveTermsFiles( self ):
 		lines = [ term for term in self.removeTermsAll ]
@@ -397,16 +494,27 @@ class TreeTM(object):
 		while p.poll() is None:
 			self.logger.debug( p.stdout.readline().rstrip('\n') )
 	
-	def StartTraining( self ):
+	def PrepareToInspect( self ):
+		assert self.resume
+		assert self.inspect
+		
+	def PrepareToStartTraining( self ):
 		assert not self.resume
 		self.CreateEntryFolder()
 		self.ImportFileOrFolder()
 		self.CreateHyperparamsFile()
 		self.CreateVocabFile()
 	
-	def ResumeTraining( self ):
+	def PrepareToResumeTraining( self ):
 		assert self.resume
+		assert not self.inspect
 		self.CopyEntryFolder()
+	
+	def ReadFiles( self ):
+		self.ReadStatesFile()
+		self.ReadConstraintsFile()
+		self.ReadKeepTermsFile()
+		self.ReadRemoveTermsFile()
 
 	def WriteFiles( self ):
 		self.CreateEntryFolder()

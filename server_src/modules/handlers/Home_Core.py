@@ -163,6 +163,7 @@ class Home_Core(object):
 				if model == 'itm':
 					attributes = [
 						'Update',
+						'Inspect',
 						'gib'
 					]
 				if model == 'corpus':

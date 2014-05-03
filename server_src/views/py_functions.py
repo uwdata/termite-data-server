@@ -4,7 +4,7 @@
 	import json
 
 	def MakeParamTextArea(name, value, width = 200, height = 50):
-		HTML = """<textarea name="{NAME}" onkeyup="updateParamTextInput('{NAME}',this)" style="width: {WIDTH}px; height: {HEIGHT}px; vertical-align: -{THIRD_HEIGHT}px; margin-bottom: 10px">{VALUE}</textarea>"""
+		HTML = """<textarea name="{NAME}" onchange="updateParamTextInput('{NAME}',this)" style="width: {WIDTH}px; height: {HEIGHT}px; vertical-align: -{THIRD_HEIGHT}px; margin-bottom: 10px">{VALUE}</textarea>"""
 		html = HTML.format(NAME = name, VALUE=value, WIDTH=width, HEIGHT=height, THIRD_HEIGHT=height/2-10)
 		response.write(html, escape=False)
 	pass
