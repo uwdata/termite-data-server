@@ -12,7 +12,8 @@ import shutil
 from apps.CreateApp import CreateApp
 from apps.SplitSentences import SplitSentences
 from db.Corpus_DB import Corpus_DB
-from db.Corpus_ComputeStats import Corpus_ComputeStats
+from db.BOW_DB import BOW_DB
+from db.BOW_ComputeStats import BOW_ComputeStats
 from db.LDA_DB import LDA_DB
 from db.LDA_ComputeStats import LDA_ComputeStats
 from readers.MalletReader import MalletReader
@@ -36,39 +37,36 @@ def ImportMalletLDA( app_name, model_path, corpus_path, database_path, is_quiet,
 	
 	if force_overwrite or not os.path.exists( app_path ):
 		with CreateApp(app_name) as app:
-			# Create a copy of the original corpus
-			app_database_filename = '{}/corpus.db'.format( app.GetDataPath() )
+			# Import corpus (models/corpus.db, data/corpus.txt, data/sentences.txt)
+			app_database_filename = '{}/corpus.db'.format( app.GetDatabasePath() )
+			app_corpus_filename = '{}/corpus.txt'.format( app.GetDataPath() )
+			app_sentences_filename = '{}/sentences.txt'.format( app.GetDataPath() )
 			logger.info( 'Copying [%s] --> [%s]', database_filename, app_database_filename )
 			shutil.copy( database_filename, app_database_filename )
-			
-			# Import corpus (models/corpus.db, data/corpus.txt, data/sentences.txt)
-			app_corpus_filename = '{}/corpus.txt'.format( app.GetDataPath() )
 			logger.info( 'Copying [%s] --> [%s]', corpus_filename, app_corpus_filename )
 			shutil.copy( corpus_filename, app_corpus_filename )
-			app_sentences_filename = '{}/sentences.txt'.format( app.GetDataPath() )
 			logger.info( 'Extracting [%s] --> [%s]', corpus_filename, app_sentences_filename )
 			SplitSentences( corpus_filename, app_sentences_filename )
-			app_db_filename = '{}/corpus.db'.format( app.GetDatabasePath() )
-			logger.info( 'Copying [%s] --> [%s]', database_filename, app_db_filename )
-			shutil.copy( database_filename, app_db_filename )
 			
-			# Compute derived-statistics about the corpus
+			# Import model (data/*)
+			app_model_path = '{}/mallet-lda'.format( app.GetDataPath() )
+			logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
+			shutil.copytree( model_path, app_model_path )
+			
 			db_path = app.GetDatabasePath()
-			with Corpus_DB(db_path, isInit=True) as corpus_db:
-				computer = Corpus_ComputeStats( corpus_db, app_corpus_filename, app_sentences_filename )
-				computer.Execute()
+			with Corpus_DB(db_path) as corpus_db:
 				
-				# Import model
-				app_model_path = '{}/mallet-lda'.format( app.GetDataPath() )
-				logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
-				shutil.copytree( model_path, app_model_path )
-			
-				# Compute derived-statistics about the model
+				# Create a bow-of-words language model
+				with BOW_DB(db_path, isInit=True) as bow_db:
+					bow_computer = BOW_ComputeStats(bow_db, corpus_db, app_corpus_filename, app_sentences_filename)
+					bow_computer.Execute()
+					
+				# Compute derived-statistics about an LDA topic model
 				with LDA_DB(db_path, isInit=True) as lda_db:
-					reader = MalletReader( lda_db, app_model_path )
-					reader.Execute()
-					computer = LDA_ComputeStats( lda_db, corpus_db )
-					computer.Execute()			
+					mallet_reader = MalletReader(lda_db, app_model_path)
+					mallet_reader.Execute()
+					lda_computer = LDA_ComputeStats(lda_db, corpus_db)
+					lda_computer.Execute()			
 	else:
 		logger.info( '    Already available: %s', app_path )
 

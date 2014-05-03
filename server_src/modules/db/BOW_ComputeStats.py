@@ -6,27 +6,33 @@ import math
 import re
 from collections import Counter
 
-class Corpus_ComputeStats():
+class BOW_ComputeStats():
 	
 	DEFAULT_STOPWORDS = 'tools/mallet/stoplists/en.txt'
 	
-	def __init__(self, corpus_db, corpusFilename, sentencesFilename, STOPWORDS = None):
+	"""
+	Create a bag-of-words language model
+	"""
+	def __init__(self, bow_db, corpus_db, corpus_filename, sentences_filename, STOPWORDS = None):
 		self.logger = logging.getLogger('termite')
-		self.corpus_db = corpus_db
-		self.db = self.corpus_db.db
-		self.corpusFilename = corpusFilename
-		self.sentencesFilename = sentencesFilename
+		self.db = bow_db.db
+		self.bowDB = bow_db
+		self.corpusDB = corpus_db
+		self.corpusFilename = corpus_filename
+		self.sentencesFilename = sentences_filename
+		self.stopwords = self.LoadStopwords(STOPWORDS if STOPWORDS is not None else BOW_ComputeStats.DEFAULT_STOPWORDS)
 		
-		self.tokenRegexStr = corpus_db.GetOption('token_regex')
+		self.tokenRegexStr = self.corpusDB.GetOption('token_regex')
 		self.tokenRegex = re.compile(self.tokenRegexStr)
-		self.minFreq = int(self.corpus_db.GetOption('min_freq'))
-		self.minDocFreq = int(self.corpus_db.GetOption('min_doc_freq'))
-		self.maxFreqCount = int(self.corpus_db.GetOption('max_freq_count'))
-		self.maxCoFreqCount = int(self.corpus_db.GetOption('max_co_freq_count'))
-		self.stopwords = self.LoadStopwords(STOPWORDS if STOPWORDS is not None else Corpus_ComputeStats.DEFAULT_STOPWORDS)
-	
+		self.minFreq = int(self.corpusDB.GetOption('min_freq'))
+		self.minDocFreq = int(self.corpusDB.GetOption('min_doc_freq'))
+		self.maxFreqCount = int(self.bowDB.GetOption('max_freq_count'))
+		self.maxCoFreqCount = int(self.bowDB.GetOption('max_co_freq_count'))
+
+################################################################################
+
 	def Execute(self):
-		self.logger.info( 'Corpus statistics' )
+		self.logger.info( 'Computing bag-of-words statistics' )
 		self.logger.info( '          token_regex = %s', self.tokenRegexStr )
 		self.logger.info( '             min_freq = %d', self.minFreq )
 		self.logger.info( '         min_doc_freq = %d', self.minDocFreq )
@@ -36,7 +42,7 @@ class Corpus_ComputeStats():
 		self.ComputeAndSaveDocumentLevelStatistics()
 		self.logger.info( 'Computing sentence-level term statistics...' )
 		self.ComputeAndSaveSentenceLevelStatistics()
-		self.corpus_db.AddModel('corpus', 'Text Corpus')
+		self.corpusDB.AddModel('bow', 'Bag-of-Words Language Model')
 			
 	def LoadStopwords(self, filename):
 		stopwords = []

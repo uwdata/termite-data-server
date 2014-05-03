@@ -8,19 +8,22 @@ class LDA_ComputeStats():
 	def __init__(self, lda_db, corpus_db):
 		self.logger = logging.getLogger('termite')
 		self.db = lda_db.db
-		self.lda_db = lda_db
-		self.corpus_db = corpus_db
+		self.ldaDB = lda_db
+		self.corpusDB = corpus_db
 		
-		self.maxCoTopicCount = int(lda_db.GetOption('max_co_topic_count'))
+		self.maxCoTopicCount = int(self.ldaDB.GetOption('max_co_topic_count'))
+
+################################################################################
 
 	def Execute(self):
-		self.logger.info( 'Computing derived LDA statistics...' )
+		self.logger.info( 'Computing derived LDA topic model statistics...' )
+		self.logger.info( '    max_co_topic_count = %s', self.maxCoTopicCount )
 		self.ReadDocCount()
 		self.ReadTopicCount()
 		self.ReadDocTopicMatrix()
 		self.ComputeTopicCooccurrences()
 		self.ComputeTopicCovariance()
-		self.corpus_db.AddModel('lda', 'LDA Topic Model')
+		self.corpusDB.AddModel('lda', 'Topic Model')
 	
 	def ReadDocCount(self):
 		count = self.db(self.db.docs).count()
@@ -66,9 +69,6 @@ class LDA_ComputeStats():
 		data = data[:self.maxCoTopicCount]
 		self.topicCooccurrences = data
 
-		self.logger.debug( '    Saving topic_cooccurrences...' )
-		self.db.topic_cooccurrences.bulk_insert( self.topicCooccurrences )
-
 	def ComputeTopicCovariance(self):
 		self.logger.debug( '    Computing topic covariance...' )
 		data = self.topicCooccurrences
@@ -77,6 +77,9 @@ class LDA_ComputeStats():
 		for d in data:
 			d['value'] *= normalization
 		self.topicCovariance = data
-
+	
+	def WriteTopicCovariance(self):
 		self.logger.debug( '    Saving topic_covariance...' )
-		self.db.topic_covariance.bulk_insert( self.topicCovariance )
+		rows = self.topicCovariance
+		self.logger.debug( '        inserting %d rows...', len(rows) )
+		self.db.topic_covariance.bulk_insert(rows)

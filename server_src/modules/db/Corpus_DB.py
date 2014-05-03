@@ -11,37 +11,27 @@ class Corpus_DB():
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DOC_IDS = ['doc_id', 'docid']
 	DOC_CONTENTS = ['doc_content', 'doccontent', 'docbody', 'doc_body']
+	MODEL_KEY = 'corpus'
+	MODEL_DESC = 'Text Corpus'
+	MODEL_ENTRY = { 'model_key' : MODEL_KEY, 'model_desc' : MODEL_DESC }
 	DEFAULT_OPTIONS = {
-		'token_regex' : r'\w{3,}',
-		'min_freq' : 5,
-		'min_doc_freq' : 3,
-		'max_freq_count'    :   4000,
-		'max_co_freq_count' : 160000,
-		'max_g2_count'      : 160000
+		'token_regex' : r'\w{3,}',        # Tokenize a corpus into a bag-of-words language model
+		'min_freq' : 5,                   # Number of times a term must appear in the corpus
+		'min_doc_freq' : 3                # Number of documents in which a terms must appear
 	}
 	
-	def __init__(self, path = None, isInit = False, isImport = False, isReset = False):
+	def __init__(self, path = None, isInit = False):
 		self.isInit = isInit
-		self.isImport = isImport
-		self.isReset = isReset
-		
-		isInitOrImport = self.isInit or self.isImport
 		if path is not None:
-			self.db = DAL(Corpus_DB.CONNECTION, lazy_tables = not isInitOrImport, migrate_enabled = isInitOrImport, folder = path)
+			self.db = DAL(Corpus_DB.CONNECTION, lazy_tables = not self.isInit, migrate_enabled = self.isInit, folder = path)
 		else:
-			self.db = DAL(Corpus_DB.CONNECTION, lazy_tables = not isInitOrImport, migrate_enabled = isInitOrImport)
+			self.db = DAL(Corpus_DB.CONNECTION, lazy_tables = not self.isInit, migrate_enabled = self.isInit)
 
 	def __enter__(self):
 		self.DefineOptionsTable()
 		self.DefineModelsTable()
 		self.DefineCorpusTable()
 		self.DefineMetadataTables()
-		if self.isReset:
-			self.Reset()
-		self.DefineTermStatsTables()
-		self.DefineTermCoStatsTables()
-		self.DefineSentenceCoStatsTables()
-		self.DefineTemporaryTable()
 		return self
 
 	def __exit__(self, type, value, traceback):
@@ -54,25 +44,22 @@ class Corpus_DB():
 		self.db.define_table( 'options',
 			Field( 'key'  , 'string', required = True, unique = True ),
 			Field( 'value', 'string', required = True ),
-			migrate = self.isImport
+			migrate = self.isInit
 		)
 		if self.isInit:
 			for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
-				keyValue = self.db( self.db.options.key == key ).select().first()
-				if keyValue:
-					keyValue.update_record( value = value )
-				else:
-					self.db.options.insert( key = key, value = value )
+				self.SetOption( key, value )
 	
 	def SetOption(self, key, value):
-		keyValue = self.db( self.db.options.key == key ).select().first()
-		if keyValue:
-			keyValue.update_record( value = value )
+		where = self.db.options.key == key
+		if self.db( where ).count() > 0:
+			self.db( where ).update( value = value )
 		else:
 			self.db.options.insert( key = key, value = value )
 
 	def GetOption(self, key):
-		keyValue = self.db( self.db.options.key == key ).select( self.db.options.value ).first()
+		where = self.db.options.key == key
+		keyValue = self.db( where ).select( self.db.options.value ).first()
 		if keyValue:
 			return keyValue.value
 		else:
@@ -82,19 +69,29 @@ class Corpus_DB():
 		self.db.define_table( 'models',
 			Field( 'model_key' , 'string', required = True, unique = True ),
 			Field( 'model_desc', 'string', required = True ),
-			migrate = self.isImport
+			migrate = self.isInit
 		)
 
 	def AddModel(self, model_key, model_desc):
-		keyDesc = self.db( self.db.models.model_key == model_key ).select().first()
-		if keyDesc:
-			keyDesc.update_record( model_desc = model_desc )
+		where = self.db.models.model_key == model_key
+		if self.db( where ).count() > 0:
+			self.db( where ).update( model_desc = model_desc )
 		else:
 			self.db.models.insert( model_key = model_key, model_desc = model_desc )
+	
+	def GetModel(self, model_key):
+		if model_key == Corpus_DB.MODEL_KEY:
+			return Corpus_DB.MODEL_ENTRY
+		where = self.db.models.model_key == model_key
+		keyValue = self.db( where ).select( self.db.models.ALL ).first()
+		if keyValue:
+			return { 'model_key' : keyValue.model_key, 'model_desc' : keyValue.model_desc }
+		else:
+			return None
 
 	def GetModels(self):
 		rows = self.db( self.db.models ).select( self.db.models.model_key, self.db.models.model_desc ).as_list()
-		return rows
+		return [ Corpus_DB.MODEL_ENTRY ] + rows
 
 ################################################################################
 
@@ -103,9 +100,9 @@ class Corpus_DB():
 			Field( 'doc_index'  , 'integer', required = True, unique = True, default = -1 ),
 			Field( 'doc_id'     , 'string' , required = True, unique = True ),
 			Field( 'doc_content', 'text'   , required = True ),
-			migrate = self.isImport
+			migrate = self.isInit
 		)
-		if self.isImport:
+		if self.isInit:
 			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS corpus_doc_index ON corpus (doc_index);' )
 			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS corpus_doc_id    ON corpus (doc_id);' )
 	
@@ -114,9 +111,9 @@ class Corpus_DB():
 			Field( 'field_index', 'integer', required = True, unique = True, default = -1 ),
 			Field( 'field_name' , 'string' , required = True, unique = True ),
 			Field( 'field_type' , 'string' , required = True ),
-			migrate = self.isImport
+			migrate = self.isInit
 		)
-		if self.isImport:
+		if self.isInit:
 			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS field_index ON fields (field_index);' )
 			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS field_name  ON fields (field_name);'  )
 			self.db.executesql( 'CREATE        INDEX IF NOT EXISTS field_type  ON fields (field_type);'  )
@@ -125,9 +122,9 @@ class Corpus_DB():
 			Field( 'doc_index'  , 'integer', required = True, default = -1 ),
 			Field( 'field_index', 'integer', required = True, default = -1 ),
 			Field( 'value'      , 'text'   , required = True ),
-			migrate = self.isImport
+			migrate = self.isInit
 		)
-		if self.isImport:
+		if self.isInit:
 			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS metadata_indexes     ON metadata (doc_index, field_index);' )
 			self.db.executesql( 'CREATE        INDEX IF NOT EXISTS metadata_doc_index   ON metadata (doc_index);'              )
 			self.db.executesql( 'CREATE        INDEX IF NOT EXISTS metadata_field_index ON metadata (field_index);'            )
@@ -135,7 +132,7 @@ class Corpus_DB():
 ################################################################################
 
 	def DefineCorpusTextSearch(self):
-		if self.isImport:
+		if self.isInit:
 			self.db.executesql( 'DROP TABLE IF EXISTS corpus_search;' )
 			self.db.executesql( 'CREATE VIRTUAL TABLE corpus_search USING fts3 (doc_content TEXT);' )
 			self.db.executesql( 'INSERT INTO corpus_search (rowid, doc_content) SELECT doc_index, doc_content FROM corpus;' )
@@ -332,145 +329,3 @@ class Corpus_DB():
 			WriteCSV(rows)
 		else:
 			WriteTSV(rows)
-
-################################################################################
-
-	def DefineTermStatsTables(self):
-		self.db.define_table( 'term_texts',
-			Field( 'term_index', 'integer', required = True, unique = True, default = -1 ),
-			Field( 'term_text' , 'string' , required = True, unique = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_text_value ON term_texts (term_text);' )
-	
-		self.db.define_table( 'term_freqs',
-			Field( 'term_index', 'integer', required = True, unique = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_freqs_value ON term_freqs (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_freqs_rank ON term_freqs (rank);' )
-	
-		self.db.define_table( 'term_probs',
-			Field( 'term_index', 'integer', required = True, unique = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_probs_value ON term_probs (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_probs_rank ON term_probs (rank);' )
-	
-		self.db.define_table( 'term_doc_freqs',
-			Field( 'term_index', 'integer', required = True, unique = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_doc_freqs_value ON term_doc_freqs (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_doc_freqs_rank ON term_doc_freqs (rank);' )
-
-	def DefineTermCoStatsTables(self):
-		self.db.define_table( 'term_co_freqs',
-			Field( 'first_term_index' , 'integer', required = True, default = -1 ),
-			Field( 'second_term_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS term_co_freqs_indexes ON term_co_freqs (first_term_index, second_term_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_co_freqs_value ON term_co_freqs (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_co_freqs_rank ON term_co_freqs (rank);' )
-
-		self.db.define_table( 'term_co_probs',
-			Field( 'first_term_index' , 'integer', required = True, default = -1 ),
-			Field( 'second_term_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS term_co_probs_indexes ON term_co_probs (first_term_index, second_term_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_co_probs_value ON term_co_probs (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_co_probs_rank ON term_co_probs (rank);' )
-
-		self.db.define_table( 'term_g2',
-			Field( 'first_term_index' , 'integer', required = True, default = -1 ),
-			Field( 'second_term_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS term_g2_indexes ON term_g2 (first_term_index, second_term_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_g2_value ON term_g2 (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS term_g2_rank ON term_g2 (rank);' )
-
-	def DefineSentenceCoStatsTables(self):
-		self.db.define_table( 'sentences_co_freqs',
-			Field( 'first_term_index' , 'integer', required = True, default = -1 ),
-			Field( 'second_term_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS sentences_co_freqs_indexes ON sentences_co_freqs (first_term_index, second_term_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_co_freqs_value ON sentences_co_freqs (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_co_freqs_rank ON sentences_co_freqs (rank);' )
-
-		self.db.define_table( 'sentences_co_probs',
-			Field( 'first_term_index' , 'integer', required = True, default = -1 ),
-			Field( 'second_term_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS sentences_co_probs_indexes ON sentences_co_probs (first_term_index, second_term_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_co_probs_value ON sentences_co_probs (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_co_probs_rank ON sentences_co_probs (rank);' )
-
-		self.db.define_table( 'sentences_g2',
-			Field( 'first_term_index', 'integer', required = True, default = -1 ),
-			Field( 'second_term_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS sentences_g2_indexes ON sentences_g2 (first_term_index, second_term_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_g2_value ON sentences_g2 (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS sentences_g2_rank ON sentences_g2 (rank);' )
-
-################################################################################
-
-	def Reset(self):
-		self.db.executesql( 'DELETE FROM term_texts;' )
-		self.db.executesql( 'DELETE FROM term_freqs;' )
-		self.db.executesql( 'DELETE FROM term_probs;' )
-		self.db.executesql( 'DELETE FROM term_doc_freqs;' )
-		self.db.executesql( 'DELETE FROM term_co_freqs;' )
-		self.db.executesql( 'DELETE FROM term_co_probs;' )
-		self.db.executesql( 'DELETE FROM term_g2;' )
-		self.db.executesql( 'DELETE FROM sentences_co_freqs;' )
-		self.db.executesql( 'DELETE FROM sentences_co_probs;' )
-		self.db.executesql( 'DELETE FROM sentences_g2;' )
-
-################################################################################
-
-	def DefineTemporaryTable(self):
-		self.db.define_table( 'vocab',
-			Field( 'term_index', 'integer', required = True, unique = True, default = -1 ),
-			Field( 'term_text', 'string', required = True ),
-			migrate = self.isInit
-		)
-		self.db.define_table( 'vocab_text',
-			Field( 'term_text', 'string', required = True, unique = True, default = -1 ),
-			migrate = self.isInit
-		)

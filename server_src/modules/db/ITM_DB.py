@@ -8,10 +8,8 @@ class ITM_DB():
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DEFAULT_OPTIONS = {}
 	
-	def __init__(self, path = None, isInit = False, isReset = False):
+	def __init__(self, path = None, isInit = False):
 		self.isInit = isInit
-		self.isReset = isReset
-		
 		if path is not None:
 			self.db = DAL(ITM_DB.CONNECTION, lazy_tables = not self.isInit, migrate = self.isInit, folder = path)
 		else:
@@ -19,8 +17,6 @@ class ITM_DB():
 
 	def __enter__(self):
 		self.DefineOptionsTable()
-		if self.isReset:
-			self.Reset()
 		return self
 	
 	def __exit__(self, type, value, traceback):
@@ -34,23 +30,26 @@ class ITM_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isInit
 		)
-		if self.db(self.db.options).count() == 0:
+		if self.isInit:
 			for key, value in ITM_DB.DEFAULT_OPTIONS.iteritems():
-				self.db.options.insert( key = key, value = value )
+				self.SetOption( key, value )
 
 	def SetOption(self, key, value):
-		keyValue = self.db( self.db.options.key == key ).select().first()
-		if keyValue:
-			keyValue.update_record( value = value )
+		where = self.db.options.key == key
+		if self.db( where ).count() > 0:
+			self.db( where ).update( value = value )
 		else:
 			self.db.options.insert( key = key, value = value )
 
 	def GetOption(self, key):
-		keyValue = self.db( self.db.options.key == key ).select( self.db.options.value ).first()
+		where = self.db.options.key == key
+		keyValue = self.db( where ).select( self.db.options.value ).first()
 		if keyValue:
 			return keyValue.value
 		else:
 			return None
+
+################################################################################
 
 	def Reset(self):
 		pass

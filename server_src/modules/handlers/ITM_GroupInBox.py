@@ -11,11 +11,14 @@ from modellers.TreeTM import RefineLDA, InspectLDA
 from readers.TreeTMReader import TreeTMReader
 
 class ITM_GroupInBox(Home_Core):
-	def __init__(self, request, response, corpus_db, lda_db):
+	def __init__(self, request, response, corpus_db, bow_db, lda_db):
 		super(ITM_GroupInBox, self).__init__(request, response)
 		JsonEncoder.FLOAT_REPR = lambda number : format(number, '.4g')
-		self.corpusDB = corpus_db.db
-		self.ldaDB = lda_db.db
+		self.corpusDB = corpus_db
+		self.bow = bow_db
+		self.ldaDB = lda_db
+		self.bow = bow_db.db
+		self.db = lda_db.db
 
 ################################################################################
 
@@ -95,12 +98,11 @@ class ITM_GroupInBox(Home_Core):
 			removeTerms = reader.RemoveTerms()
 		if action == 'train' and finalIter is not None and finalIter > currIter:
 			RefineLDA( app_model_path, numIters = finalIter, mustLinks = mustLinks, cannotLinks = cannotLinks, keepTerms = keepTerms, removeTerms = removeTerms )
-			with Corpus_DB() as corpus_db:
-				with LDA_DB( isReset = True ) as lda_db:
-					reader = TreeTMReader( lda_db, app_model_path )
-					reader.Execute()
-					computer = LDA_ComputeStats( lda_db, corpus_db )
-					computer.Execute()
+			self.ldaDB.Reset()
+			treetm_reader = TreeTMReader( self.ldaDB, app_model_path )
+			treetm_reader.Execute()
+			lda_computer = LDA_ComputeStats( self.ldaDB, self.corpusDB )
+			lda_computer.Execute()
 	
 	def InspectModel(self):
 		app_path = self.request.folder
@@ -142,7 +144,7 @@ class ITM_GroupInBox(Home_Core):
 
 	def LoadTopTermsPerTopic( self ):
 		termLimit = self.GetTermLimit()
-		topicCount = self.ldaDB(self.ldaDB.topics).count()
+		topicCount = self.db(self.db.topics).count()
 		data = []
 		self.vocab = set()
 		for topicIndex in range(topicCount):
@@ -151,8 +153,8 @@ class ITM_GroupInBox(Home_Core):
 			INNER JOIN {TERMS} AS terms ON matrix.term_index = terms.term_index
 			WHERE matrix.topic_index = {TOPIC_INDEX}
 			ORDER BY matrix.rank
-			LIMIT {LIMIT}""".format(MATRIX=self.ldaDB.term_topic_matrix, TERMS=self.ldaDB.terms, LIMIT=termLimit, TOPIC_INDEX=topicIndex)
-			rows = self.ldaDB.executesql(query, as_dict = True)
+			LIMIT {LIMIT}""".format(MATRIX=self.db.term_topic_matrix, TERMS=self.db.terms, LIMIT=termLimit, TOPIC_INDEX=topicIndex)
+			rows = self.db.executesql(query, as_dict = True)
 			data.append(rows)
 			self.vocab.update(row['term'] for row in rows)
 		self.content.update({
@@ -163,8 +165,8 @@ class ITM_GroupInBox(Home_Core):
 	def LoadTopicCovariance( self ):
 		query = """SELECT first_topic_index AS source, second_topic_index AS target, value
 		FROM {MATRIX} AS matrix
-		WHERE source != target""".format(MATRIX=self.ldaDB.topic_covariance)
-		rows = self.ldaDB.executesql(query, as_dict=True)
+		WHERE source != target""".format(MATRIX=self.db.topic_covariance)
+		rows = self.db.executesql(query, as_dict=True)
 		for index, row in enumerate(rows):
 			row['rank'] = index+1
 		self.content.update({
@@ -172,15 +174,15 @@ class ITM_GroupInBox(Home_Core):
 		})
 	
 	def CreateTempVocabTable( self ):
-		self.corpusDB.executesql( 'DELETE FROM vocab;' )
-		self.corpusDB.executesql( 'DELETE FROM vocab_text;' )
-		self.corpusDB.vocab_text.bulk_insert( { 'term_text' : d } for d in self.vocab )
+		self.bow.executesql( 'DELETE FROM vocab;' )
+		self.bow.executesql( 'DELETE FROM vocab_text;' )
+		self.bow.vocab_text.bulk_insert( { 'term_text' : d } for d in self.vocab )
 		query = """INSERT INTO {TARGET} (term_index, term_text)
 			SELECT terms.term_index, terms.term_text
 			FROM {TERMS} AS terms
 			INNER JOIN {SOURCE} AS vocab ON terms.term_text = vocab.term_text""".format(
-				TERMS=self.corpusDB.term_texts, SOURCE=self.corpusDB.vocab_text, TARGET=self.corpusDB.vocab)
-		self.corpusDB.executesql(query)
+				TERMS=self.bow.term_texts, SOURCE=self.bow.vocab_text, TARGET=self.bow.vocab)
+		self.bow.executesql(query)
 	
 	def DeleteTempVocabTable( self ):
 		pass
@@ -189,8 +191,8 @@ class ITM_GroupInBox(Home_Core):
 		query = """SELECT probs.term_index AS term_index, probs.value AS term_prob
 		FROM {PROBS} AS probs
 		INNER JOIN {VOCAB} AS vocab ON probs.term_index = vocab.term_index
-		WHERE term_prob > 0""".format(PROBS = table, VOCAB = self.corpusDB.vocab)
-		rows = self.corpusDB.executesql( query, as_dict = True )
+		WHERE term_prob > 0""".format(PROBS = table, VOCAB = self.bow.vocab)
+		rows = self.bow.executesql( query, as_dict = True )
 		probs = { row['term_index'] : row['term_prob'] for row in rows }
 		return probs
 	
@@ -200,8 +202,8 @@ class ITM_GroupInBox(Home_Core):
 		INNER JOIN {VOCAB} AS ref1 ON matrix.first_term_index = ref1.term_index
 		INNER JOIN {VOCAB} AS ref2 ON matrix.second_term_index = ref2.term_index
 		ORDER BY matrix.rank
-		LIMIT 2000""".format(MATRIX = table, VOCAB = self.corpusDB.vocab)
-		rows = self.corpusDB.executesql( query, as_dict = True )
+		LIMIT 2000""".format(MATRIX = table, VOCAB = self.bow.vocab)
+		rows = self.bow.executesql( query, as_dict = True )
 		return rows
 	
 	def ComputePMI( self, marginalProbs, sparseJointProbs ):
@@ -225,16 +227,16 @@ class ITM_GroupInBox(Home_Core):
 		return data
 		
 	def LoadTermPMI(self):
-		marginals = self.GetMarginalProbs( self.corpusDB.term_probs )
-		joints = self.GetSparseJointProbs( self.corpusDB.term_co_probs )
+		marginals = self.GetMarginalProbs( self.bow.term_probs )
+		joints = self.GetSparseJointProbs( self.bow.term_co_probs )
 		rows = self.ComputePMI( marginals, joints )
 		self.content.update({
 			'TermPMI' : rows
 		})
 
 	def LoadSentencePMI(self):
-		marginals = self.GetMarginalProbs( self.corpusDB.term_probs )
-		joints = self.GetSparseJointProbs( self.corpusDB.sentences_co_probs )
+		marginals = self.GetMarginalProbs( self.bow.term_probs )
+		joints = self.GetSparseJointProbs( self.bow.sentences_co_probs )
 		rows = self.ComputePMI( marginals, joints )
 		self.content.update({
 			'SentencePMI' : rows

@@ -148,6 +148,24 @@ class Home_Core(object):
 		attributes = []
 		if not self.IsExcludedDataset(dataset):
 			if model != 'default':
+				if model == 'corpus':
+					attributes = [
+						'DocumentByIndex',
+						'DocumentById',
+						'SearchDocuments',
+						'Metadata'
+					]
+				if model == 'bow':
+					attributes = [
+						'TermFreqs',
+						'TermProbs',
+						'TermCoFreqs',
+						'TermCoProbs',
+						'TermG2',
+						'SentenceCoFreqs',
+						'SentenceCoProbs',
+						'SentenceG2'
+					]
 				if model == 'lda':
 					attributes = [
 						'Vocab',
@@ -166,21 +184,6 @@ class Home_Core(object):
 						'Inspect',
 						'GroupInBox',
 						'gib'
-					]
-				if model == 'corpus':
-					attributes = [
-						'DocumentByIndex',
-						'DocumentById',
-						'SearchDocuments',
-						'Metadata',
-						'TermFreqs',
-						'TermProbs',
-						'TermCoFreqs',
-						'TermCoProbs',
-						'TermG2',
-						'SentenceCoFreqs',
-						'SentenceCoProbs',
-						'SentenceG2'
 					]
 				if self.configs['attribute'] == 'index':
 					self.content.update({

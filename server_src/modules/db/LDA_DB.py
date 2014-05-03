@@ -7,13 +7,11 @@ class LDA_DB():
 	FILENAME = 'lda.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DEFAULT_OPTIONS = {
-		'max_co_topic_count' : 40000
+		'max_co_topic_count' : 10000      # Number of topic pairs to store
 	}
 	
-	def __init__(self, path = None, isInit = False, isReset = False):
+	def __init__(self, path = None, isInit = False):
 		self.isInit = isInit
-		self.isReset = isReset
-		
 		if path is not None:
 			self.db = DAL(LDA_DB.CONNECTION, lazy_tables = not self.isInit, migrate = self.isInit, folder = path)
 		else:
@@ -21,8 +19,6 @@ class LDA_DB():
 
 	def __enter__(self):
 		self.DefineOptionsTable()
-		if self.isReset:
-			self.Reset()
 		self.DefineDimensionTables()
 		self.DefineMatrixTables()
 		self.DefineStatsTables()
@@ -39,19 +35,20 @@ class LDA_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isInit
 		)
-		if self.db(self.db.options).count() == 0:
+		if self.isInit:
 			for key, value in LDA_DB.DEFAULT_OPTIONS.iteritems():
-				self.db.options.insert( key = key, value = value )
+				self.SetOption( key, value )
 
 	def SetOption(self, key, value):
-		keyValue = self.db( self.db.options.key == key ).select().first()
-		if keyValue:
-			keyValue.update_record( value = value )
+		where = self.db.options.key == key
+		if self.db( where ).count() > 0:
+			self.db( where ).update( value = value )
 		else:
 			self.db.options.insert( key = key, value = value )
 
 	def GetOption(self, key):
-		keyValue = self.db( self.db.options.key == key ).select( self.db.options.value ).first()
+		where = self.db.options.key == key
+		keyValue = self.db( where ).select( self.db.options.value ).first()
 		if keyValue:
 			return keyValue.value
 		else:
@@ -131,18 +128,6 @@ class LDA_DB():
 			self.db.executesql( 'CREATE INDEX IF NOT EXISTS doc_topic_topicindex ON doc_topic_matrix (topic_index);' )
 
 	def DefineStatsTables(self):
-		self.db.define_table( 'topic_cooccurrences',
-			Field( 'first_topic_index' , 'integer', required = True, default = -1 ),
-			Field( 'second_topic_index', 'integer', required = True, default = -1 ),
-			Field( 'value', 'double' , required = True ),
-			Field( 'rank' , 'integer', required = True ),
-			migrate = self.isInit
-		)
-		if self.isInit:
-			self.db.executesql( 'CREATE UNIQUE INDEX IF NOT EXISTS topic_cooccurrences_indexes ON topic_cooccurrences (first_topic_index, second_topic_index);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS topic_cooccurrences_value ON topic_cooccurrences (value);' )
-			self.db.executesql( 'CREATE INDEX IF NOT EXISTS topic_cooccurrences_rank ON topic_cooccurrences (rank);' )
-
 		self.db.define_table( 'topic_covariance',
 			Field( 'first_topic_index', 'integer', required = True, default = -1 ),
 			Field( 'second_topic_index', 'integer', required = True, default = -1 ),
@@ -163,6 +148,5 @@ class LDA_DB():
 		self.db.executesql( 'DELETE FROM topics;' )
 		self.db.executesql( 'DELETE FROM term_topic_matrix;' )
 		self.db.executesql( 'DELETE FROM doc_topic_matrix;' )
-		self.db.executesql( 'DELETE FROM topic_cooccurrences;' )
 		self.db.executesql( 'DELETE FROM topic_covariance;' )
 

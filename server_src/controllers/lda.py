@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from db.Corpus_DB import Corpus_DB
 from db.LDA_DB import LDA_DB
 from handlers.LDA_Core import LDA_Core
 

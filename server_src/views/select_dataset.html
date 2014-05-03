@@ -6,7 +6,7 @@
 			<option value="{{=value}}" {{if configs['dataset'] == value:}}selected="selected"{{pass}}>{{=value}}</option>
 		{{pass}}
 		<option value="NONE">&nbsp;</option>
-		<option value="NONE">&mdash; Available Visualizations &mdash;</option>
+		<option value="NONE">&mdash; Visualizations &mdash;</option>
 		{{if len(menus['views']) == 0:}}
 			<option value="NONE">(TBD)</option>
 		{{else:}}
@@ -15,7 +15,7 @@
 			{{pass}}
 		{{pass}}
 		<option value="NONE">&nbsp;</option>
-		<option value="NONE">&mdash; Dataset Manager &mdash;</option>
+		<option value="NONE">&mdash; Data Manager &mdash;</option>
 		{{for d in menus['operations']:}}
 			<option value="{{=d['value']}}" {{if configs['dataset'] == d['value']:}}selected="selected"{{pass}}>{{=d['name']}}</option>
 		{{pass}}
