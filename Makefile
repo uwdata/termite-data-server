@@ -81,7 +81,6 @@ itm-demos:
 	./demo.py nsfgrants treetm
 
 stm-demos:
-	./demo.py poliblogs stm
 	./demo.py fomc stm
 
 large-demos:
