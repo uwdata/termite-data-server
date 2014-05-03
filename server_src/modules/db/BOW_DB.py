@@ -37,16 +37,18 @@ class BOW_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isInit
 		)
-		if self.isInit:
-			for key, value in BOW_DB.DEFAULT_OPTIONS.iteritems():
-				self.SetOption( key, value )
+		for key, value in BOW_DB.DEFAULT_OPTIONS.iteritems():
+			self.SetOption( key, value, overwrite = self.isInit )
 
-	def SetOption(self, key, value):
+
+	def SetOption(self, key, value, overwrite = True):
 		where = self.db.options.key == key
 		if self.db( where ).count() > 0:
-			self.db( where ).update( value = value )
+			if overwrite:
+				self.db( where ).update( value = value )
 		else:
 			self.db.options.insert( key = key, value = value )
+		self.db.commit()
 
 	def GetOption(self, key):
 		where = self.db.options.key == key

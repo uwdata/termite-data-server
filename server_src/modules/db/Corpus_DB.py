@@ -46,16 +46,18 @@ class Corpus_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isInit
 		)
-		if self.isInit:
-			for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
-				self.SetOption( key, value )
+		for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
+			self.SetOption( key, value, overwrite = self.isInit )
+			
 	
-	def SetOption(self, key, value):
+	def SetOption(self, key, value, overwrite = True):
 		where = self.db.options.key == key
 		if self.db( where ).count() > 0:
-			self.db( where ).update( value = value )
+			if overwrite:
+				self.db( where ).update( value = value )
 		else:
 			self.db.options.insert( key = key, value = value )
+		self.db.commit()
 
 	def GetOption(self, key):
 		where = self.db.options.key == key
@@ -78,6 +80,7 @@ class Corpus_DB():
 			self.db( where ).update( model_desc = model_desc )
 		else:
 			self.db.models.insert( model_key = model_key, model_desc = model_desc )
+		self.db.commit()
 	
 	def GetModel(self, model_key):
 		if model_key == Corpus_DB.MODEL_KEY:
