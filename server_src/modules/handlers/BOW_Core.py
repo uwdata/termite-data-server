@@ -1,13 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import re
-import os
-import json
 from handlers.Home_Core import Home_Core
 
-class BOW_Core( Home_Core ):
-	def __init__( self, request, response, bow_db ):
-		super( BOW_Core, self ).__init__( request, response )
+class BOW_Core(Home_Core):
+	def __init__(self, request, response, bow_db):
+		super(BOW_Core, self).__init__(request, response)
+		self.bowDB = bow_db
 		self.db = bow_db.db
 	
 	def GetDocLimits(self):
