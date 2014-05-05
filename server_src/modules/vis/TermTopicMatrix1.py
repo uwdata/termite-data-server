@@ -28,7 +28,7 @@ class TermTopicMatrix1(Home_Core):
 		return data
 
 	def GetSeriatedTermTopicProbabilityModel(self):
-		termLimit = 2000
+		termLimit = 500
 		data = {}
 		
 		table = self.lda.terms
@@ -60,7 +60,7 @@ class TermTopicMatrix1(Home_Core):
 		return data
 
 	def GetFilteredTermTopicProbabilityModel(self):
-		termLimit = 2000
+		termLimit = 500
 		data = {}
 
 		table = self.lda.terms
@@ -102,7 +102,7 @@ class TermTopicMatrix1(Home_Core):
 		return data
 
 	def GetTermFrequencyModel(self):
-		termLimit = 2000
+		termLimit = 500
 		data = {}
 
 		table = self.lda.terms
