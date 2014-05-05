@@ -101,7 +101,7 @@ class Home_Core(object):
 		})
 		return views
 		
-	EXCLUDE_SYSTEM_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset' ])
+	EXCLUDE_SYSTEM_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset', 'echo' ])
 	EXCLUDE_VIS_FOLDERS = frozenset([])
 	EXCLUDE_TEMP_FOLDERS = re.compile(r'^temp_.*$')
 	def IsExcludedDataset(self, folder):
