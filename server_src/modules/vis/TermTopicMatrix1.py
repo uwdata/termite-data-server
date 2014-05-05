@@ -89,13 +89,14 @@ class TermTopicMatrix1(Home_Core):
 		termDistinctiveness = {}
 		termSaliency = {}
 		for i, row in enumerate(matrix):
-			termText = termTexts[i]
 			normalization = 1.0 / sum(row) if sum(row) > 0 else 1.0
 			normalized_row = [ d * normalization for d in row ]
 			q = 1.0 / topicCount
 			value = sum([ p * math.log(p) - p * math.log(q) if p > 0 else 0 for p in normalized_row ])
-			termDistinctiveness[termText] = value
-			termSaliency[termText] = termFreqs[termText] * value
+			if i < len(termTexts):
+				termText = termTexts[i]
+				termDistinctiveness[termText] = value
+				termSaliency[termText] = termFreqs[termText] * value
 		data['termDistinctivenessMap'] = termDistinctiveness
 		data['termSaliencyMap'] = termSaliency
 		return data
