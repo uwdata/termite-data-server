@@ -62,8 +62,9 @@ TermFrequencyModel.prototype.initModels = function( parent, state ){
  */
 TermFrequencyModel.prototype.load = function(){	
 
-	var successHandler = function( model, response, options )
-	{
+	var successHandler = function(model, response, options) {
+		console.log("Loaded TermFrequencyModel", model, response, options);
+		
 		this.set("termIndex", this.parentModel.get("termIndex"));
 		
 		// UPDATE: many of these should come from stateModel instead of param file?
@@ -82,10 +83,11 @@ TermFrequencyModel.prototype.load = function(){
 		}
 		
 		// signal completion
-		this.trigger("loaded:freqModel");	
-		
+		this.trigger("loaded:freqModel");
 	}.bind(this);
-	var errorHandler = function( model, xhr, options ) { }.bind(this);
+	var errorHandler = function(model, response, options) {
+		console.log("Cannot load TermFrequencyModel", model, response, options);
+	}.bind(this);
 	this.fetch({
 		add : false,
 		success : successHandler,

@@ -138,7 +138,7 @@ class Home_Core(object):
 	def GetVisualizations(self, server, dataset):
 		visualizations = [{
 			'value' : 'TermTopicMatrix1',
-			'name'  : 'Term-Topic Matrix View 0.1'
+			'name'  : 'Term-Topic Matrix 1'
 		}]
 		if not self.IsExcludedDataset(dataset):
 			if self.configs['model'] == 'default':

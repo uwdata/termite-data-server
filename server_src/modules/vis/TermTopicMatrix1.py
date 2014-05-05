@@ -19,7 +19,8 @@ class TermTopicMatrix1(Home_Core):
 			'topicIndex' : [ {
 				'color' : 'default',
 				'id' : row.topic_index,
-				'name' : row.topic_label,
+#				'name' : row.topic_label,
+				'name' : 'Topic {}'.format(n+1),
 				'position' : n,
 				'selected' : False
 			} for n, row in enumerate(rows) ]
@@ -27,7 +28,7 @@ class TermTopicMatrix1(Home_Core):
 		return data
 
 	def GetSeriatedTermTopicProbabilityModel(self):
-		termLimit = 200
+		termLimit = 2000
 		data = {}
 		
 		table = self.lda.terms
@@ -59,7 +60,7 @@ class TermTopicMatrix1(Home_Core):
 		return data
 
 	def GetFilteredTermTopicProbabilityModel(self):
-		termLimit = 200
+		termLimit = 2000
 		data = {}
 
 		table = self.lda.terms
@@ -100,7 +101,7 @@ class TermTopicMatrix1(Home_Core):
 		return data
 
 	def GetTermFrequencyModel(self):
-		termLimit = 200
+		termLimit = 2000
 		data = {}
 
 		table = self.lda.terms
@@ -115,7 +116,8 @@ class TermTopicMatrix1(Home_Core):
 		query = """SELECT topic_index, topic_label FROM {TABLE}
 		ORDER BY topic_index""".format(TABLE = table)
 		rows = self.lda().select(table.topic_index, table.topic_label, orderby=table.topic_index)
-		data['topicIndex'] = [ row.topic_label for row in rows ]
+#		data['topicIndex'] = [ row.topic_label for row in rows ]
+		data['topicIndex'] = [ 'Topic {}'.format(n+1) for n, _ in enumerate(rows) ]
 		data['topicMapping'] = [ n for n, row in enumerate(rows) ]
 		topicCount = len(rows)
 
