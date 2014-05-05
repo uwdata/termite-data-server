@@ -1,0 +1,243 @@
+/* matrix color objects */
+line.normal {
+	stroke: #808080;
+	stroke-opacity: 0.25;
+	stroke-width: 0.5px;
+}
+line.blue{
+	stroke: #1f77b4;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+line.orange {
+	stroke: #ff7f0e;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+line.green {
+	stroke: #2ca02c;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+line.purple {
+	stroke: #9467bd;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+line.brown {
+	stroke: #8c564b;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+line.pink {
+	stroke: #e377c2;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+line.red {
+	stroke: #933 ;
+	stroke-opacity: 1 ;
+	stroke-width: 0.5px ;
+}
+
+text {
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	font-family: Verdana;
+	font-size: 10px;
+}
+text.topLabel {
+	text-anchor: start;
+	cursor: pointer;
+}
+text.leftLabel {
+	text-anchor: end;
+}
+text.normal {
+	fill: #808080;
+	stroke: #808080;
+	stroke-opacity: 0;
+	stroke-width: 0px;
+}
+text.blue {
+	fill: #1f77b4;
+	stroke: #1f77b4;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+text.orange {
+	fill: #ff7f0e;
+	stroke: #ff7f0e;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+text.green {
+	fill: #2ca02c;
+	stroke: #2ca02c;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+text.purple {
+	fill: #9467bd;
+	stroke: #9467bd;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+text.brown {
+	fill: #8c564b;
+	stroke: #8c564b;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+text.pink {
+	fill: #e377c2;
+	stroke: #e377c2;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+text.red {
+	fill: #933 ;
+	stroke: #933 ;
+	stroke-opacity: 1 ;
+	stroke-width: 0.5px ;
+}
+
+circle.normal {
+	fill: #808080;
+	fill-opacity: 0.4;
+	stroke: #808080;
+	stroke-opacity: 0.8;
+}
+circle.blue {
+	fill: #1f77b4;
+	fill-opacity: 0.5;
+	stroke: #1f77b4;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+circle.orange {
+	fill: #ff7f0e;
+	fill-opacity: 0.5;
+	stroke: #ff7f0e;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+circle.green {
+	fill: #2ca02c;
+	fill-opacity: 0.5;
+	stroke: #2ca02c;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+circle.purple {
+	fill: #9467bd;
+	fill-opacity: 0.5;
+	stroke: #9467bd;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+circle.brown {
+	fill: #8c564b;
+	fill-opacity: 0.5;
+	stroke: #8c564b;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+circle.pink {
+	fill: #e377c2;
+	fill-opacity: 0.5;
+	stroke: #e377c2;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+circle.red {
+	fill: #933 ;
+	fill-opacity: 0.5 ;
+	stroke: #933 ;
+	stroke-opacity: 1 ;
+	stroke-width: 0.5px ;
+}
+/* histogram color objects */
+text.termLabel{
+	text-anchor: end;
+}
+text.HISTnormal {
+	fill: #808080;
+	stroke: #808080;
+	stroke-opacity: 0;
+	stroke-width: 0px;
+}
+text.HISTorange {
+	fill: #ff7f0e;
+	stroke: #ff7f0e;
+	stroke-opacity: 1;
+	stroke-width: 0.5px;
+}
+text.HISTred {
+	fill: #933 ;
+	stroke: #933 ;
+	stroke-opacity: 1 ;
+	stroke-width: 0.5px ;
+}
+
+line.termFreqBar {
+	stroke: #808080;
+	stroke-opacity: 0.4;
+	stroke-width: 5px;
+}
+line.HISTnormal {
+	stroke: #000;
+	stroke-opacity: 0;
+	stroke-width: 5px;
+}
+
+.HISTblue {
+	fill: #1f77b4;
+	stroke: #1f77b4;
+	stroke-opacity: 1;
+	stroke-width: 5px;
+}
+.HISTorange {
+	fill: #ff7f0e;
+	stroke: #ff7f0e;
+	stroke-opacity: 1;
+	stroke-width: 5px;
+}
+.HISTgreen {
+	fill: #2ca02c;
+	stroke: #2ca02c;
+	stroke-opacity: 1;
+	stroke-width: 5px;
+}
+
+.HISTpurple {
+	fill: #9467bd;
+	stroke: #9467bd;
+	stroke-opacity: 1;
+	stroke-width: 5px;
+}
+.HISTbrown {
+	fill: #8c564b;
+	stroke: #8c564b;
+	stroke-opacity: 1;
+	stroke-width: 5px;
+}
+.HISTpink {
+	fill: #e377c2;
+	stroke: #e377c2;
+	stroke-opacity: 1;
+	stroke-width: 5px;
+}
+.HISTred {
+	fill: #933;
+	stroke: #933;
+	stroke-opacity: 1;
+	stroke-width: 5px;
+}
+line.HISTred {
+	fill: #933 ;
+	stroke: #933 ;
+	stroke-opacity: 1 ;
+	stroke-width: 5px ;
+}
