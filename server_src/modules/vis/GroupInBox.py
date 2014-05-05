@@ -10,12 +10,12 @@ from handlers.Home_Core import Home_Core
 from modellers.TreeTM import RefineLDA, InspectLDA
 from readers.TreeTMReader import TreeTMReader
 
-class ITM_GroupInBox(Home_Core):
+class GroupInBox(Home_Core):
 	def __init__(self, request, response, corpus_db, bow_db, lda_db):
-		super(ITM_GroupInBox, self).__init__(request, response)
+		super(GroupInBox, self).__init__(request, response)
 		JsonEncoder.FLOAT_REPR = lambda number : format(number, '.4g')
 		self.corpusDB = corpus_db
-		self.bow = bow_db
+		self.bowDB = bow_db
 		self.ldaDB = lda_db
 		self.bow = bow_db.db
 		self.db = lda_db.db
