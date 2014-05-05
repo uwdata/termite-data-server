@@ -1,0 +1,355 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Termite | Topic Model Visualization</title>
+	<link rel="stylesheet" href="{{=URL('static','css/font-awesome.min.css')}}" />
+	<link rel="stylesheet" href="{{=URL('static','css/common.css')}}" />
+	<link rel="stylesheet" href="{{=URL('static/TermTopicMatrix1/css','termite.css')}}"/>
+	<link rel="stylesheet" href="{{=URL('static/TermTopicMatrix1/css','InteractionObjects.css')}}"/>
+	<link rel="stylesheet" href="{{=URL('static/TermTopicMatrix1/css','chosen.css')}}"/>
+{{include 'py_functions.py'}}
+	<script type="text/javascript">
+{{include 'js_functions.js'}}
+	</script>
+	<script type="text/javascript" src="{{=URL('static/js','jquery.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/js','underscore.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/js','backbone.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/js','d3.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/js','common.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','chosen.jquery.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','jquery-ui.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','FullTermTopicProbabilityModel.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','SeriatedTermTopicProbabilityModel.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','FilteredTermTopicProbabilityModel.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','TermFrequencyModel.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','ViewParameters.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','TermTopicMatrixView.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','TermFrequencyView.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','UserControlViews.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','StateModel.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','html5slider.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix1/js','QueryString.js')}}"></script>
+
+<script type="text/javascript">
+
+/**
+ * Generates a descending sorted sparse matrix representation of a full matrix. 
+ * Must be called by a model that has termIndex, topicIndex, and matrix default vars
+ * (e.g. seriated model, filtered model)
+ *
+ * @this { a termTopic model }
+ * @param { double } THRESHHOLD is defined in ViewParameters
+ * @param { array } termIndex is a list of ordered terms, size n
+ * @param { array } topicIndex is a list of ordered topics, size m
+ * @param { 2D array } matrix is a n x m matrix of doubles
+ * @param { array } cSums, non-null if normalizing columns
+ * @return { array } Sparse matrix representation of matrix (list of objects)
+ */
+var generateSparseMatrix = function( cSums ) {
+	var termIndex = this.get("termIndex");
+	var topicIndex = this.get("topicIndex");	// what about this global?
+	var matrix = this.get("matrix");
+	
+	var columnSums = cSums;
+	if( cSums === null){
+		columnSums = [];
+		for(var i = 0; i < topicIndex.length; i++){
+			columnSums.push(1);
+		}
+	} 
+	
+	var sparseMatrix = [];
+	for ( var i = 0; i < termIndex.length; i++ )
+		for ( var j = 0; j < topicIndex.length; j++ )
+			if ( matrix[i][j] > THRESHHOLD )
+				sparseMatrix.push({
+					'term' : termIndex[i],
+					'termIndex' : i,
+					'topicName' : topicIndex[j],
+					'topicIndex' : j,
+					'value' : matrix[i][j] / columnSums[j]
+				});
+	sparseMatrix = sparseMatrix.sort( function(a,b) { return b.value - a.value  });
+	return sparseMatrix;
+};
+/**
+ * Returns a column-first representation of a row-first matrix
+ * 
+ * @this { index.html }
+ * @param { 2D array } row first matrix
+ * @return { 2D array } column first matrix
+ */
+var generateColumnFirst = function( matrix ) {
+	//var matrix = this.get("matrix");
+	var colMatrix = [];
+	if(matrix === null)
+		return null;
+	// init empty rows of column matrix
+	for (i = 0; i < matrix[0].length; ++i) {
+		colMatrix.push([]);
+	}
+	// fill in values
+	for (i = 0; i < matrix.length; ++i) {
+		var row = matrix[i];
+		for (j = 0; j < row.length; ++j) {
+			colMatrix[j].push(row[j]);
+		}
+	}
+	return colMatrix;
+};
+// temp globals to check values with javascript console
+var stateModel;
+var seriatedTermTopicProbabilityModel;
+var filteredTermTopicProbabilityModel;
+var termTopicMatrixView;
+var termFrequencyModel;
+var termFrequencyView;
+function init()
+{
+	// create backbone models and views
+	//
+	stateModel = new StateModel({
+		"url" : "/{{=configs['dataset']}}/{{=configs['model']}}/StateModel"
+	});
+	
+	seriatedTermTopicProbabilityModel = new SeriatedTermTopicProbabilityModel({
+		"url" : "/{{=configs['dataset']}}/{{=configs['model']}}/SeriatedTermTopicProbabilityModel"
+	});
+	filteredTermTopicProbabilityModel = new FilteredTermTopicProbabilityModel({
+		"url" : "/{{=configs['dataset']}}/{{=configs['model']}}/FilteredTermTopicProbabilityModel"
+	});
+	termFrequencyModel = new TermFrequencyModel({
+		"url" : "/{{=configs['dataset']}}/{{=configs['model']}}/TermFrequencyModel"
+	});
+	
+	termTopicMatrixView = new TermTopicMatrixView({
+		"el" : "div.termTopicMatrixContainer"
+	});
+	termFrequencyView = new TermFrequencyView({
+		"el" : "div.termFrequencyContainer"
+	});
+	
+	// init user control views
+	var totalTermsView = new TotalTermsView({ "model" : stateModel });
+	var affinityNumTermsView = new AffinityNumTermsView({ "model" : stateModel });
+	var salientNumTermsView = new SalientNumTermsView({ "model" : stateModel });
+	var affinityNumTermsSlider = new AffinityNumTermsSlider({ "model" : stateModel });
+	var salientNumTermsSlider = new SalientNumTermsSlider({ "model" : stateModel });
+	var addTopTwenty = new AddTopTwenty({ "model" :stateModel });
+	var sortDescription = new SortDescription({ "model" :stateModel });
+	var clearAllButton = new ClearAllButton({ "model" :stateModel });
+	var clearSortButton = new ClearSortButton({ "model" :stateModel });
+	var normalizeColumns = new NormalizeColumns({ "model" :stateModel });
+	var saveStateButton = new SaveStateButton({ "model" :stateModel });
+	var loadStateButton = new LoadStateButton({ "model" :stateModel });
+	var currentVersionNo = new CurrentVersionNo({ "model" :stateModel });
+	var multiSelectTermsBox = new MultiSelectTermsBox({ "model" :stateModel });
+	
+	// topic labelling/reposition stuff
+	var topicMoveButton = new TopicMoveButton({ "model" :stateModel });
+	var clearMoveButton = new ClearMoveButton({ "model" :stateModel });
+	var topicRenameButton = new TopicRenameButton({ "model" :stateModel });
+	
+	var showInstructionsButton = new ShowInstructionsButton({ "model" :stateModel });
+	
+	// initialize parent and state model where needed
+	//seriatedTermTopicProbabilityModel.initModel( fullModel ); // unused at the moment
+	filteredTermTopicProbabilityModel.initModel( seriatedTermTopicProbabilityModel, stateModel );
+	termTopicMatrixView.initModel( filteredTermTopicProbabilityModel, stateModel );
+	termFrequencyModel.initModels( filteredTermTopicProbabilityModel, stateModel );
+	termFrequencyView.initModel( termFrequencyModel, stateModel );
+	
+	// load all models
+	stateModel.once( "loaded:states", seriatedTermTopicProbabilityModel.load, seriatedTermTopicProbabilityModel );
+	seriatedTermTopicProbabilityModel.once( "loaded:seriated", filteredTermTopicProbabilityModel.load, filteredTermTopicProbabilityModel );
+	filteredTermTopicProbabilityModel.once( "loaded:filtered", termTopicMatrixView.load, termTopicMatrixView );
+	filteredTermTopicProbabilityModel.once( "loaded:filtered", termFrequencyModel.load, termFrequencyModel );
+	termFrequencyModel.once( "loaded:freqModel", termFrequencyView.load, termFrequencyView );
+		
+	// initialize all events that listen to stateModel
+	stateModel.once( "loaded:states", function() {	
+		// chosen multi-select stuff
+		$(".chzn-select").chosen();
+		
+		filteredTermTopicProbabilityModel.listenTo(stateModel, "change:numAffinityTerms", filteredTermTopicProbabilityModel.update.bind( filteredTermTopicProbabilityModel ));
+		filteredTermTopicProbabilityModel.listenTo(stateModel, "change:numSalientTerms", filteredTermTopicProbabilityModel.update.bind( filteredTermTopicProbabilityModel ));
+		filteredTermTopicProbabilityModel.listenTo(stateModel, "change:visibleTerms", filteredTermTopicProbabilityModel.update.bind( filteredTermTopicProbabilityModel ));
+		filteredTermTopicProbabilityModel.listenTo(stateModel, "change:sortType change:doubleClickTopic", filteredTermTopicProbabilityModel.update.bind( filteredTermTopicProbabilityModel));
+		filteredTermTopicProbabilityModel.listenTo(stateModel, "change:addTopTwenty", filteredTermTopicProbabilityModel.update.bind( filteredTermTopicProbabilityModel ));
+		filteredTermTopicProbabilityModel.listenTo(stateModel, "change:topicIndex color:topic", filteredTermTopicProbabilityModel.update, filteredTermTopicProbabilityModel );
+
+		termTopicMatrixView.listenTo(stateModel, "change:highlightedTerm", termTopicMatrixView.onSelectionTermChanged, termTopicMatrixView );
+		termTopicMatrixView.listenTo(stateModel, "change:highlightedTopic", termTopicMatrixView.onSelectionTopicChanged, termTopicMatrixView );
+		termTopicMatrixView.listenTo(stateModel, "change:topicIndex color:topic", termTopicMatrixView.updateColors, termTopicMatrixView);
+		termTopicMatrixView.listenTo(stateModel, "change:topicIndex", termTopicMatrixView.update, termTopicMatrixView);
+		termTopicMatrixView.listenTo(stateModel, "change:topicLabels change:topicPosition", termTopicMatrixView.update.bind( termTopicMatrixView ));
+		termTopicMatrixView.listenTo( stateModel, "change:normColumns", termTopicMatrixView.update, termTopicMatrixView);
+
+		termFrequencyModel.listenTo(stateModel, "color:topic", termFrequencyModel.update.bind( termFrequencyModel ));
+		termFrequencyModel.listenTo(stateModel, "change:topicPosition change:topicIndex", termFrequencyModel.update.bind( termFrequencyModel ));
+
+		termFrequencyView.listenTo(stateModel, "change:highlightedTerm", termFrequencyView.onHighlightTermChanged, termFrequencyView);
+		termFrequencyView.listenTo(stateModel, "change:highlightedTopic", termFrequencyView.onHighlightTopicChanged, termFrequencyView);
+	});
+	
+	// initialize all events that listen to filtered model
+	filteredTermTopicProbabilityModel.once( "loaded:filtered", function() {
+		// Declare dependencies
+		// data pipeline events
+		termTopicMatrixView.listenTo( filteredTermTopicProbabilityModel, "change:sparseMatrix", termTopicMatrixView.update.bind( termTopicMatrixView ));
+		termFrequencyModel.listenTo( filteredTermTopicProbabilityModel, "change:termIndex", termFrequencyModel.update.bind( termFrequencyModel ));
+
+		// user control views
+		totalTermsView.listenTo( filteredTermTopicProbabilityModel, 'change:termIndex', totalTermsView.render );
+	});
+	
+	// initialize all events that listen to term frequency model
+	termFrequencyModel.once( "loaded:freqModel", function() {
+		termFrequencyView.listenTo( termFrequencyModel, "updated:TFM", termFrequencyView.renderUpdate, termFrequencyView);
+	});
+	
+	// user control views
+	sortDescription.listenTo( stateModel, "change:sortType change:doubleClickTopic" , sortDescription.render );
+	multiSelectTermsBox.listenTo( stateModel, 'change:visibleTerms', multiSelectTermsBox.render );
+	topicRenameButton.listenTo( stateModel, 'color:topic', topicRenameButton.render );
+	topicRenameButton.listenTo( stateModel, 'clear:allTopics', topicRenameButton.clear );
+	affinityNumTermsView.listenTo( stateModel, 'change:numAffinityTerms', affinityNumTermsView.render );
+	salientNumTermsView.listenTo( stateModel, 'change:numSalientTerms', salientNumTermsView.render );
+	totalTermsView.listenTo( stateModel, 'change:totalTerms', totalTermsView.render );
+	currentVersionNo.listenTo( stateModel, 'change:version', currentVersionNo.render );
+	multiSelectTermsBox.listenTo( seriatedTermTopicProbabilityModel, 'loaded:seriated', multiSelectTermsBox.render );
+
+	// initialize state model listeners that catch view events
+	stateModel.listenTo( termTopicMatrixView, "mouseover:topic mouseout:topic", stateModel.setHighlightedTopic );
+	stateModel.listenTo( termTopicMatrixView, "mouseover:term mouseout:term", stateModel.setHighlightedTerm );
+	stateModel.listenTo( termFrequencyView, "mouseover:term mouseout:term", stateModel.setHighlightedTerm );
+	stateModel.listenTo( termTopicMatrixView, "doubleClick:topic", stateModel.setDoubleClickTopic );	
+	stateModel.listenTo( termTopicMatrixView, "click:topic", stateModel.selectTopic );
+	stateModel.listenTo( stateModel, "change:topicIndex", stateModel.batchClaimColors, stateModel );
+	
+	eventData = null;
+	$('#multi-select').chosen().change( function(event, data){ multiSelectTermsBox.trigger("change"); });
+
+	// begin loading process
+	stateModel.load();
+}
+</script>
+</head>
+<body onload="init()">
+<div class="head">
+	<div class="title">Termite Data Server</div>
+	{{include 'select_server.html'}}
+	{{include 'select_dataset.html'}}
+	{{include 'select_model.html'}}
+</div>
+
+<div class="body">
+	<div id="pageBackground">
+		<div id="pageFrame" style="width: 1600px">
+			<div id="pageHeader" style="width: 400px; display: inline-block; vertical-align: top; ">
+				<table id="layoutTable">
+					<tr>
+						<td id="controls" valign="baseline">
+							<div id="pageLogo" class="headerObject">
+								<span class="title">Termite</span><span class="subtitle"><br/>Topic Model Visualization 0.1</span><br/>
+								<span class="credits">Visualization by Jason Chuang, Ashley Jin<br/>Stanford Vis Group</span><br/>
+							</div>
+							<div id="pageControl" class="headerObject">
+								<div class="line">
+									Currently showing 
+									<div class="TotalTermsView" style="display:inline">50</div> 
+									total terms.
+								</div>
+								<div class="line">
+									Show top:
+									<input class="AffinityNumTermsSlider" style="display:inline; width: 160px; vertical-align: -5px;" type="range" max="100" min="10" value="50"/> 
+									<div class="AffinityNumTermsView" style="display:inline">50</div> 
+									terms by affinity.
+								</div>
+								<div class="line">
+									Show top:
+									<input class="SalientNumTermsSlider" style="display:inline; width: 160px; vertical-align: -5px;" type="range" max="100" min="0" value="0"/>
+									<div class="SalientNumTermsView" style="display:inline-block">0</div> 
+									terms by saliency.
+								</div>
+								<br/>
+								<div class="line instructions">
+									Double click topic label to sort by topic.
+								</div>
+								<div class="line">
+									Sorting by: 
+									<div class="SortDescription" style="display:inline-block">default</div> 
+								</div>
+								<div class="line">
+									<button type="button" class="clearSort" style="width: 150px">Clear sorting method</button>
+								</div>
+								<br/>
+								<div class="instructions">
+									Choose terms to always show in the terms list.
+								</div>
+								<div class="line">
+									Persistent terms
+									<select id="multi-select" data-placeholder="Choose Terms..." style="width:300px;" multiple class="chzn-select multiSelectTerms" tabindex="8">
+									</select>
+								</div>
+								<br/>
+								<div class="line">
+									<input type="checkbox" class="NormalizeColumns" style="display:inline-block"></input> 
+									 Normalize by topic weight
+								</div>									
+								<div class="line">
+									<input type="checkbox" class="TopTwentyAddition" style="display:inline-block"></input> 
+									 Add 20 top terms per selected topic
+								</div>
+								<br/>
+								<div class="line instructions">
+									Click a topic label to rename it.
+								</div>
+								<div class="line">
+									Relabel: 
+									<input class="rename" style="display:inline; width: 100px; vertical-align: -2px" type="text"/>
+									<button type="button" class="saveRename" style="width: 80px">Save Label</button>
+								</div>
+								<br/>
+								<div class="line">
+									<button type="button" class="clearAll" style="width: 150px">Clear all topic selections</button>
+								</div>
+								<br/>
+								<div class="line">
+									Move topic at 
+									<input class="moveTopicNo" style="display:inline; width: 50px; vertical-align: -2px" type="text"/>
+									to: 
+									<input class="topicPosition" style="display:inline; width: 150px; vertical-align: -2px" type="text"/>
+									<button type="button" class="saveMove" style="width: 80px">Save Move</button>
+									<button type="button" class="clearMoves" style="width: 100px">Clear All Moves</button>
+								</div>
+								<div class="line">
+									<button type="button" class="showInstructions" style="width: 130px">Show Instructions</button>	
+								</div>
+							</div>
+						</td>
+						<td id="views" valign="baseline">
+							<div id="pageContent" style="width: 1000px; display: inline-block; vertical-align: top; ">
+							<table>
+								<tr>
+									<td style="vertical-align: top"><div class="termTopicMatrixContainer"></div></td>
+									<td><div class="termFrequencyContainer"></div></td>
+								</tr>
+							</table>
+							<div id="pageDetails">
+								<p>This visualization shows the topical distribution of words in a corpus.</p>
+								<p>The area of a circle is proportional to a word's frequency in a topic.</p>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+			<div id="pageFooter" style="display: block">
+				http://termite.stanford.edu | Version 0.1
+			</div>
+		</div>
+	</div>
+</div>	
+</body>
+</html>

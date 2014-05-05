@@ -1,12 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-import os
-import json
 from handlers.Home_Core import Home_Core
 
 class LDA_Core(Home_Core):
 	def __init__(self, request, response, lda_db):
 		super(LDA_Core, self).__init__(request, response)
+		self.ldaDB = lda_db
 		self.db = lda_db.db
 	
 	def GetDocLimits(self):

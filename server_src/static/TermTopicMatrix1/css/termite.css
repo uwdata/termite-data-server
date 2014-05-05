@@ -1,0 +1,99 @@
+body {
+ background-color: #ccc;
+ cursor: default;
+}
+div, p {
+ padding: 0;
+ margin: 0;
+ border: 0;
+}
+
+#pageBackground {
+ padding: 0px;
+}
+#pageFrame {
+ border: 1px solid #999;
+ box-shadow: 0 0 25px #999;
+ background-color: #f3f3f3;
+}
+#pageHeader {
+}
+
+#pageLogo {
+ font-family: Georgia;
+ padding: 20px 50px 20px 30px;
+}
+#pageLogo .title {
+ font-weight: bold;
+ font-size: 18pt;
+}
+#pageLogo .subtitle {
+ font-size: 12pt;
+ color: #666;
+}
+#pageLogo .credits {
+ font-size: 9pt;
+ color: #666;
+}
+
+#pageControl {
+ color: #666;
+ font-family: Verdana;
+ font-size: 8pt;
+ padding: 10px 20px;
+ border-top: 1px solid #999;
+}
+
+#renaming {
+ color: #666;
+ font-family: Verdana;
+ font-size: 8pt;
+}
+
+#pageHeader .headerObject {
+ display: inline-block;
+ vertical-align: top;
+}
+#pageHeader .headerObject div.line {
+ padding: 0;
+ margin: 0;
+}
+#pageContent {
+ padding: 20px 40px;
+}
+#pageDetails {
+ color: #999;
+ font-family: Verdana;
+ font-size: 8pt;
+}
+
+#pageFooter {
+ color: #666;
+ font-family: Verdana;
+ font-size: 8pt;
+ padding: 5px;
+}
+
+#layoutTable {
+  border-collapse:collapse;
+  border-bottom: 1px solid #999;
+}
+
+#controls {
+  border-right: 1px solid #999;
+}
+
+#views {
+  background-color: #fff;
+}
+
+.instructions {
+  height: 0px;
+  overflow: hidden;
+  font-weight: bold;
+}
+
+select {
+ font-family: Verdana;
+ font-size: 8pt;
+ }

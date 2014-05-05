@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
 import json
@@ -68,7 +69,7 @@ class Home_Core(object):
 
 		operations = self.GetOperations(server)
 		datasets = self.GetDatasets(server)
-		views = self.GetViews(server)
+		visualizations = self.GetVisualizations(server, dataset)
 		models = self.GetModels(server, dataset)
 		attributes = self.GetAttributes(server, dataset, model, attribute)
 		menus = {
@@ -80,7 +81,7 @@ class Home_Core(object):
 			'datasets' : datasets,
 			'operations' : operations,
 			'models' : models,
-			'views' : views,
+			'visualizations' : visualizations,
 			'attributes' : attributes
 		}
 		return menus
@@ -94,20 +95,10 @@ class Home_Core(object):
 		})
 		return operations
 
-	def GetViews(self, server):
-		views = []
-		self.configs.update({
-			'AvailableVisualizations' : views
-		})
-		return views
-		
-	EXCLUDE_SYSTEM_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset', 'echo' ])
-	EXCLUDE_VIS_FOLDERS = frozenset([])
+	EXCLUDE_SYSTEM_FOLDERS = frozenset([ 'admin', 'examples', 'welcome', 'init', 'dataset', 'vis' ])
 	EXCLUDE_TEMP_FOLDERS = re.compile(r'^temp_.*$')
 	def IsExcludedDataset(self, folder):
 		if folder in Home_Core.EXCLUDE_SYSTEM_FOLDERS:
-			return True
-		elif folder in Home_Core.EXCLUDE_VIS_FOLDERS:
 			return True
 		elif Home_Core.EXCLUDE_TEMP_FOLDERS.match(folder) is not None:
 			return True
@@ -144,6 +135,18 @@ class Home_Core(object):
 				})
 		return models
 	
+	def GetVisualizations(self, server, dataset):
+		visualizations = [{
+			'value' : 'TermTopicMatrix1',
+			'name'  : 'Term-Topic Matrix 1'
+		}]
+		if not self.IsExcludedDataset(dataset):
+			if self.configs['model'] == 'default':
+				self.content.update({
+					'AvailableVisualizations' : visualizations
+				})
+		return visualizations
+
 	def GetAttributes(self, server, dataset, model, attribute):
 		attributes = []
 		if not self.IsExcludedDataset(dataset):
@@ -336,4 +339,6 @@ class Home_Core(object):
 		data.update( self.content )
 		data['content'] = json.dumps( self.content, encoding = 'utf-8', indent = 2, sort_keys = True )
 		self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
+		if self.HasAllowedOrigin():
+			self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
 		return data
