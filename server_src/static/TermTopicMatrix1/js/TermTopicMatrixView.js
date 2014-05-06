@@ -230,7 +230,7 @@ TermTopicMatrixView.prototype.updateMatrixView = function(){
 	this.matrixLayer.selectAll( "circle" ).data( matrix ).enter().append( "svg:circle" )
 		.on( "mouseout", function() { this.trigger( "mouseout:term", ""); this.trigger( "mouseout:topic", null); }.bind(this) )
 	this.matrixLayer.selectAll( "circle" ).data( matrix )	
-		.attr( "class", function(d) { console.log(this.colorMap, topicMapping); /**DEBUG**/ return [ "matrixElement", this.colorMap(topicMapping[d.topicIndex].color), getTopicClassTag(d.topicIndex.toString()), getTermClassTag(d.term) ].join(" ") }.bind(this))
+		.attr( "class", function(d) { return [ "matrixElement", this.colorMap(topicMapping[d.topicIndex].color), getTopicClassTag(d.topicIndex.toString()), getTermClassTag(d.term) ].join(" ") }.bind(this))
 		.on( "mouseover", function(d) { this.trigger( "mouseover:term", d.term); this.trigger( "mouseover:topic", d.topicIndex); }.bind(this) )
 		.on( "click", function (d) { this.trigger( "click:topic", d.topicIndex ) }.bind(this)) 
 		.attr( "cx", function(d) { return this.xs(topicMapping[d.topicIndex].position+0.5) }.bind(this) )

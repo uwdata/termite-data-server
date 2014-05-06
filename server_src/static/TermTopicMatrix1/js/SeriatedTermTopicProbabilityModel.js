@@ -61,7 +61,7 @@ SeriatedTermTopicProbabilityModel.prototype.load = function () {
 		console.log("Loaded SeriatedTermTopicProbabilityModel", model, response, options);
 		// UDPATE: will get matrix, termIndex, topicIndex from stateModel
 		sumColumns();
-		this.printHTML('select'); 	//TODO: hacky
+		this.printHTML('select#multi-select'); 	//TODO: hacky
 		this.trigger("loaded:seriated");	
 		
 	}.bind(this);
