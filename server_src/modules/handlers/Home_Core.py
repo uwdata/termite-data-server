@@ -69,8 +69,8 @@ class Home_Core(object):
 
 		operations = self.GetOperations(server)
 		datasets = self.GetDatasets(server)
-		visualizations = self.GetVisualizations(server, dataset)
 		models = self.GetModels(server, dataset)
+		visualizations = self.GetVisualizations(server, dataset)
 		attributes = self.GetAttributes(server, dataset, model, attribute)
 		menus = {
 			'server' : server,
@@ -129,19 +129,26 @@ class Home_Core(object):
 				'value' : row['model_key'],
 				'name' : row['model_desc']
 			} for row in rows ]
-			if self.configs['model'] == 'default':
-				self.content.update({
-					'AvailableModels' : models
-				})
+			self.content.update({
+				'AvailableModels' : models
+			})
 		return models
 	
 	def GetVisualizations(self, server, dataset):
-		visualizations = [{
-			'value' : 'TermTopicMatrix1',
-			'name'  : 'Term-Topic Matrix 1'
-		}]
+		visualizations = []
 		if not self.IsExcludedDataset(dataset):
-			if self.configs['model'] == 'default':
+			if 'AvailableModels' in self.content:			
+				models = frozenset(d['value'] for d in self.content['AvailableModels'])
+				if 'bow' in models and 'lda' in models:
+					visualizations.append({
+						'value' : 'TermTopicMatrix1',
+						'name'  : 'Term-Topic Matrix 1'
+					})
+				if 'bow' in models and 'lda' in models and 'itm' in models:
+					visualizations.append({
+						'value' : 'GroupInBox',
+						'name'  : 'Group-in-a-Box'
+					})
 				self.content.update({
 					'AvailableVisualizations' : visualizations
 				})

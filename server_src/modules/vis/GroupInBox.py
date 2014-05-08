@@ -29,6 +29,7 @@ class GroupInBox(Home_Core):
 		})
 		if action is None or action != 'train':
 			action = ''
+		print "action param", action
 		return action
 
 	def GetIters(self, iterCount):
@@ -36,6 +37,13 @@ class GroupInBox(Home_Core):
 		self.params.update({
 			'iters' : iters if iters is not None else iterCount
 		})
+		print "iters param", iters
+		for key in self.request.env:
+			print key, self.request.env[key]
+			print '---'
+		for key in self.request.vars:
+			print key, self.request.vars[key]
+			print '---'
 		return iters
 
 	def GetConstraints(self):
@@ -49,6 +57,11 @@ class GroupInBox(Home_Core):
 			'keepTerms' : keepTermsStr,
 			'removeTerms' : removeTermsStr
 		})
+		print "constraints as received"
+		print mustLinksStr
+		print cannotLinksStr
+		print keepTermsStr
+		print removeTermsStr
 		mustLinks = None
 		cannotLinks = None
 		keepTerms = None
@@ -78,6 +91,11 @@ class GroupInBox(Home_Core):
 				removeTerms = [ d for d in data if type(d) is unicode ]
 		except (ValueError, KeyError, TypeError):
 			pass
+		print "constraints sanitized"
+		print mustLinks
+		print cannotLinks
+		print keepTerms
+		print removeTerms
 		return mustLinks, cannotLinks, keepTerms, removeTerms
 
 	def UpdateModel(self):

@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en" ng-app="termite">
+<head>
+	<meta charset="utf-8">
+	<title>Termite | Group-in-a-Box Visualization</title>
+
+	<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,400italic' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" href="[[=URL('static/GroupInBox','libs/fluxweed/style.css')]]"/>
+	<link rel="stylesheet" href="[[=URL('static/GroupInBox','css/style.css')]]"/>
+	<script type="text/javascript" src="[[=URL('static','js/jquery.js')]]"></script>
+	<script type="text/javascript" src="[[=URL('static','js/underscore.js')]]"></script>
+	<script type="text/javascript" src="[[=URL('static','js/backbone.js')]]"></script>
+	<script type="text/javascript" src="[[=URL('static','js/d3.js')]]"></script>
+	<script type="text/javascript" src="[[=URL('static','js/common.js')]]"></script>
+<script type="text/javascript">
+var SERVER_URL = "/[[ =configs['dataset'] ]]/[[ =configs['model'] ]]/gib"
+var NUM_TERMS = 10;
+var ITERS = 1000;
+</script>
+</head>
+<body>
+	<div class="header">
+		<span class="ui-title"><span class="dark">TERMITE</span><span class="subtitle"> | interactive topic modeling</span></span>
+	</div>
+	<div id="data-manager" ng-controller="DatasetController">
+		<div ng-show="loading" id="loader" class="ui-loader">loading...</div>
+	</div>
+	<div id="GIB" ng-controller="TopicModelViewController">
+		<div id="itm-continue-button" ng-click="continue()">continue</div>
+			<div id="topics">
+				<span class="topic" id="{{t.id}}" ng-repeat="t in topics">
+					<!-- this should be a view or a directive? -->
+					<span class="topic-header" ng-class="{edit: t.mode.edit}">
+						<span class="topic-name">{{t.name}}</span>
+						<input ng-show="t.mode.edit" type="text" ng-model="t.name" ng-enter="edit = false;"/>
+						<span ng-show="t.mode.edit" class="topic-toolbox">
+							<span class="icon icon-plus" ng-class="{active: t.mode.edit, selected: t.mode.addWord}" title="add word(s) to the topic" ng-click="swapTopicMode('add', t)"></span>
+							<span class="icon icon-scissors" ng-class="{active: t.mode.removeWord}" title="remove word(s) from the topic" ng-click="removeWords(t)"></span>
+							<span class="icon icon-trash" ng-class="{active: t.mode.trashWord}" title="add word(s) to the global stop words list" ng-click="addToStopWords(t)"></span>
+						</span>
+						<span class="icon topic-edit icon-wrench active" ng-class="{selected: t.mode.edit}" title="edit topic" ng-click="swapTopicMode('edit', t)"></span>
+					</span>
+					<!-- this should be a directive -->
+					<topic-graph topic="t"></topic-graph>
+					<span ng-show="t.mode.addWord" class="topic-footer">
+						<input class="topic-word-input" ng-show="t.mode.addWord" type="text" ng-model="t.addedWord" ng-enter="addWord(t)" >
+					</span>
+				</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- In production use:
+	<script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
+	-->
+	<script src="[[=URL('static/GroupInBox','bower_components/angular/angular.js')]]"></script>
+	<script src="[[=URL('static/GroupInBox','bower_components/angular-route/angular-route.js')]]"></script>
+	<script src="[[=URL('static/GroupInBox','js/app.js')]]"></script>
+	<script src="[[=URL('static/GroupInBox','js/services.js')]]"></script>
+	<script src="[[=URL('static/GroupInBox','js/controllers.js')]]"></script>
+	<script src="[[=URL('static/GroupInBox','js/directives.js')]]"></script> 
+</body>
+</html>
