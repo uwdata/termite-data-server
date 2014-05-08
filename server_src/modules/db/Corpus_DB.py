@@ -14,6 +14,8 @@ class Corpus_DB():
 	MODEL_KEY = 'corpus'
 	MODEL_DESC = 'Text Corpus'
 	MODEL_ENTRY = { 'model_key' : MODEL_KEY, 'model_desc' : MODEL_DESC }
+	LINEBREAKS_TABS = re.compile(r'[\t\r\n\f]')
+	
 	DEFAULT_OPTIONS = {
 		'token_regex' : r'\w{3,}',        # Tokenize a corpus into a bag-of-words language model
 		'min_freq' : 5,                   # Number of times a term must appear in the corpus
@@ -142,6 +144,10 @@ class Corpus_DB():
 	
 ################################################################################
 
+	def SanitizeText(self, text):
+		text = Corpus_DB.LINEBREAKS_TABS.sub(u' ', text).strip()
+		return text
+
 	def ImportFromFile(self, filename):
 		"""
 		filename = A plain-text file (utf-8 encoded) containing one document per line
@@ -160,7 +166,7 @@ class Corpus_DB():
 					yield {
 						'doc_index' : doc_index,
 						'doc_id' : doc_id,
-						'doc_content' : doc_content.encode('utf-8')
+						'doc_content' : doc_content.encode('utf-8', 'ignore')
 					}
 		self.db.corpus.bulk_insert(ReadFile())
 
@@ -178,7 +184,7 @@ class Corpus_DB():
 					yield {
 						'doc_index' : doc_index,
 						'doc_id' : doc_id,
-						'doc_content' : doc_content.encode('utf-8')
+						'doc_content' : doc_content.encode('utf-8', 'ignore')
 					}
 		self.db.corpus.bulk_insert(ReadFolder())
 
@@ -235,7 +241,7 @@ class Corpus_DB():
 							metadata.append({
 								'doc_index' : doc_index,
 								'field_index' : field_index,
-								'value' : value.encode('utf-8')
+								'value' : value.encode('utf-8', 'ignore')
 							})
 						
 							# [START] infer field type
@@ -257,7 +263,7 @@ class Corpus_DB():
 					yield {
 						'doc_index' : doc_index,
 						'doc_id' : doc_id,
-						'doc_content' : doc_content.encode('utf-8')
+						'doc_content' : doc_content.encode('utf-8', 'ignore')
 					}
 
 		def GetFields():
@@ -280,12 +286,11 @@ class Corpus_DB():
 		filename = A tab-delimited file (utf-8 encoded, without header) containing docIDs and document contents
 		"""
 		def WriteFile(rows):
-			m = re.compile(r'\s+')
 			with open(filename, 'w') as f:
 				for row in rows:
 					doc_id = row.doc_id
-					doc_content = m.sub(u' ', row.doc_content.decode('utf-8'))
-					f.write(u'{}\t{}\n'.format(doc_id, doc_content).encode('utf-8'))
+					doc_content = self.SanitizeText(row.doc_content.decode('utf-8'))
+					f.write(u'{}\t{}\n'.format(doc_id, doc_content).encode('utf-8', 'ignore'))
 
 		rows = self.db().select(self.db.corpus.doc_id, self.db.corpus.doc_content, orderby = self.db.corpus.doc_index)
 		WriteFile(rows)
@@ -299,33 +304,31 @@ class Corpus_DB():
 		all_field_names = [ 'doc_id', 'doc_content' ] + field_names
 
 		def WriteCSV(rows):
-			m = re.compile(r'\s+')
 			with open(filename, 'w') as f:
 				writer = UnicodeWriter(f)
 				writer.writerow(all_field_names)
 				for row in rows:
 					doc_index = row.doc_index
 					doc_id = row.doc_id
-					doc_content = m.sub(u' ', row.doc_content.decode('utf-8'))
+					doc_content = self.SanitizeText(row.doc_content.decode('utf-8'))
 					values = [u''] * field_count
 					for d in self.db(self.db.metadata.doc_index == doc_index).select(self.db.metadata.field_index, self.db.metadata.value):
-						values[d.field_index] = m.sub(u' ', d.value.decode('utf-8'))
+						values[d.field_index] = self.SanitizeText(d.value.decode('utf-8'))
 					all_values = [ doc_id, doc_content ] + values
 					writer.writerow(all_values)
 			
 		def WriteTSV(rows):
-			m = re.compile(r'\s+')
 			with open(filename, 'w') as f:
-				f.write(u'{}\n'.format(u'\t'.join(all_field_names)).encode('utf-8'))
+				f.write(u'{}\n'.format(u'\t'.join(all_field_names)).encode('utf-8', 'ignore'))
 				for row in rows:
 					doc_index = row.doc_index
 					doc_id = row.doc_id
-					doc_content = m.sub(u' ', row.doc_content.decode('utf-8'))
+					doc_content = self.SanitizeText(row.doc_content.decode('utf-8'))
 					values = [u''] * field_count
 					for d in self.db(self.db.metadata.doc_index == doc_index).select(self.db.metadata.field_index, self.db.metadata.value):
-						values[d.field_index] = m.sub(u' ', d.value.decode('utf-8'))
+						values[d.field_index] = self.SanitizeText(d.value.decode('utf-8'))
 					all_values = [ doc_id, doc_content ] + values
-					f.write(u'{}\n'.format(u'\t'.join(all_values)).encode('utf-8'))
+					f.write(u'{}\n'.format(u'\t'.join(all_values)).encode('utf-8', 'ignore'))
 
 		rows = self.db().select(self.db.corpus.doc_index, self.db.corpus.doc_id, self.db.corpus.doc_content, orderby = self.db.corpus.doc_index)
 		if is_csv:
