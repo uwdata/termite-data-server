@@ -29,7 +29,6 @@ class GroupInBox(Home_Core):
 		})
 		if action is None or action != 'train':
 			action = ''
-		print "action param", action
 		return action
 
 	def GetIters(self, iterCount):
@@ -37,13 +36,6 @@ class GroupInBox(Home_Core):
 		self.params.update({
 			'iters' : iters if iters is not None else iterCount
 		})
-		print "iters param", iters
-		for key in self.request.env:
-			print key, self.request.env[key]
-			print '---'
-		for key in self.request.vars:
-			print key, self.request.vars[key]
-			print '---'
 		return iters
 
 	def GetConstraints(self):
@@ -67,26 +59,26 @@ class GroupInBox(Home_Core):
 		keepTerms = None
 		removeTerms = None
 		try:
-			data = json.loads(mustLinksStr)
+			data = json.loads(mustLinksStr, encoding='utf8')
 			if type(data) is list:
 				mustLinks = [ [ d for d in dd if type(d) is unicode ] for dd in data if type(dd) is list ]
 		except (ValueError, KeyError, TypeError):
 			pass
 		try:
-			data = json.loads(cannotLinksStr)
+			data = json.loads(cannotLinksStr, encoding='utf8')
 			if type(data) is list:
 				cannotLinks = [ [ d for d in dd if type(d) is unicode ] for dd in data if type(dd) is list ]
 		except (ValueError, KeyError, TypeError):
 			pass
 		try:
-			data = json.loads(keepTermsStr)
+			data = json.loads(keepTermsStr, encoding='utf8')
 			if type(data) is dict:
 				for key, value in data.iteritems():
-					keepTerms = { int(key) : [ d for d in value if type(d) is unicode ] for key, value in data.iteritems() if type(value) is list }
+					keepTerms = { int(key[5:]) : [ d for d in value if type(d) is unicode ] for key, value in data.iteritems() if type(value) is list }
 		except (ValueError, KeyError, TypeError):
 			pass
 		try:
-			data = json.loads(removeTermsStr)
+			data = json.loads(removeTermsStr, encoding='utf8')
 			if type(data) is list:
 				removeTerms = [ d for d in data if type(d) is unicode ]
 		except (ValueError, KeyError, TypeError):
