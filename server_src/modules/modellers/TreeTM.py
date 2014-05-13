@@ -52,19 +52,24 @@ class RefineLDA(object):
 	def __init__( self, modelPath, numIters = 1000, prevEntry = None,
 			mustLinks = None, cannotLinks = None, keepTerms = None, removeTerms = None,
 			MALLET_PATH = 'tools/mallet' ):
-		with TreeTM( modelsPath = modelPath, resume = True, nextIter = numIters, prevEntryID = prevEntry ) as treeTM:
-			treeTM.PrepareToResumeTraining()
+		with TreeTM( modelsPath = modelPath, resume = True, inspect = True ) as treeTM:
+			treeTM.PrepareToInspect()
 			treeTM.ReadFiles()
-			if mustLinks is not None:
-				treeTM.SetMustLinks( mustLinks )
-			if cannotLinks is not None:
-				treeTM.SetCannoLinks( cannotLinks )
-			if keepTerms is not None:
-				treeTM.SetKeepTerms( keepTerms )
-			if removeTerms is not None:
-				treeTM.SetRemoveTerms( removeTerms )
-			treeTM.WriteFiles()
-			treeTM.Execute()
+			prevIter = treeTM.prevIter
+		if numIters > prevIter:
+			with TreeTM( modelsPath = modelPath, resume = True, nextIter = numIters, prevEntryID = prevEntry ) as treeTM:
+				treeTM.PrepareToResumeTraining()
+				treeTM.ReadFiles()
+				if mustLinks is not None:
+					treeTM.SetMustLinks( mustLinks )
+				if cannotLinks is not None:
+					treeTM.SetCannoLinks( cannotLinks )
+				if keepTerms is not None:
+					treeTM.SetKeepTerms( keepTerms )
+				if removeTerms is not None:
+					treeTM.SetRemoveTerms( removeTerms )
+				treeTM.WriteFiles()
+				treeTM.Execute()
 	
 class BuildLDA(object):
 	"""
@@ -235,7 +240,8 @@ class TreeTM(object):
 		self.filenameConstraints         = '{nextEntryPath}/constraint.all'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameKeepTermsPrevious   = '{prevEntryPath}/important.keep'.format( prevEntryPath = self.prevEntryPath )
 		self.filenameKeepTerms           = '{nextEntryPath}/important.keep'.format( nextEntryPath = self.nextEntryPath )
-		self.filenameRemoveTermsPrevious = '{prevEntryPath}/removed.all'.format( prevEntryPath = self.prevEntryPath )
+		self.filenameRemoveTermsPrevNew  = '{prevEntryPath}/removed.new'.format( prevEntryPath = self.prevEntryPath )
+		self.filenameRemoveTermsPrevAll  = '{prevEntryPath}/removed.all'.format( prevEntryPath = self.prevEntryPath )
 		self.filenameRemoveTermsPrefix   = '{nextEntryPath}/removed'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameRemoveTermsNew      = '{nextEntryPath}/removed.new'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameRemoveTermsAll      = '{nextEntryPath}/removed.all'.format( nextEntryPath = self.nextEntryPath )
@@ -287,7 +293,7 @@ class TreeTM(object):
 		self.mustLinkConstraints = []
 		self.cannotLinkConstraints = []
 		self.keepTerms = {}
-		self.removeTermsAll = frozenset()
+		self.removeTermsPrev = frozenset()
 		self.removeTermsNew = frozenset()
 
 	def __enter__( self ):
@@ -319,9 +325,7 @@ class TreeTM(object):
 	
 	def SetRemoveTerms( self, removeTerms ):
 		"""Argument 'removeTerms' should be a list of words"""
-		removeTermsPrevious = self.removeTermsAll
-		self.removeTermsAll = frozenset(removeTerms)
-		self.removeTermsNew = self.removeTermsAll.difference(removeTermsPrevious)
+		self.removeTermsNew = removeTerms
 	
 	def GetMustLinks( self ):
 		return self.mustLinkConstraints
@@ -333,7 +337,7 @@ class TreeTM(object):
 		return self.keepTerms
 	
 	def GetRemoveTerms( self ):
-		return self.removeTermsAll
+		return frozenset(self.removeTermsNew.union(self.removeTermsPrev))
 	
 ################################################################################
 # File I/O Operations
@@ -428,7 +432,7 @@ class TreeTM(object):
 		keepTerms = {}
 		with open( self.filenameKeepTermsPrevious, 'r' ) as f:
 			for line in f.read().decode('utf-8').splitlines():
-				term, topic = line.split('\t')
+				term, topic = line.split(' ')
 				if topic not in keepTerms:
 					keepTerms[topic] = set()
 				keepTerms[topic].add(term)
@@ -438,17 +442,20 @@ class TreeTM(object):
 		lines = []
 		for topic, terms in self.keepTerms.iteritems():
 			for term in terms:
-				lines.append( u'{}\t{}'.format(term, topic) )
+				lines.append( u'{} {}'.format(term, topic) )
 		with open( self.filenameKeepTerms, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
 
 	def ReadRemoveTermsFile( self ):
-		with open( self.filenameRemoveTermsPrevious, 'r' ) as f:
-			lines = f.read().decode('utf-8').splitlines()
-		self.removeTermsAll = frozenset(lines)
+		lines = []
+		with open( self.filenameRemoveTermsPrevAll, 'r' ) as f:
+			lines += f.read().decode('utf-8').splitlines()
+		with open( self.filenameRemoveTermsPrevNew, 'r') as f:
+			lines += f.read().decode('utf-8').splitlines()
+		self.removeTermsPrev = frozenset(lines)
 		
 	def WriteRemoveTermsFiles( self ):
-		lines = [ term for term in self.removeTermsAll ]
+		lines = [ term for term in self.removeTermsPrev ]
 		with open( self.filenameRemoveTermsAll, 'w' ) as f:
 			f.write( u'\n'.join(lines).encode('utf-8') )
 		lines = [ term for term in self.removeTermsNew ]
@@ -477,8 +484,6 @@ class TreeTM(object):
 		if not os.path.exists( self.nextEntryPath ):
 			self.logger.info( 'Copying entry folder: %s', self.nextEntryPath )
 			shutil.copytree( self.prevEntryPath, self.nextEntryPath )
-			with open( self.filenameRemoveTermsNew, 'w' ) as f:
-				f.write('')
 
 	def ImportFileOrFolder( self ):
 		mallet_executable = '{}/bin/mallet'.format( self.MALLET_PATH )
