@@ -46,7 +46,7 @@ class TreeTMReader(LDAReader):
 			self.termList = [ line.decode('utf-8', 'ignore').rstrip('\n').split('\t')[1] for line in f ]
 
 	def ReadTopicWordWeights( self ):
-		self.termTopicMatrix = []
+		accumulator = {}
 		self.logger.debug( '    Loading matrix: %s', self.entryTopicWordWeights )
 		with open( self.entryTopicWordWeights, 'r' ) as f:
 			for line in f:
@@ -55,12 +55,21 @@ class TreeTMReader(LDAReader):
 				topicIndex = int(topicIndex)
 				value = float(value)
 				if value > TreeTMReader.PROB_THRESHOLD:
-					self.termTopicMatrix.append({
-						'term_index' : term,
-						'topic_index' : topicIndex,
-						'value' : value,
-						'rank' : 0
-					})
+					if term not in accumulator:
+						accumulator[term] = {}
+					if topicIndex not in accumulator[term]:
+						accumulator[term][topicIndex] = 0.0
+					accumulator[term][topicIndex] += value
+		self.termTopicMatrix = []
+		for term in accumulator:
+			for topicIndex in accumulator[term]:
+				value = accumulator[term][topicIndex]
+				self.termTopicMatrix.append({
+					'term_index' : term,
+					'topic_index' : topicIndex,
+					'value' : value,
+					'rank' : 0
+				})
 		termLookup = { term : termIndex for termIndex, term in enumerate(self.termList) }
 		self.termTopicMatrix.sort( key = lambda d : -d['value'] )
 		for index, d in enumerate(self.termTopicMatrix):
