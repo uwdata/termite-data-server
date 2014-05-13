@@ -300,13 +300,13 @@ class TreeTM(object):
 ################################################################################
 # Setters (public methods)
 		
-	def SetMustLinks( self, mustLinkConstraints ):
-		"""Argument 'mustLinkConstraints' should be a list of lists of words"""
-		self.mustLinkConstraints = [ frozenset(constraint) for constraint in mustLinkConstraints ]
+	def SetMustLinks( self, mustLinks ):
+		"""Argument 'mustLinks' should be a list of lists of words"""
+		self.mustLinkConstraints = [ frozenset(constraint) for constraint in mustLinks ]
 
-	def SetCannoLinks( self, cannotLinkConstraints ):
-		"""Argument 'cannotLinkConstraints' should be a list of lists of words"""
-		self.cannotLinkConstraints = [ frozenset(constraint) for constraint in cannotLinkConstraints ]
+	def SetCannoLinks( self, cannotLinks ):
+		"""Argument 'cannotLinks' should be a list of lists of words"""
+		self.cannotLinkConstraints = [ frozenset(constraint) for constraint in cannotLinks ]
 
 	def SetKeepTerms( self, keepTerms ):
 		"""Argument 'keepTerms' should be a dict where the keys are topic indexes and the values are a list of words"""
