@@ -230,18 +230,19 @@ class TreeTM(object):
 		self.inspect = inspect
 		self.prevIter = None
 		self.nextIter = nextIter
-		self.prevEntryPath = '{modelsPath}/entry-{prevEntryID:06d}'.format( modelsPath = self.modelsPath, prevEntryID = self.prevEntryID )
+		self.prevEntryPath = '{modelsPath}/entry-{prevEntryID:06d}'.format( modelsPath = self.modelsPath, prevEntryID = self.prevEntryID ) if self.prevEntryID >= 0 else None
 		self.nextEntryPath = '{modelsPath}/entry-{nextEntryID:06d}'.format( modelsPath = self.modelsPath, nextEntryID = self.nextEntryID )
-		self.filenamePrevStates  = '{prevEntryPath}/states.json'.format( prevEntryPath = self.prevEntryPath )
-		self.filenamePrevModel   = '{prevEntryPath}/model'.format( prevEntryPath = self.prevEntryPath )
+		self.filenamePrevStates  = '{prevEntryPath}/states.json'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
+		print "filename, path = ", self.filenamePrevStates, self.prevEntryPath
+		self.filenamePrevModel   = '{prevEntryPath}/model'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
 		self.filenameNextStates  = '{nextEntryPath}/states.json'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameNextModel   = '{nextEntryPath}/model'.format( nextEntryPath = self.nextEntryPath )
-		self.filenameConstraintsPrevious = '{prevEntryPath}/constraint.all'.format( prevEntryPath = self.prevEntryPath )
+		self.filenameConstraintsPrevious = '{prevEntryPath}/constraint.all'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
 		self.filenameConstraints         = '{nextEntryPath}/constraint.all'.format( nextEntryPath = self.nextEntryPath )
-		self.filenameKeepTermsPrevious   = '{prevEntryPath}/important.keep'.format( prevEntryPath = self.prevEntryPath )
+		self.filenameKeepTermsPrevious   = '{prevEntryPath}/important.keep'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
 		self.filenameKeepTerms           = '{nextEntryPath}/important.keep'.format( nextEntryPath = self.nextEntryPath )
-		self.filenameRemoveTermsPrevNew  = '{prevEntryPath}/removed.new'.format( prevEntryPath = self.prevEntryPath )
-		self.filenameRemoveTermsPrevAll  = '{prevEntryPath}/removed.all'.format( prevEntryPath = self.prevEntryPath )
+		self.filenameRemoveTermsPrevNew  = '{prevEntryPath}/removed.new'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
+		self.filenameRemoveTermsPrevAll  = '{prevEntryPath}/removed.all'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
 		self.filenameRemoveTermsPrefix   = '{nextEntryPath}/removed'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameRemoveTermsNew      = '{nextEntryPath}/removed.new'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameRemoveTermsAll      = '{nextEntryPath}/removed.all'.format( nextEntryPath = self.nextEntryPath )
@@ -380,9 +381,10 @@ class TreeTM(object):
 			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
 
 	def ReadStatesFile( self ):
-		with open( self.filenamePrevStates, 'r' ) as f:
-			states = json.load( f, encoding = 'utf-8' )
-		self.prevIter = states['numIters']
+		if self.filenamePrevStates is not None:
+			with open( self.filenamePrevStates, 'r' ) as f:
+				states = json.load( f, encoding = 'utf-8' )
+			self.prevIter = states['numIters']
 		
 	def WriteStatesFile( self ):
 		states = {
@@ -407,15 +409,16 @@ class TreeTM(object):
 	def ReadConstraintsFile( self ):
 		mustLinkConstraints = []
 		cannotLinkConstraints = []
-		with open( self.filenameConstraintsPrevious, 'r' ) as f:
-			for line in f.read().decode('utf-8').splitlines():
-				values = line.split('\t')
-				action = values[0]
-				terms = values[1:]
-				if action == 'MERGE_':
-					mustLinkConstraints.append(frozenset(terms))
-				if action == 'SPLIT_':
-					cannotLinkConstraints.append(frozenset(terms))
+		if self.filenameConstraintsPrevious is not None:
+			with open( self.filenameConstraintsPrevious, 'r' ) as f:
+				for line in f.read().decode('utf-8').splitlines():
+					values = line.split('\t')
+					action = values[0]
+					terms = values[1:]
+					if action == 'MERGE_':
+						mustLinkConstraints.append(frozenset(terms))
+					if action == 'SPLIT_':
+						cannotLinkConstraints.append(frozenset(terms))
 		self.mustLinkConstraints = mustLinkConstraints
 		self.cannotLinkConstraints = cannotLinkConstraints
 
@@ -430,12 +433,13 @@ class TreeTM(object):
 	
 	def ReadKeepTermsFile( self ):
 		keepTerms = {}
-		with open( self.filenameKeepTermsPrevious, 'r' ) as f:
-			for line in f.read().decode('utf-8').splitlines():
-				term, topic = line.split(' ')
-				if topic not in keepTerms:
-					keepTerms[topic] = set()
-				keepTerms[topic].add(term)
+		if self.filenameKeepTermsPrevious is not None:
+			with open( self.filenameKeepTermsPrevious, 'r' ) as f:
+				for line in f.read().decode('utf-8').splitlines():
+					term, topic = line.split(' ')
+					if topic not in keepTerms:
+						keepTerms[topic] = set()
+					keepTerms[topic].add(term)
 		self.keepTerms = keepTerms
 				
 	def WriteKeepTermsFile( self ):
@@ -448,10 +452,12 @@ class TreeTM(object):
 
 	def ReadRemoveTermsFile( self ):
 		lines = []
-		with open( self.filenameRemoveTermsPrevAll, 'r' ) as f:
-			lines += f.read().decode('utf-8').splitlines()
-		with open( self.filenameRemoveTermsPrevNew, 'r') as f:
-			lines += f.read().decode('utf-8').splitlines()
+		if self.filenameRemoveTermsPrevAll is not None:
+			with open( self.filenameRemoveTermsPrevAll, 'r' ) as f:
+				lines += f.read().decode('utf-8').splitlines()
+		if self.filenameRemoveTermsPrevNew is not None:
+			with open( self.filenameRemoveTermsPrevNew, 'r') as f:
+				lines += f.read().decode('utf-8').splitlines()
 		self.removeTermsPrev = frozenset(lines)
 		
 	def WriteRemoveTermsFiles( self ):
