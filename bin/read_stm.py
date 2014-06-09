@@ -52,6 +52,11 @@ def ImportSTM( app_name, model_path, corpus_path, database_path, is_quiet, force
 			app_model_path = '{}/stm'.format( app.GetDataPath() )
 			logger.info( 'Copying [%s] --> [%s]', model_path, app_model_path )
 			shutil.copytree( model_path, app_model_path )
+			for stm_filename in [ 'doc-index.json', 'term-index.json', 'topic-index.json', 'doc-topic-matrix.txt', 'term-topic-matrix.txt' ]:
+				source_filename = '{}/{}'.format(corpus_path, stm_filename)
+				target_filename = '{}/{}'.format(app_model_path, stm_filename)
+				logger.info( 'Copying [%s] --> [%s]', source_filename, target_filename )
+				shutil.copy( source_filename, target_filename )
 			
 			db_path = app.GetDatabasePath()
 			with Corpus_DB(db_path) as corpus_db:
