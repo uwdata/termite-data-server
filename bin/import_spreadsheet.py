@@ -14,7 +14,7 @@ def ImportSpreadsheet(spreadsheet_filename, database_path, id_key, content_key, 
 	database_filename = '{}/corpus.db'.format(database_path)
 	print 'Importing spreadsheet [{}] into database [{}]'.format(spreadsheet_filename, database_filename)
 	
-	with Corpus_DB(database_path, isINit=True) as corpus_db:
+	with Corpus_DB(database_path, isInit=True) as corpus_db:
 		corpus_db.ImportFromSpreadsheet(spreadsheet_filename, is_csv = is_csv, id_key = id_key, content_key = content_key)
 
 def main():
