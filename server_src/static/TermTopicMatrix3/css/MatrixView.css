@@ -1,0 +1,26 @@
+div.MatrixView div {
+	display: inline-block;
+	padding: 0;
+	margin: 0;
+	border: none;
+	box-shadow: none;
+	cursor: default;
+	pointer-events: none;
+}
+div.MatrixView div.container {
+	font-family: Gill Sans;
+	background: #fff;
+	border: 1px solid #ccc;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: moz-none;
+	-ms-user-select: none;
+	user-select: none;
+}
+div.MatrixView div.canvas {
+	position : absolute;
+}
+div.MatrixView div.canvas * {
+	position : absolute;
+}

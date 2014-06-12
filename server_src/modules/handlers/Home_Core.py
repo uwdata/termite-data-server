@@ -148,6 +148,10 @@ class Home_Core(object):
 						'value' : 'TermTopicMatrix2',
 						'name'  : 'Term-Topic Matrix 0.2'
 					})
+					visualizations.append({
+						'value' : 'TermTopicMatrix3',
+						'name'  : 'Term-Topic Matrix 0.3'
+					})
 				if 'bow' in models and 'lda' in models and 'itm' in models:
 					visualizations.append({
 						'value' : 'GroupInBox',

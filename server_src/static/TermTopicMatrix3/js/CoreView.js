@@ -186,7 +186,6 @@ CoreView.prototype.__dragEnterHandler = function( data ) {
 
 CoreView.prototype.__dragOverHandler = function( data ) {
 	if ( this.model.get( "ui:dragActive" ) === true ) {
-		if ( d3.event.preventDefault ) { d3.event.preventDefault() }
 		d3.event.dataTransfer.dropEffect = "move";
 		var eventType = this.__eventType( "dragover" );
 		var sourceData = this.model.get( "ui:dragData" );
@@ -207,6 +206,7 @@ CoreView.prototype.__dragOverHandler = function( data ) {
 			"targetData" : targetData,
 			"targetElement" : targetElement 
 		});
+		d3.event.preventDefault();
 	}
 };
 
