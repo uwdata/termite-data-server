@@ -15,14 +15,14 @@ MatrixInteractions.prototype.CONST = {
 	ANIMATION_STYLE_EASE : "linear",
 	
 	ICONS : {
-		PROMOTIONS : "fa fa-icon-ok-sign",
-		NO_PROMOTIONS : "fa fa-icon-ok",
-		DEMOTIONS : "fa fa-icon-remove-sign",
-		NO_DEMOTIONS : "fa fa-icon-remove",
-		VISIBILITY : "fa fa-icon-eye-open",
-		ORDERING : "fa fa-icon-sort", //"icon-sort-by-attributes-alt",
-		SELECTION : "fa fa-icon-tag",
-		PRIORITY : "fa fa-icon-signal" //"icon-sort-by-attributes-alt"
+		PROMOTIONS : "icon-ok-sign",
+		NO_PROMOTIONS : "icon-ok",
+		DEMOTIONS : "icon-remove-sign",
+		NO_DEMOTIONS : "icon-remove",
+		VISIBILITY : "icon-eye-open",
+		ORDERING : "icon-sort", //"icon-sort-by-attributes-alt",
+		SELECTION : "icon-tag",
+		PRIORITY : "icon-signal" //"icon-sort-by-attributes-alt"
 	}
 };
 
