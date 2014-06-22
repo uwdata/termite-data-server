@@ -1,0 +1,102 @@
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Termite | Topic Modeling Visualization</title>
+	<link rel="stylesheet" href="{{=URL('static','css/common.css')}}" />
+	<link rel="stylesheet" href="{{=URL('static/TermTopicMatrix2','css/font-awesome.css')}}" />
+	<link rel="stylesheet" href="{{=URL('static/TermTopicMatrix2','css/MatrixView.css')}}"/>
+	<link rel="stylesheet" href="{{=URL('static/TermTopicMatrix2','css/NavigationView.css')}}"/>
+{{include 'py_functions.py'}}
+	<script type="text/javascript">
+{{include 'js_functions.js'}}
+	</script>
+	<script type="text/javascript" src="{{=URL('static','js/jquery.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/underscore.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/backbone.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/d3.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static','js/common.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/CoreModel.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/CoreView.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixState.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixModel.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixModel_Precomputations.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixModel_Visibilities.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixModel_Styles.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixModel_Values.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixModel_Positions.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixModel_AnnotationControls.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixModel_SelectionGroups.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixInteractions.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixView.js')}}"></script>
+	<script type="text/javascript" src="{{=URL('static/TermTopicMatrix2','js/MatrixSelections.js')}}"></script>
+	
+<style type="text/css">
+body, div, p {
+	border: 0;
+	padding: 0;
+	margin: 0
+}
+div.body {
+	padding: 10px;
+	font-family: Gill Sans;
+	font-size: 10pt;
+	color: #666;
+}
+div.container {
+	display: inline-block;
+	vertical-align: top;
+	margin: 10px;
+	padding: 10px;
+	border: 1px solid #999;
+	box-shadow: 2px 2px 15px #ccc;
+	background: #eee;
+}
+div.event {
+	margin: 0 5px 2px 5px;
+	color: #666;
+}
+a {
+	color: #666;
+	text-decoration: none;
+}
+a:hover {
+	color: 000;
+	text-decoration: underline;
+}
+</style>
+<script type="text/javascript">
+$(document).ready(function() {
+	matrixState = new MatrixState();
+	matrixModel = new MatrixModel({ "state" : matrixState });
+	matrixView = new MatrixView({ "model" : matrixModel });
+	d3.json( "/{{=configs['dataset']}}/{{=configs['model']}}/GetEntry", function( results ) {
+		var rowDims = results.terms.length;
+		var columnDims = results.topics.length;
+		matrixState.importEntries( null, results.matrix, rowDims, columnDims )
+			.allRowLabels( results.terms )
+			.allColumnLabels( results.topics )
+			.setParameters( results.states );
+		
+	});
+});
+</script>
+</head>
+<body>
+	<div class="head">
+		<div class="title">Termite Data Server</div>
+		{{include 'select_server.html'}}
+		{{include 'select_dataset.html'}}
+		{{include 'select_model.html'}}
+	</div>
+
+	<div class="body">
+		<div class="container MatrixView"></div><br/>
+		<p><a href="http://jason.chuang.ca" target="_blank">Jason Chuang</a>, 
+			<a href="http://vis.stanford.edu" target="_blank">Vis</a> &amp; 
+			<a href="http://nlp.stanford.edu" target="_blank">NLP</a>, 
+			<a href="http://cs.stanford.edu" target="_blank">Stanford University</a>, 2013
+		</p>
+		<img id="EmptyImage" src="">
+	</div>
+</body>
+</html>

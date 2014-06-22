@@ -37,15 +37,21 @@ public class SentenceSplitter {
 			while ((line = in.readLine()) != null) {
 				final String[] fields = line.split("\\t");
 				final String docID = fields[0];
-				final String docContent = fields[1];
-				final Annotation document = new Annotation(docContent);
-				pipeline.annotate(document);
-				final List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-				int sentenceIndex = 0;
-				for (CoreMap sentence : sentences) {
-					final String text = sentence.get(TextAnnotation.class);
-					sentenceIndex++;
-					out.write(docID+"::"+sentenceIndex+"\t"+text);
+				if (fields.length >= 2) {
+					final String docContent = fields[1];
+					final Annotation document = new Annotation(docContent);
+					pipeline.annotate(document);
+					final List<CoreMap> sentences = document.get(SentencesAnnotation.class);
+					int sentenceIndex = 0;
+					for (CoreMap sentence : sentences) {
+						final String text = sentence.get(TextAnnotation.class);
+						sentenceIndex++;
+						out.write(docID+"::"+sentenceIndex+"\t"+text);
+						out.newLine();
+					}
+				}
+				else {
+					out.write(docID+"::"+0+"\t"+"");
 					out.newLine();
 				}
 			}

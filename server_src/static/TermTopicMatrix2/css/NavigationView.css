@@ -1,0 +1,25 @@
+div.NavigationView div {
+	display: inline-block;
+	padding: 0;
+	margin: 0;
+	border: none;
+	box-shadow: none;
+}
+div.NavigationView div.container {
+	background: #fff;
+	border: 1px solid #ccc;
+	cursor: default;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: moz-none;
+	-ms-user-select: none;
+	user-select: none;;
+}
+div.NavigationView div.container div.canvas {
+	position : absolute;
+}
+div.NavigationView div.container div.canvas * {
+	position : absolute;
+	pointer-events: none;
+}

@@ -142,7 +142,15 @@ class Home_Core(object):
 				if 'bow' in models and 'lda' in models:
 					visualizations.append({
 						'value' : 'TermTopicMatrix1',
-						'name'  : 'Term-Topic Matrix 1'
+						'name'  : 'Term-Topic Matrix 0.1'
+					})
+					visualizations.append({
+						'value' : 'TermTopicMatrix2',
+						'name'  : 'Term-Topic Matrix 0.2'
+					})
+					visualizations.append({
+						'value' : 'TermTopicMatrix3',
+						'name'  : 'Term-Topic Matrix 0.3'
 					})
 				if 'bow' in models and 'lda' in models and 'itm' in models:
 					visualizations.append({

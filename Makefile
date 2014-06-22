@@ -81,6 +81,7 @@ itm-demos:
 
 stm-demos:
 	./demo.py fomc stm
+	./demo.py gjp stm
 
 large-demos:
 	./demo.py nsfgrants mallet

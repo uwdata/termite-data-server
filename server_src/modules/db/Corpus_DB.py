@@ -295,13 +295,16 @@ class Corpus_DB():
 		rows = self.db().select(self.db.corpus.doc_id, self.db.corpus.doc_content, orderby = self.db.corpus.doc_index)
 		WriteFile(rows)
 
-	def ExportToSpreadsheet(self, filename, is_csv = False):
+	def ExportToSpreadsheet(self, filename, id_key = None, content_key = None, is_csv = False):
 		"""
 		filename = A tab- or comma-separated spreadsheet (utf-8 encoded, with header) containing the text corpus and all metadata
 		"""
 		field_names = [ row.field_name for row in self.db().select(self.db.fields.field_name, orderby = self.db.fields.field_index) ]
 		field_count = len(field_names)
-		all_field_names = [ 'doc_id', 'doc_content' ] + field_names
+		all_field_names = [
+			id_key if id_key is not None else 'doc_id',
+			content_key if content_key is not None else 'doc_content'
+		] + field_names
 
 		def WriteCSV(rows):
 			with open(filename, 'w') as f:
