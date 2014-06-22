@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-import utils.paths as paths
+import utils.uploads as uploads
 
 def index():
     corpus = request.vars['corpus']
@@ -9,10 +9,10 @@ def index():
 
 def csv():
     corpus = request.vars['corpus']
-    with open(os.path.join(paths.spreadsheet(request), corpus)) as f:
+    with open(os.path.join(uploads.spreadsheet_dir(request), corpus)) as f:
         return f.read()
 
 def plaintext():
     corpus = request.vars['corpus']
-    with open(os.path.join(paths.plaintext(request), corpus)) as f:
+    with open(os.path.join(uploads.plaintext_dir(request), corpus)) as f:
         return f.read()
