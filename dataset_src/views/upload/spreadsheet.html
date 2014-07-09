@@ -1,5 +1,13 @@
 {{extend 'template.html'}}
 
+<h3>
+    Upload a spreadsheet
+</h3>
+
 <p>
-	This webpage allows users to upload a spreadsheet (one document per row with header, containing at least two columns named 'doc_id' and 'doc_content').
+The spreadsheet must be in <a href="http://en.wikipedia.org/wiki/Comma-separated_values">csv format</a>.
+The csv must have columns for unique document ids and document content, and a header row with column/field names (e.g., "doc_id,doc_content").
+You may include any metadata you want in additional columns.
+    {{=flash}}
+    {{=form}}
 </p>

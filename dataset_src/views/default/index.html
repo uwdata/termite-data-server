@@ -1,5 +1,15 @@
 {{extend 'template.html'}}
-
-<p>
-	This webpage displays a list of existing datasets, and provides links for <a href='/dataset/upload'>uploading</a> or <a href='/dataset/download'>downloading</a> datasets.
-</p>
+<div class="heading">
+    Datasets
+</div>
+<ul>
+    {{if corpora:}}
+        {{for corpus in corpora:}}
+        <li>
+            <a href="/dataset/download?corpus={{=corpus}}">{{=corpus}}</a>
+        </li>
+        {{pass}}
+    {{else:}}
+        None yet
+    {{pass}}
+</ul>

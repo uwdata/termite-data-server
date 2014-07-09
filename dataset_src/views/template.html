@@ -4,13 +4,29 @@
 	<title>Termite Data Server | Dataset Management</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<link rel="stylesheet" href="{{=URL('static','css/font-awesome.min.css')}}" />
+	<link rel="stylesheet" href="{{=URL('static','css/common.css')}}" />
 	<script type="text/javascript" src="{{=URL('static','js/jquery.js')}}"></script>
 	<script type="text/javascript" src="{{=URL('static','js/underscore.js')}}"></script>
 	<script type="text/javascript" src="{{=URL('static','js/backbone.js')}}"></script>
 	<script type="text/javascript" src="{{=URL('static','js/d3.js')}}"></script>
 	<script type="text/javascript" src="{{=URL('static','js/vega.js')}}"></script>
+    <style>
+        input {
+            display: block;
+        }
+    </style>
 </head>
 <body>
-	{{include}}
+    <div class="head">
+        <div class="title">
+            <a href="/">Termite Data Server</a>
+        </div>
+        <!--<a href="/dataset/download">Download</a>-->
+        <a href="/dataset/upload">Upload</a>
+    </div>
+
+    <div class="body">
+	    {{include}}
+    </div>
 </body>
 </html>
