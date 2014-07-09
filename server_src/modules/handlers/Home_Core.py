@@ -69,8 +69,8 @@ class Home_Core(object):
 
 		operations = self.GetOperations(server)
 		datasets = self.GetDatasets(server)
-		models = self.GetModels(server, dataset)
-		visualizations = self.GetVisualizations(server, dataset)
+		models = self.GetModels(server, dataset, model, attribute)
+		visualizations = self.GetVisualizations(server, dataset, model, attribute)
 		attributes = self.GetAttributes(server, dataset, model, attribute)
 		menus = {
 			'server' : server,
@@ -120,7 +120,7 @@ class Home_Core(object):
 			})
 		return datasets
 
-	def GetModels(self, server, dataset):
+	def GetModels(self, server, dataset, model, attribute):
 		models = []
 		if not self.IsExcludedDataset(dataset):
 			with Corpus_DB() as corpus_db:
@@ -129,34 +129,37 @@ class Home_Core(object):
 				'value' : row['model_key'],
 				'name' : row['model_desc']
 			} for row in rows ]
-			self.content.update({
-				'AvailableModels' : models
-			})
+			if model == 'default' and attribute == 'index':
+				self.content.update({
+					'AvailableModels' : models
+				})
 		return models
 	
-	def GetVisualizations(self, server, dataset):
+	def GetVisualizations(self, server, dataset, model, attribute):
 		visualizations = []
 		if not self.IsExcludedDataset(dataset):
-			if 'AvailableModels' in self.content:			
-				models = frozenset(d['value'] for d in self.content['AvailableModels'])
-				if 'bow' in models and 'lda' in models:
-					visualizations.append({
-						'value' : 'TermTopicMatrix1',
-						'name'  : 'Term-Topic Matrix 0.1'
-					})
-					visualizations.append({
-						'value' : 'TermTopicMatrix2',
-						'name'  : 'Term-Topic Matrix 0.2'
-					})
-					visualizations.append({
-						'value' : 'TermTopicMatrix3',
-						'name'  : 'Term-Topic Matrix 0.3'
-					})
-				if 'bow' in models and 'lda' in models and 'itm' in models:
-					visualizations.append({
-						'value' : 'GroupInBox',
-						'name'  : 'Group-in-a-Box'
-					})
+			with Corpus_DB() as corpus_db:
+				rows = corpus_db.GetModels()
+			models = frozenset(row['model_key'] for row in rows)
+			if 'bow' in models and 'lda' in models:
+				visualizations.append({
+					'value' : 'TermTopicMatrix1',
+					'name'  : 'Term-Topic Matrix 0.1'
+				})
+				visualizations.append({
+					'value' : 'TermTopicMatrix2',
+					'name'  : 'Term-Topic Matrix 0.2'
+				})
+				visualizations.append({
+					'value' : 'TermTopicMatrix3',
+					'name'  : 'Term-Topic Matrix 0.3'
+				})
+			if 'bow' in models and 'lda' in models and 'itm' in models:
+				visualizations.append({
+					'value' : 'GroupInBox',
+					'name'  : 'Group-in-a-Box'
+				})
+			if model == 'default' and attribute == 'index':
 				self.content.update({
 					'AvailableVisualizations' : visualizations
 				})
