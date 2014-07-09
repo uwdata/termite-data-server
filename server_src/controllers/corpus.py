@@ -27,8 +27,14 @@ def SearchDocuments():
 		handler.SearchDocuments()
 	return handler.GenerateResponse()
 
-def Metadata():
+def MetadataFields():
 	with Corpus_DB() as corpus_db:
 		handler = Corpus_Core(request, response, corpus_db)
 		handler.LoadMetadataFields()
+	return handler.GenerateResponse()
+
+def MetadataByName():
+	with Corpus_DB() as corpus_db:
+		handler = Corpus_Core(request, response, corpus_db)
+		handler.LoadMetadataByName()
 	return handler.GenerateResponse()

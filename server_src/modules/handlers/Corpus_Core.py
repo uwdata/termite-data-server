@@ -39,6 +39,15 @@ class Corpus_Core(Home_Core):
 		if docId is None:
 			docId = ''
 		return docId
+	
+	def GetMetadataName(self):
+		metadataName = self.GetStringParam('metadataName')
+		self.params.update({
+			'metadataName' : metadataName
+		})
+		if metadataName is None:
+			metadataName = None
+		return metadataName
 
 	def GetSearchPattern(self):
 		searchPattern = self.GetStringParam( 'searchPattern' )
@@ -49,17 +58,43 @@ class Corpus_Core(Home_Core):
 			searchPattern = ''
 		return searchPattern
 	
-	def LoadMetadataFields( self ):
+	def LoadMetadataFields(self):
 		table = self.db.fields
 		rows = self.db().select( table.ALL, orderby = table.field_index ).as_list()
 		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
 		self.content.update({
-			'Metadata' : rows
+			'MetadataFields' : rows
 		})
 		self.table = rows
 		self.header = header
 	
-	def LoadDocumentByIndex( self ):
+	def LoadMetadataByName(self):
+		docOffset, docLimit = self.GetDocLimits()
+		docCount = self.db(self.db.corpus).count()
+		metadataName = self.GetMetadataName()
+		if metadataName is not None:
+			m = self.db.metadata
+			f = self.db.fields
+			query = """SELECT m.doc_index AS doc_index, m.value AS value FROM {METADATA} AS m
+				INNER JOIN {FIELDS} AS f ON m.field_index = f.field_index
+				WHERE f.field_name = '{METADATA_NAME}'
+				ORDER BY m.doc_index
+				LIMIT {LIMIT}""".format(METADATA = m, FIELDS = f, METADATA_NAME = metadataName, LIMIT = docLimit)
+			rows = self.db.executesql(query, as_dict=True)
+			header = [
+						{ 'name' : 'doc_index', 'type' : 'string' },
+						{ 'name' : 'value', 'type' : 'string' }
+					]
+			self.content.update({
+				'MetadataValues' : rows,
+				'MetadataName' : metadataName,
+				'DocLimit' : docLimit,
+				'DocCount' : docCount
+			})
+			self.table = rows
+			self.header = header
+	
+	def LoadDocumentByIndex(self):
 		docIndex = self.GetDocIndex()
 		docCount = self.db(self.db.corpus).count()
 		table = self.db.corpus
@@ -74,7 +109,7 @@ class Corpus_Core(Home_Core):
 		self.table = rows
 		self.header = header
 	
-	def LoadDocumentById( self ):
+	def LoadDocumentById(self):
 		docId = self.GetDocId()
 		table = self.db.corpus
 		where = (table.doc_id == docId)
@@ -87,7 +122,7 @@ class Corpus_Core(Home_Core):
 		self.table = rows
 		self.header = header
 	
-	def SearchDocuments( self ):
+	def SearchDocuments(self):
 		docOffset, docLimit = self.GetDocLimits()
 		docCount = self.db(self.db.corpus).count()
 		searchPattern = self.GetSearchPattern()

@@ -174,7 +174,8 @@ class Home_Core(object):
 						'DocumentByIndex',
 						'DocumentById',
 						'SearchDocuments',
-						'Metadata'
+						'MetadataFields',
+						'MetadataByName'
 					]
 				if model == 'bow':
 					attributes = [
