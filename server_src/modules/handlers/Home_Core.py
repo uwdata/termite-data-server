@@ -218,7 +218,7 @@ class Home_Core(object):
 
 	def GetStringParam( self, key ):
 		if key in self.request.vars:
-			return unicode(self.request.vars[key])
+			return self.request.vars[key].decode('utf-8', 'replace')
 		else:
 			return None
 		
