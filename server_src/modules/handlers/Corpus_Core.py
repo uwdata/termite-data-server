@@ -93,6 +93,15 @@ class Corpus_Core(Home_Core):
 			})
 			self.table = rows
 			self.header = header
+		else:
+			self.content.update({
+				'MetadataValues' : [],
+				'MetadataName' : '',
+				'DocLimit' : docLimit,
+				'DocCount' : docCount
+			})
+			self.table = []
+			self.header = {}
 	
 	def LoadDocumentByIndex(self):
 		docIndex = self.GetDocIndex()
