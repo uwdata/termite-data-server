@@ -1,0 +1,15 @@
+.tip {
+	opacity:0.9;
+	z-index:1000;
+	text-align:left;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	padding:8px 8px;
+	color: black;
+	background-color:#E6E6E6;
+	border: 1px solid #B3B3B3;
+	box-shadow: 2px 2px 5px #888;
+	pointer-events:none;
+
+}

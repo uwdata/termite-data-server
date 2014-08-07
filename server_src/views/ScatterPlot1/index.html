@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Termite-Dev</title>
+<head>
+		<!-- get query string -->
+	<script>
+		var QueryString = function () {
+			// This function is anonymous, is executed immediately and 
+			// the return value is assigned to QueryString!
+			var query_string = {};
+			var query = window.location.search.substring(1);
+			var vars = query.split("&");
+			for (var i=0;i<vars.length;i++) {
+				var pair = vars[i].split("=");
+					// If first entry with this name
+				if (typeof query_string[pair[0]] === "undefined") {
+					query_string[pair[0]] = pair[1];
+					// If second entry with this name
+				} else if (typeof query_string[pair[0]] === "string") {
+				  var arr = [ query_string[pair[0]], pair[1] ];
+				  query_string[pair[0]] = arr;
+					// If third or later entry with this name
+				} else {
+				  query_string[pair[0]].push(pair[1]);
+				}
+			} 
+			return query_string;
+		} ();
+	</script>
+	<!-- libraries -->
+	<script src="[[=URL('static/ScatterPlot1','lib/d3.v3.min.js')]]"></script>
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','lib/jquery-1.8.2.min.js')]]"></script>
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','lib/jquery.poshytip.min.js')]]"></script> 
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','lib/jquery-ui-1.9.0.custom.js')]]"></script>
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','lib/colorbrewer.js')]]"></script>
+	<link type="text/css" rel="stylesheet" href="[[=URL('static/ScatterPlot1','lib/jquery-ui-1.9.0.custom.min.css')]]"/>
+
+	<script src="[[=URL('static/ScatterPlot1','lib/underscore.js')]]"></script>
+	<script src="[[=URL('static/ScatterPlot1','lib/backbone.js')]]"></script>
+
+	<!-- js files -->
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','js/Scatter.js')]]"></script> 
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','js/Controls.js')]]"></script> 
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','js/TextBox.js')]]"></script> 
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','js/ScatterModel.js')]]"></script> 
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','js/ScatterView.js')]]"></script> 
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','js/TextBoxView.js')]]"></script> 
+	<script type="text/javascript" src="[[=URL('static/ScatterPlot1','js/ControlsView.js')]]"></script> 
+
+	<!-- css files -->
+	<link type="text/css" rel="stylesheet" href="[[=URL('static/ScatterPlot1','css/tip.css')]]"/>
+	<link type="text/css" rel="stylesheet" href="[[=URL('static/ScatterPlot1','css/scatter.css')]]"/>
+	<link type="text/css" rel="stylesheet" href="[[=URL('static/ScatterPlot1','css/textbox.css')]]"/>
+	<link type="text/css" rel="stylesheet" href="[[=URL('static/ScatterPlot1','css/controls.css')]]"/>
+
+
+</head>
+
+<body>
+	<div id="header">
+	<div id="main">
+		<div id="top-controls"></div>
+	</div>
+	
+	<!-- Instantiate app -->
+	<script type="text/javascript">
+	
+	var sm, sv, tv, cv;
+	var Metadata = {};
+	
+	var loadData = function() {
+		var filesLoaded = 0;
+		var filesExpected = 4;
+		d3.json("/[[ =configs['dataset'] ]]/lda/TopicList?format=json", function(data) {
+			topTerms = data;
+			filesLoaded += 1;
+			if (filesLoaded >= filesExpected) {
+				loadMetadata();
+			}
+		});
+		d3.json("/[[ =configs['dataset'] ]]/corpus/SearchDocuments?docLimit=1000&searchPattern=the&format=json", function(data) {
+			Documents = data;
+			filesLoaded += 1;
+			if (filesLoaded >= filesExpected) {
+				loadMetadata();
+			}
+		});
+		d3.json("/[[ =configs['dataset'] ]]/lda/DocTopicMatrix?docLimit=1000&cellLimit=90764&format=json", function(data) {
+			proportions = data;
+			filesLoaded += 1;
+			if (filesLoaded >= filesExpected) {
+				loadMetadata();
+			}
+		});
+		d3.json("/[[ =configs['dataset'] ]]/corpus/MetadataFields?format=json", function(data) {
+			MetadataFields = data;
+			filesLoaded += 1;
+			if (filesLoaded >= filesExpected) {
+				loadMetadata();
+			}
+		});
+	};
+	var loadMetadata = function() {
+		var fieldsLoaded = 0;
+		var fieldsExpected = MetadataFields.MetadataFields.length;
+		MetadataFields.MetadataFields.forEach(function(d) {
+			var url = "/[[ =configs['dataset'] ]]/corpus/MetadataByName?docLimit=1000&metadataName=" + d.field_name + "&format=json";
+			d3.json(url, function(data){
+				Metadata[d.field_name] = data;
+				fieldsLoaded += 1;
+				if (fieldsLoaded >= fieldsExpected) {
+					loadVisalization();
+				}
+			});
+		});
+	};
+	var loadVisalization = function() {
+				$(window).resize(function() {
+					sv.sizeView()
+					sv.chart.updatePosition(sv.loadSettings())
+
+					tv.sizeView()
+					tv.textBox.updatePosition(tv.loadSettings())
+
+				})
+		// Uncomment to make N number of plots
+		// 		d3.range(2).map(function(d) {
+					var d = 1
+					console.log('query string ', QueryString)
+					sm = new ScatterModel({topic:d})
+					sm.loadData(function() {
+						cv = new ControlsView()
+						sv = new ScatterView({model:sm, el:'#main', chartid:'scatter-' + d, textid:'text-' + d})
+		 				tv = new TextBoxView({model:sm, el:'#main', textid:'text-' + d})
+						// sm.listenTo(sv, 'click', function(){console.log('sv click')})
+		// 				sv.on('change:highlighted', 
+					})
+					// set listeners
+
+		// 		})
+	};
+	loadData();
+	</script>
+</body>

@@ -1,0 +1,5 @@
+.textbox {
+	display:inline-block;
+	position:absolute;
+	overflow:auto;
+}
