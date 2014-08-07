@@ -130,6 +130,21 @@ class Corpus_Core(Home_Core):
 		})
 		self.table = rows
 		self.header = header
+		
+	def LoadDocuments(self):
+		docOffset, docLimit = self.GetDocLimits()
+		docCount = self.db(self.db.corpus).count()
+		table = self.db.corpus
+		rows = self.db().select( table.ALL, orderby = table.doc_index, limitby = (docOffset, docOffset+docLimit) ).as_list()
+		header = [ { 'name' : field, 'type' : table[field].type } for field in table.fields ]
+		self.content.update({
+			'Documents' : rows,
+			'DocOffset' : docOffset,
+			'DocLimit' : docLimit,
+			'DocCount' : docCount
+		})
+		self.table = rows
+		self.header = header
 	
 	def SearchDocuments(self):
 		docOffset, docLimit = self.GetDocLimits()

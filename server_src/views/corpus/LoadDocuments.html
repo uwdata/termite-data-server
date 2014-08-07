@@ -1,0 +1,32 @@
+{{extend 'template.html'}}
+
+<div class="head">
+	<div class="title">Termite Data Server</div>
+	{{include 'select_server.html'}}
+	{{include 'select_dataset.html'}}
+	{{include 'select_model.html'}}
+	{{include 'select_attribute.html'}}
+</div>
+
+<div class="body">
+	<div class="heading">Method: <b>lda/DocIndex</b></div>
+	<div class="info">
+		Get a list of documents used to train the LDA model.
+	</div>
+	{{include 'insert_request.html'}}
+	<div class="params">
+		<p>
+			<span class="key">docLimit = </span>
+			<span class="value">{{MakeParamRange('docLimit', DocLimit, DocCount)}}</span>
+		</p>
+		<p>
+			<span class="key">docOffset = </span>
+			<span class="value">{{MakeParamRange('docOffset', DocOffset, DocCount)}}</span>
+		</p>
+		<p>
+			<span class="key">format = </span>
+			<span class="value">{{MakeParamFormat(json_only=True)}}</span>
+		</p>
+	</div>
+	{{include 'insert_response.html'}}
+</div>

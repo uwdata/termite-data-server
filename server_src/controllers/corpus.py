@@ -21,6 +21,12 @@ def DocumentById():
 		handler.LoadDocumentById()
 	return handler.GenerateResponse()
 
+def LoadDocuments():
+	with Corpus_DB() as corpus_db:
+		handler = Corpus_Core(request, response, corpus_db)
+		handler.LoadDocuments()
+	return handler.GenerateResponse()
+
 def SearchDocuments():
 	with Corpus_DB() as corpus_db:
 		handler = Corpus_Core(request, response, corpus_db)

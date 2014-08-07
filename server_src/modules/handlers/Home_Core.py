@@ -154,6 +154,10 @@ class Home_Core(object):
 					'value' : 'TermTopicMatrix3',
 					'name'  : 'Term-Topic Matrix 0.3'
 				})
+				visualizations.append({
+					'value' : 'ScatterPlot1',
+					'name'  : 'Scatter Plot 1.0'
+				})
 			if 'bow' in models and 'lda' in models and 'itm' in models:
 				visualizations.append({
 					'value' : 'GroupInBox',
@@ -173,6 +177,7 @@ class Home_Core(object):
 					attributes = [
 						'DocumentByIndex',
 						'DocumentById',
+						'LoadDocuments',
 						'SearchDocuments',
 						'MetadataFields',
 						'MetadataByName'
