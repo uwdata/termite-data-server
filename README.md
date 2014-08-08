@@ -12,8 +12,8 @@ This repository contains:
 
 The web server includes various interactive visualizations:
   * term-topic matrix
-  * group-in-a-box visualization (interactive topic modeling)
-  * scatter plots
+  * group-in-a-box visualization
+  * scatter plot
 
 This software is distributed under the BSD-3 license.
 
