@@ -15,8 +15,19 @@ The web server includes various interactive visualizations:
   * group-in-a-box visualization (interactive topic modeling)
   * scatter plots
 
-The Termite Data Server is developed and maintained by [Jason Chuang](http://jason.chuang.ca), and distributed under the BSD-3 license.  The term-topic matrix visualization is developed by Jason Chuang and [Ashley Jin](http://www.linkedin.com/in/ashpjin).  The group-in-a-box visualization is developed by [Alison Smith](http://www.cs.umd.edu/people/amsmit).  The scatter plot visualization is developed by [Michael Freeman](https://www.linkedin.com/pub/michael-freeman/66/363/322).  The upload functionality is developed by [Peter Enns](https://www.linkedin.com/pub/peter-enns/37/674/408) and Jason Chuang.  Helper scripts are developed by Jason Chuang with contributions from Leo Claudino, [Molly Roberts](http://scholar.harvard.edu/mroberts/home) and [Yuening Hu](http://www.cs.umd.edu/~ynhu/).
+This software is distributed under the BSD-3 license.
 
+Contributors
+------------
+
+The Termite Data Server is developed and maintained by [Jason Chuang](http://jason.chuang.ca) with contributions from:
+ * [Ashley Jin](http://www.linkedin.com/in/ashpjin) on the term-topic matrix visualization and various data processing scripts
+ * [Alison Smith](http://www.cs.umd.edu/people/amsmit) on the group-in-a-box visualization
+ * [Michael Freeman](https://www.linkedin.com/pub/michael-freeman/66/363/322) on the scatter plot visualization
+ * [Peter Enns](https://www.linkedin.com/pub/peter-enns/37/674/408) on the web server upload functionality
+ * Leo Claudino on data processing for interactive topic models
+ * [Yuening Hu](http://www.cs.umd.edu/~ynhu/) on data processing for interactive topic models
+ * [Molly Roberts](http://scholar.harvard.edu/mroberts/home) on data processing for structural topic models
 
 Topic modeling
 --------------
