@@ -1,21 +1,22 @@
 Data Server for Topic Models
 ============================
 
-Termite is a visual analysis tool for inspecting the output of statistical topic models.
+Termite is a visual analysis tool for exploring the output of statistical topic models.
 
-The tool contains two components:
-  * **[Termite Data Server](http://github.com/uwdata/termite-data-server)** for processing the output of topic models and distributing the content as a web service
-  * **[Termite Visualizations](http://github.com/uwdata/termite-visualizations)** for visualizing topic model outputs in a web browser
-
-This repository contains the data server component, which includes:
-  * a web server
-  * a copy of the MALLET topic model toolkit
-  * helper scripts to import topic model outputs into the server
+This repository contains:
+  * a web server based on the web2py framework
   * helper scripts to download various datasets
   * helper scripts to download and setup various topic modeling tools
-  * demonstration scripts to build a basic topic model
+  * helper scripts to build topic models
+  * helper scripts to import topic model outputs into the server
 
-This software is developed by [Jason Chuang](http://jason.chuang.ca) and Ashley Jin, and distributed under the BSD-3 license.
+The web server includes various interactive visualizations:
+  * term-topic matrix
+  * group-in-a-box visualization (interactive topic modeling)
+  * scatter plots
+
+The Termite Data Server is developed and maintained by [Jason Chuang](http://jason.chuang.ca), and distributed under the BSD-3 license.  The term-topic matrix visualization is developed by Jason Chuang and [Ashley Jin](http://www.linkedin.com/in/ashpjin).  The group-in-a-box visualization is developed by [Alison Smith](http://www.cs.umd.edu/people/amsmit).  The scatter plot visualization is developed by [Michael Freeman](https://www.linkedin.com/pub/michael-freeman/66/363/322).  The upload functionality is developed by [Peter Enns](https://www.linkedin.com/pub/peter-enns/37/674/408) and Jason Chuang.  Helper scripts are developed by Jason Chuang with contributions from Leo Claudino, [Molly Roberts](http://scholar.harvard.edu/mroberts/home) and [Yuening Hu](http://www.cs.umd.edu/~ynhu/).
+
 
 Topic modeling
 --------------
@@ -23,16 +24,16 @@ Topic modeling
 Currently, this data server can import topic models from:
   * [MALLET](http://mallet.cs.umass.edu)
   * [Gensim](http://radimrehurek.com/gensim/)
-
-We are in the process of adding support for:
   * [Interactive Topic Modeling](http://github.com/uwdata/termite-treetm)
   * [Structural Topic Models](http://github.com/uwdata/termite-stm)
+
+We are in the process of adding support for:
   * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4/)
 
 Launch this data server
 -----------------------
 
-To launch this data server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
+The data server can be deployed on [various platforms supported by web2py](http://web2py.com/books/default/chapter/29/13/deployment-recipes).  However, the copy included in the reopsitory is customized for Apple's OSX. To launch this data server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
 
 ```
 ./start_server.sh
@@ -46,31 +47,31 @@ Several demos are included in this repository.
 Executing the following command will download the 20newsgroups dataset (18828 documents), build an LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
-./demo 20newsgroups
+./demo.py 20newsgroups
 ```
 
 Executing the following command will download the InfoVis dataset (449 documents with metadata), build an LDA topic model with 20 latent topics using MALLET, and launch the web server.
 
 ```
-./demo infovis
+./demo.py infovis
 ```
 
 To build an example topic model on the InfoVis dataset using Gensim:
 
 ```
-./demo infovis gensim
+./demo.py infovis gensim
 ```
 
 More generally, to build a topic model on `dataset` using `tool`:
 
 ```
-./demo [dataset] [tool]
+./demo.py [dataset] [tool]
 ```
 
 To see more demo options:
 
 ```
-./demo --help
+./demo.py --help
 ```
 
 The resulting topic model(s) will be available at:
