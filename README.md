@@ -17,8 +17,8 @@ The web server includes various interactive visualizations:
 
 This software is distributed under the BSD-3 license.
 
-Contributors
-------------
+Contributors and Credits
+------------------------
 
 The Termite Data Server is developed and maintained by [Jason Chuang](http://jason.chuang.ca) with contributions from:
  * [Ashley Jin](http://www.linkedin.com/in/ashpjin) on the term-topic matrix visualization and various data processing scripts
@@ -28,6 +28,16 @@ The Termite Data Server is developed and maintained by [Jason Chuang](http://jas
  * Leo Claudino on data processing for interactive topic models
  * [Yuening Hu](http://www.cs.umd.edu/~ynhu/) on data processing for interactive topic models
  * [Molly Roberts](http://scholar.harvard.edu/mroberts/home) on data processing for structural topic models
+
+Termite requires on the use of the following software. We thank their respective authors for developing and distributing these tools.
+
+  * [MALLET (MAchine Learning for LanguagE Toolkit)](http://mallet.cs.umass.edu) by Andrew McCallum, et al.
+  * [Interactive Topic Modeling](http://www.cs.umd.edu/~ynhu) by Yuening Hu, et al.
+  * Structural Topic Models by Margaret Roberts, et al.
+  * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4) by Daniel Ramage
+  * [Gensim](http://radimrehurek.com/gensim) by Radim Řehůřek
+  * [The web2py Web Framework](http://web2py.com) by Massimo Di Pierro, et al.
+  * [Font Awesome](http://fontawesome.io) by Dave Gandy  
 
 Topic modeling
 --------------
@@ -122,21 +132,8 @@ http:// [server] / [dataset] / [model] / [attribute]
 
 The string `[server]` is the base portion of the URL, such as `http://localhost:8080` when running a local machine.  As multiple projects can be hosted on the same server, `[dataset]` is a string `[A-Za-z0-9_]+` that uniquely identifies a project. A web-based visualization can access the content of a topic model by specifying the remaining URL `[model]/[attribute]`, such as `lda/TermTopicMatrix` and `treetm/TermTopicConstraints` to retrieve the term-topic matrix and send user-defined constraints to the server, respectively.
 
-Credits
-=======
-
-Termite requires the use of the following software. We thank their respective authors for developing and distributing these tools.
-
-  * [MALLET (MAchine Learning for LanguagE Toolkit)](http://mallet.cs.umass.edu) by Andrew McCallum, et al.
-  * [Interactive Topic Modeling](http://www.cs.umd.edu/~ynhu) by Yuening Hu, et al.
-  * Structural Topic Models by Margaret Roberts, et al.
-  * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4) by Daniel Ramage
-  * [Gensim](http://radimrehurek.com/gensim) by Radim Řehůřek
-  * [The web2py Web Framework](http://web2py.com) by Massimo Di Pierro, et al.
-  * [Font Awesome](http://fontawesome.io) by Dave Gandy  
-
 License
--------
+=======
 
 Copyright (c) 2013, Leland Stanford Junior University
 Copyright (c) 2014, University of Washington
