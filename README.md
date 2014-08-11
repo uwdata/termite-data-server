@@ -25,8 +25,8 @@ The Termite Data Server is developed and maintained by [Jason Chuang](http://jas
  * [Alison Smith](http://www.cs.umd.edu/people/amsmit) on the group-in-a-box visualization
  * [Michael Freeman](https://www.linkedin.com/pub/michael-freeman/66/363/322) on the scatter plot visualization
  * [Peter Enns](https://www.linkedin.com/pub/peter-enns/37/674/408) on the web server upload functionality
- * Leo Claudino on data processing for interactive topic models
- * [Yuening Hu](http://www.cs.umd.edu/~ynhu/) on data processing for interactive topic models
+ * [Leo Claudino](http://www.linkedin.com/in/claudino) on data processing for interactive topic models
+ * [Yuening Hu](http://www.cs.umd.edu/~ynhu) on data processing for interactive topic models
  * [Molly Roberts](http://scholar.harvard.edu/mroberts/home) on data processing for structural topic models
 
 Termite requires on the use of the following software. We thank their respective authors for developing and distributing these tools.
