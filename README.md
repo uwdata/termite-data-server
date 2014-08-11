@@ -21,7 +21,7 @@ Contributors and Credits
 ------------------------
 
 The Termite Data Server is developed and maintained by [Jason Chuang](http://jason.chuang.ca) with contributions from:
- * [Ashley Jin](http://www.linkedin.com/in/ashpjin) on the term-topic matrix visualization and various data processing scripts
+ * [Ashley Jin](http://www.linkedin.com/in/ashpjin) on the initial implementation of the Termite Data Server, the term-topic matrix visualization, and various data processing scripts
  * [Alison Smith](http://www.cs.umd.edu/people/amsmit) on the group-in-a-box visualization
  * [Michael Freeman](https://www.linkedin.com/pub/michael-freeman/66/363/322) on the scatter plot visualization
  * [Peter Enns](https://www.linkedin.com/pub/peter-enns/37/674/408) on the web server upload functionality
@@ -39,8 +39,8 @@ Termite requires on the use of the following software. We thank their respective
   * [The web2py Web Framework](http://web2py.com) by Massimo Di Pierro, et al.
   * [Font Awesome](http://fontawesome.io) by Dave Gandy  
 
-Topic modeling
---------------
+Launch this data server
+=======================
 
 Currently, this data server can import topic models from:
   * [MALLET](http://mallet.cs.umass.edu)
@@ -51,10 +51,23 @@ Currently, this data server can import topic models from:
 We are in the process of adding support for:
   * [Stanford Topic Modeling Toolbox](http://nlp.stanford.edu/downloads/tmt/tmt-0.4/)
 
-Launch this data server
------------------------
+The data server can be deployed on [various platforms supported by web2py](http://web2py.com/books/default/chapter/29/13/deployment-recipes).  However, the copy included in the repository is customized for Apple's OSX.
 
-The data server can be deployed on [various platforms supported by web2py](http://web2py.com/books/default/chapter/29/13/deployment-recipes).  However, the copy included in the reopsitory is customized for Apple's OSX. To launch this data server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
+Preparations
+------------
+
+At the time of writing, the following three tools need to be installed when this repository is first cloned.  Execute the following commands at the root of the repository.
+
+```
+bin/setup_corenlp.sh
+bin/setup_mallet.sh
+make -C utils/corenlp
+```
+
+Start the web server
+--------------------
+
+To launch this data server, execute the following command. A dialogue box will appear. Click on "start server" to proceed.
 
 ```
 ./start_server.sh

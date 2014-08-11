@@ -85,7 +85,8 @@ class TreeTMReader(LDAReader):
 			for index, line in enumerate(f):
 				line = line.rstrip('\n').decode('utf-8')
 				if index == 0:
-					assert line == "#doc source topic proportion ..."
+					pass
+#					assert line == "#doc source topic proportion ..."
 				else:
 					fields = line.split( ' ' )
 					docIndex = int(fields[0])

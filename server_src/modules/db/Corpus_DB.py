@@ -138,9 +138,10 @@ class Corpus_DB():
 
 	def DefineCorpusTextSearch(self):
 		if self.isInit:
-			self.db.executesql( 'DROP TABLE IF EXISTS corpus_search;' )
-			self.db.executesql( 'CREATE VIRTUAL TABLE corpus_search USING fts3 (doc_content TEXT);' )
-			self.db.executesql( 'INSERT INTO corpus_search (rowid, doc_content) SELECT doc_index, doc_content FROM corpus;' )
+			pass
+#			self.db.executesql( 'DROP TABLE IF EXISTS corpus_search;' )
+#			self.db.executesql( 'CREATE VIRTUAL TABLE corpus_search USING fts3 (doc_content TEXT);' )
+#			self.db.executesql( 'INSERT INTO corpus_search (rowid, doc_content) SELECT doc_index, doc_content FROM corpus;' )
 	
 ################################################################################
 
