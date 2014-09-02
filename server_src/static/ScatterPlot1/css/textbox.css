@@ -2,4 +2,6 @@
 	display:inline-block;
 	position:absolute;
 	overflow:auto;
+	background: white;
+	padding:5px;
 }
