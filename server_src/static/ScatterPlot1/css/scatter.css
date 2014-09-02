@@ -32,3 +32,12 @@
 .legend-g rect {
 	fill-opacity:.6;
 }
+
+#scatter-1-title {
+	text-align: center;
+	font-size:23px;
+}
+
+.axis-label {
+	font-size: 18px;
+}
