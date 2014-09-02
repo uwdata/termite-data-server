@@ -103,7 +103,7 @@ ScatterView.prototype.sizeView = function() {
 	var that = this
 	that.options.chart.width = $(window).width()*2/3
 	that.options.chart.height = $(window).height() - $('#top-controls').height() - 10
-	that.options.chart.margin.bottom = this.model.get('colorVariableType') == 'string' ? 0 : 100
+	that.options.chart.margin.bottom = this.model.get('colorVariableType') == 'string' | this.model.get('colorVariableType') == '' ? 0 : 100
 	that.options.chart.margin.right = this.model.get('colorVariableType') == 'string' ? 120 : 0
 	console.log('right margin ', this.model.get('colorVariableType'), this.options.chart.margin.right)
 	that.options.chart.position = this.options.chart.position == undefined ? {} : this.options.chart.position
