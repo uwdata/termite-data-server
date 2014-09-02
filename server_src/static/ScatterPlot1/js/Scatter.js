@@ -15,6 +15,7 @@ var Scatter = function(settings) {
 	this.build()
 }
 
+
 Scatter.prototype.defineFunctions = function() {
 	var that = this
 	
@@ -159,6 +160,7 @@ Scatter.prototype.build = function() {
 					.text(this.settings.xtitle)
 					.attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')')
 					.attr('id', 'xaxistext')
+					.attr('class', 'axis-label')
 
 	
 				
@@ -171,8 +173,10 @@ Scatter.prototype.build = function() {
 						
 	this.ytitle = this.yAxisSvg.append('text')
 					.text(this.settings.ytitle)
-					.attr('transform', 'translate(' + (30) + ',' + (this.settings.height/5*3)+ ') rotate(-90)')
+					.attr('transform', 'translate(' + (30) + ',' + (this.settings.height/2)+ ') rotate(-90)')
 					.attr('id', 'yaxistext')
+					.attr('class', 'axis-label')
+
 		
 	this.moveHighlighted()	
 	if(this.settings.colorVariableType == 'integer') this.buildContinuousLegend()	
@@ -248,12 +252,18 @@ Scatter.prototype.updateHighlighted = function(hl) {
 Scatter.prototype.updatePosition = function(settings) {
 	var that = this
 	this.settings = settings
+	this.div
+		.style('top', this.settings.position.top + 'px')
+		.style('left', this.settings.position.left + 'px')
+		.style("width", this.settings.width  + 'px')
+		.style("height", this.settings.height + 'px')
+		
 	this.title.style('width', this.settings.width + 'px')
 	d3.select('#' + settings.id + '-title').text('Topic ' + this.settings.topic + ' Proportions')
 	this.data = settings.data
 	this.setScales()
 	this.xtitle.attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')').text(this.settings.xtitle)
-	this.ytitle.attr('transform', 'translate(' + (30) + ',' + (this.settings.height/5*3)+ ') rotate(-90)')
+	this.ytitle.attr('transform', 'translate(' + (30) + ',' + (this.settings.height/2)+ ') rotate(-90)')
 	this.zoomRect.attr("width", this.xScale.range()[1])
 		.attr("height", this.yScale.range()[1])
 		
@@ -286,7 +296,7 @@ Scatter.prototype.buildCategoricalLegend = function(parent, id) {
 	legendData = that.settings.colorLabels
 	if(legendData.length == 1) return
 	var labelScale = d3.scale.linear().domain([legendData.length-1,0]).range([0,(that.settings.height - 50)]) 
-	var legendSvg = this.wrapper.append('svg').attr('id', this.settings.id + '-legend-wrapper').style('position', 'absolute').style("left", that.settings.margin.left + 'px').style('pointer-events', 'none')
+	var legendSvg = this.wrapper.append('svg').attr('id', this.settings.id + '-legend-wrapper').style('position', 'absolute').style("left", that.settings.margin.left + 'px').style('pointer-events', 'none').style('width', this.settings.width+ 'px')
 				
 			
 	var legend = legendSvg.append('g').attr('transform', 'translate(' + (x) + ',' +(y) + ')')
