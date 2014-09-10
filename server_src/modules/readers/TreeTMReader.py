@@ -35,8 +35,12 @@ class TreeTMReader(LDAReader):
 		entries = []
 		for filename in os.listdir( self.modelPath ):
 			path = '{}/{}'.format( self.modelPath, filename )
-			if os.path.isdir( path ):
-				entries.append( path )
+			# Keep only folders that begin with "entry-". This will prevent
+			# folders like "corpus" to be the last in the list
+			if os.path.isdir( path ) and filename.startswith('entry-'):
+				entries.append(path)
+		# This is so entry-X is listed after entry-Y, X > Y
+		entries.sort()
 		return entries[-1]
 
 	def ReadVocabFile( self ):
