@@ -30,7 +30,7 @@ app.path.TopicIndex = "{DATA_PATH}/topic-index.json"
 
 # Load input data
 load( file = "{MODEL_FILENAME}" )
-model = mod.out
+model = {R_VARIABLE}
 
 library( jsonlite )
 
@@ -83,8 +83,9 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 
 """
 
-	def __init__( self, lda_db, modelPath, corpus_db ):
+	def __init__( self, lda_db, modelPath, corpus_db, r_variable = 'mod.out'):
 		super(STMReader, self).__init__(lda_db)
+		self.rVariable = r_variable
 		self.modelPath = modelPath
 		self.modelRData = '{}/{}'.format( self.modelPath, STMReader.RDATA_FILENAME )
 		self.modelScript = '{}/import.r'.format( self.modelPath )
@@ -111,7 +112,7 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 	
 	def WriteToDisk( self ):
 		self.logger.debug( '    Writing R script: %s', self.modelScript )
-		r = STMReader.SCRIPT.format( DATA_PATH = self.modelPath, MODEL_FILENAME = self.modelRData )
+		r = STMReader.SCRIPT.format( DATA_PATH = self.modelPath, MODEL_FILENAME = self.modelRData, R_VARIABLE = self.rVariable )
 		with open( self.modelScript, 'w' ) as f:
 			f.write( r.encode( 'utf-8' ) )
 		self.logger.info( 'Executing R script: %s', self.modelScript )
