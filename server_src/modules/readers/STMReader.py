@@ -94,7 +94,7 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 		self.ldaDocIndex = '{}/doc-index.json'.format( self.modelPath )
 		self.ldaTermIndex = '{}/term-index.json'.format( self.modelPath )
 		self.ldaTopicIndex = '{}/topic-index.json'.format( self.modelPath )
-		self.corpus = corpus_db.db
+		self.corpus = corpus_db.db if corpus_db is not None else None
 
 	def Execute( self ):
 		self.logger.info( 'Reading STM topic model...' )
@@ -126,7 +126,7 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 		with open( self.ldaTermIndex ) as f:
 			data = json.load( f, encoding = 'utf-8' )
 		self.termList = [ d['text'] for d in data ]
-		self.docList = [ d.doc_id for d in self.corpus().select(self.corpus.corpus.doc_id, orderby=self.corpus.corpus.doc_index) ]
+		self.docList = [ d.doc_id for d in self.corpus().select(self.corpus.corpus.doc_id, orderby=self.corpus.corpus.doc_index) ] if self.corpus is not None else None
 
 		self.logger.debug( '    Loading matrix: %s', self.ldaTermTopicMatrix )
 		with open( self.ldaTermTopicMatrix ) as f:

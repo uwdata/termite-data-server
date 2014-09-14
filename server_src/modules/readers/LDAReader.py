@@ -72,7 +72,7 @@ class LDAReader(object):
 		self.logger.debug( '    Saving docs...' )
 		for index, d in enumerate(docTable):
 			docIndex = d['doc_index']
-			d['doc_id'] = self.docList[docIndex]
+			d['doc_id'] = self.docList[docIndex] if self.docList is not None else 'doc{}'.format(index+1)
 			d['rank'] = index + 1
 		self.db.docs.bulk_insert(docTable)
 
