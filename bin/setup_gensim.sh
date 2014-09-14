@@ -2,6 +2,7 @@
 
 EXTERNALS_PATH=externals
 TOOLS_PATH=tools
+VERSION=0.9.1
 
 if [ ! -d "bin" ]
 then
@@ -16,10 +17,10 @@ then
 fi
 
 function __setup_gensim__ {
-	EXTERNALS_SUBPATH=$EXTERNALS_PATH/gensim-0.8.9
-	TOOLS_SUBPATH=$TOOLS_PATH/gensim-0.8.9
+	EXTERNALS_SUBPATH=$EXTERNALS_PATH/gensim-$VERSION
+	TOOLS_SUBPATH=$TOOLS_PATH/gensim-$VERSION
 	SYMLINK_SUBPATH=$TOOLS_PATH/gensim
-	SYMLINK=gensim-0.8.9
+	SYMLINK=gensim-$VERSION
 
 	if [ ! -d "$TOOLS_SUBPATH" ]
 	then
@@ -31,11 +32,11 @@ function __setup_gensim__ {
 			mkdir -p $EXTERNALS_PATH
 			mkdir -p $EXTERNALS_SUBPATH
 			echo "    Downloading..."
-			curl --insecure --location http://pypi.python.org/packages/source/g/gensim/gensim-0.8.9.tar.gz > $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz
+			curl --insecure --location http://pypi.python.org/packages/source/g/gensim/gensim-$VERSION.tar.gz > $EXTERNALS_SUBPATH/gensim-$VERSION.tar.gz
 			echo "    Extracting README..."
-			tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9/README.rst &&\
-				mv gensim-0.8.9/README.rst $EXTERNALS_SUBPATH &&\
-				rmdir gensim-0.8.9
+			tar -zxf $EXTERNALS_SUBPATH/gensim-$VERSION.tar.gz gensim-$VERSION/README.rst &&\
+				mv gensim-$VERSION/README.rst $EXTERNALS_SUBPATH &&\
+				rmdir gensim-$VERSION
 			echo "You may delete downloaded files in this folder without affecting the topic model server." > $EXTERNALS_SUBPATH/safe-to-delete.txt
 		fi
 		
@@ -43,9 +44,9 @@ function __setup_gensim__ {
 		mkdir -p $TOOLS_PATH
 		mkdir -p $TOOLS_SUBPATH
 		echo "    Uncompressing..."
-		tar -zxf $EXTERNALS_SUBPATH/gensim-0.8.9.tar.gz gensim-0.8.9 &&\
-			mv gensim-0.8.9/* $TOOLS_SUBPATH &&\
-			rmdir gensim-0.8.9 &&\
+		tar -zxf $EXTERNALS_SUBPATH/gensim-$VERSION.tar.gz gensim-$VERSION &&\
+			mv gensim-$VERSION/* $TOOLS_SUBPATH &&\
+			rmdir gensim-$VERSION &&\
 			ln -s $SYMLINK $SYMLINK_SUBPATH
 
 		echo "    Running self tests..."
