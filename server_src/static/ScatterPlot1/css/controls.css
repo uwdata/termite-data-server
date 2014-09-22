@@ -11,8 +11,12 @@
 }
 
 #top-controls {
-	text-align:center;
-	border-bottom:1px solid #d3d3d3;
-/* 	height:80px; */
-
+	text-align: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	border-bottom: 1px solid #aaa;
+	color: #333;
+	background: #ccc;
 }

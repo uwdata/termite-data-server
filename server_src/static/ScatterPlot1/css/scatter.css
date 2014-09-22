@@ -7,6 +7,15 @@
 	fill: none;
 }
 
+.axis path, .axis line {
+	opacity:.2;
+}
+
+.axis text {
+	opacity:.6;
+	font-family:helvetica;
+}
+
 .point.highlighted {
 	fill-opacity:.8;
 	fill:red !important;
@@ -40,4 +49,8 @@
 
 .axis-label {
 	font-size: 18px;
+}
+
+#yaxistext, #xaxistext {
+	font-family:helvetica;
 }

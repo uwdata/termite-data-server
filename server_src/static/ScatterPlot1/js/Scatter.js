@@ -113,7 +113,7 @@ Scatter.prototype.build = function() {
 	var that = this
 	this.wrapper = this.div.append("div")
 		.attr('id', this.settings.id + '-svg-wrapper')
-		.style('height', that.settings.height + 'px')
+// 		.style('height', that.settings.height + 'px')
 		
 	this.xAxisSvg = this.wrapper.append('svg').attr('id', 'xaxis')
 		.style('position', 'absolute')
@@ -156,24 +156,34 @@ Scatter.prototype.build = function() {
 					.attr("id", "xaxis-label")
 					.call(this.xaxis)
 					
-	this.xtitle = this.xAxisSvg.append('text')
+	// this.xtitle = this.xAxisSvg.append('text')
+// 					.text(this.settings.xtitle)
+// 					.attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')')
+// 					.attr('id', 'xaxistext')
+// 					.attr('class', 'axis-label')
+// 					
+	this.xtitleDiv = this.div.append('div')	.style('text-align', 'center')
+					.style('margin-top', '10px')
+					
+	this.xtitleDiv.append('text')
 					.text(this.settings.xtitle)
-					.attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')')
+					// .attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')')
 					.attr('id', 'xaxistext')
 					.attr('class', 'axis-label')
+
 
 	
 				
 	this.yaxisLabels = this.yAxisSvg.append('g')
 						.attr('class', 'axis yaxis')
 						.attr('id', 'yaxis-label')
-						.attr('transform', 'translate(' + this.settings.margin.left + ',0)')
+						.attr('transform', 'translate(' + (this.settings.margin.left + 10) + ',0)')
 						.call(this.yaxis)
 
 						
 	this.ytitle = this.yAxisSvg.append('text')
 					.text(this.settings.ytitle)
-					.attr('transform', 'translate(' + (30) + ',' + (this.settings.height/2)+ ') rotate(-90)')
+					.attr('transform', 'translate(' + (30) + ',' + (this.settings.height/2 - 20)+ ') rotate(-90)')
 					.attr('id', 'yaxistext')
 					.attr('class', 'axis-label')
 
@@ -262,7 +272,7 @@ Scatter.prototype.updatePosition = function(settings) {
 	d3.select('#' + settings.id + '-title').text('Topic ' + this.settings.topic + ' Proportions')
 	this.data = settings.data
 	this.setScales()
-	this.xtitle.attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')').text(this.settings.xtitle)
+// 	this.xtitle.attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')').text(this.settings.xtitle)
 	this.ytitle.attr('transform', 'translate(' + (30) + ',' + (this.settings.height/2)+ ') rotate(-90)')
 	this.zoomRect.attr("width", this.xScale.range()[1])
 		.attr("height", this.yScale.range()[1])
