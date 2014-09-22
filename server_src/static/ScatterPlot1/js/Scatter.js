@@ -37,7 +37,6 @@ Scatter.prototype.defineFunctions = function() {
 			var limit = Math.floor((that.settings.margin.right -10)/10.5)
 			var fullText =   d
 			var text = fullText
-// 			var text = fullText.length > limit ?  fullText.substring(0,limit) + '...' : fullText
 			return text
 		})
 		.attr('fulltext', function(d) {  
@@ -76,7 +75,7 @@ Scatter.prototype.defineFunctions = function() {
 			return klass
 		})
 		.attr('fill', function(d) {
-			return that.colorScale(d.colorValue)
+			return that.colorScale(Number(d.colorValue))
 		})
 		.attr('id', function(d) {return 'id_' + d.id})
 	}
@@ -88,9 +87,10 @@ Scatter.prototype.setScales = function() {
 	this.settings.radiusHighlighted = this.settings.radius * 3
 	this.xScale = d3.scale.linear().domain(that.settings.domain.x).range([this.settings.highlightedRadius + this.settings.stroke, this.settings.width - this.settings.highlightedRadius -  this.settings.stroke - this.settings.margin.left - this.settings.margin.right])
 	this.yScale = d3.scale.linear().domain(that.settings.domain.y).range([this.settings.highlightedRadius+ this.settings.stroke, this.settings.height - this.settings.highlightedRadius -  this.settings.stroke - this.settings.margin.top - this.settings.margin.bottom ])
-	this.colorScale = this.settings.colorVariableType == "string" ? d3.scale.category10() : d3.scale.linear().domain(d3.range(this.settings.domain.colors[1],this.settings.domain.colors[0], -(this.settings.domain.colors[1] - this.settings.domain.colors[0])/11)).range(colorbrewer['RdYlBu'][11])
+	var colorDomain = d3.range(this.settings.domain.colors[1],this.settings.domain.colors[0], -(this.settings.domain.colors[1] - this.settings.domain.colors[0])/11)
+	this.colorScale = this.settings.colorVariableType == "string" ? d3.scale.category10() : d3.scale.linear().domain(colorDomain).range(this.settings.colorRange)
 	this.legendScale = d3.scale.linear()
-		.domain(this.settings.domain.x)
+		.domain(this.settings.domain.colors)
 		.range([0,this.settings.legend.width]);
 		
 	this.xaxis = d3.svg.axis()
@@ -113,7 +113,6 @@ Scatter.prototype.build = function() {
 	var that = this
 	this.wrapper = this.div.append("div")
 		.attr('id', this.settings.id + '-svg-wrapper')
-// 		.style('height', that.settings.height + 'px')
 		
 	this.xAxisSvg = this.wrapper.append('svg').attr('id', 'xaxis')
 		.style('position', 'absolute')
@@ -126,7 +125,8 @@ Scatter.prototype.build = function() {
 	this.yAxisSvg = this.wrapper.append('svg').attr('id', 'yaxis').style('height', that.yScale.range()[1] + + that.settings.highlightedRadius + that.settings.stroke +'px')
 
 	this.pointsSvg = this.wrapper.append('svg')
-		.attr("width", this.xScale.range()[1] + that.settings.highlightedRadius + that.settings.stroke)
+// 		.attr("width", this.xScale.range()[1] + that.settings.highlightedRadius + that.settings.stroke)
+		.attr('width', this.settings.width)
 		.attr("height", this.yScale.range()[1] + that.settings.highlightedRadius+ that.settings.stroke )
 		.attr('id', this.settings.id + '-svg')
 		.style('position', 'absolute')
@@ -202,7 +202,7 @@ Scatter.prototype.buildContinuousLegend = function() {
 		.append("svg")		
 		.attr('id', that.settings.id + '-legend-svg')
 		.attr("height", that.settings.legend.height + 40)
-		.attr("width", that.settings.legend.width + that.settings.legend.shift + 14)
+		.attr("width", that.settings.legend.width + that.settings.legend.shift + 24)
 	
 	that.gradient = that.legend
 		.append("svg:defs")
@@ -272,13 +272,13 @@ Scatter.prototype.updatePosition = function(settings) {
 	d3.select('#' + settings.id + '-title').text('Topic ' + this.settings.topic + ' Proportions')
 	this.data = settings.data
 	this.setScales()
-// 	this.xtitle.attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')').text(this.settings.xtitle)
 	this.ytitle.attr('transform', 'translate(' + (30) + ',' + (this.settings.height/2)+ ') rotate(-90)')
 	this.zoomRect.attr("width", this.xScale.range()[1])
 		.attr("height", this.yScale.range()[1])
 		
 	this.pointsSvg
-		.attr("width", this.xScale.range()[1] + that.settings.highlightedRadius + that.settings.stroke)
+// 		.attr("width", this.xScale.range()[1] + that.settings.highlightedRadius + that.settings.stroke)
+		.attr("width", this.settings.width)
 		.attr("height", this.yScale.range()[1] + that.settings.highlightedRadius+ that.settings.stroke )
 		
 	this.xAxisSvg.transition().duration(500).style('top', (this.yScale.range()[1] + 25) + 'px')
@@ -296,6 +296,8 @@ Scatter.prototype.updatePosition = function(settings) {
 	$('#' + this.settings.id + '-legend-wrapper').remove()
 	if(this.settings.colorVariableType == 'integer') this.buildContinuousLegend()	
 	else this.buildCategoricalLegend() 	
+// 	this.addHover()
+
 }
 
 
@@ -306,10 +308,8 @@ Scatter.prototype.buildCategoricalLegend = function(parent, id) {
 	legendData = that.settings.colorLabels
 	if(legendData.length == 1) return
 	var labelScale = d3.scale.linear().domain([legendData.length-1,0]).range([0,(that.settings.height - 50)]) 
-	var legendSvg = this.wrapper.append('svg').attr('id', this.settings.id + '-legend-wrapper').style('position', 'absolute').style("left", that.settings.margin.left + 'px').style('pointer-events', 'none').style('width', this.settings.width+ 'px')
-				
-			
-	var legend = legendSvg.append('g').attr('transform', 'translate(' + (x) + ',' +(y) + ')')
+		
+	var legend = this.pointsSvg.append('g').attr('id', this.settings.id + '-legend-wrapper').attr('transform', 'translate(' + (x) + ',' +(y) + ')').style('cursor', 'pointer')
 	var labels = legend.selectAll('g')
 					.data(legendData, function(d) {return d})
 					.enter().append('g')
@@ -320,7 +320,22 @@ Scatter.prototype.buildCategoricalLegend = function(parent, id) {
 		
 
 	var text = labels.append('text').call(that.legendTextFunc)
-				
+	$('.legend-g').poshytip({
+		slide: false, 
+		followCursor: true, 
+		alignTo: 'cursor', 
+		showTimeout: 0, 
+		liveevents:true,
+		hideTimeout: 0, 
+		alignX: 'center', 
+		alignY: 'inner-bottom', 
+		className: 'tip',
+		offsetY: 10,
+		content: function(a,tip){
+			var text = this.__data__
+			return text
+		}
+	})			
 }
 
 
@@ -354,5 +369,7 @@ Scatter.prototype.addHover = function() {
 			return text
 		}
 	})
+	
+	
 
 }
