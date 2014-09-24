@@ -113,24 +113,27 @@ Scatter.prototype.build = function() {
 	var that = this
 	this.wrapper = this.div.append("div")
 		.attr('id', this.settings.id + '-svg-wrapper')
+// 		.style('position', 'relative')
+	.style('top', '0px')
+		.style('left' ,'0px')
 		
 	this.xAxisSvg = this.wrapper.append('svg').attr('id', 'xaxis')
 		.style('position', 'absolute')
 		.style('top', (this.yScale.range()[1] + 25) + 'px')
-		.style('left', this.settings.margin.left)
+		.style('left', this.settings.margin.left + 'px')
 		.style('width', that.settings.width + 'px')
 		.style('height', 80+ 'px')
 
 
 	this.yAxisSvg = this.wrapper.append('svg').attr('id', 'yaxis').style('height', that.yScale.range()[1] + + that.settings.highlightedRadius + that.settings.stroke +'px')
 
+	var left = $.browser.mozilla == true ? 0 : this.settings.margin.left
 	this.pointsSvg = this.wrapper.append('svg')
-// 		.attr("width", this.xScale.range()[1] + that.settings.highlightedRadius + that.settings.stroke)
 		.attr('width', this.settings.width)
 		.attr("height", this.yScale.range()[1] + that.settings.highlightedRadius+ that.settings.stroke )
 		.attr('id', this.settings.id + '-svg')
 		.style('position', 'absolute')
-		.style('left', this.settings.margin.left + 'px')
+		.style('left', left + 'px')
 		.attr("transform", "translate(" + this.settings.margin.left + "," +10+ ")")
 		
 	this.zoomG = this.pointsSvg.append("g")
@@ -263,6 +266,7 @@ Scatter.prototype.updatePosition = function(settings) {
 	var that = this
 	this.settings = settings
 	this.div
+		.style('position', 'relative')
 		.style('top', this.settings.position.top + 'px')
 		.style('left', this.settings.position.left + 'px')
 		.style("width", this.settings.width  + 'px')
@@ -282,7 +286,7 @@ Scatter.prototype.updatePosition = function(settings) {
 		.attr("height", this.yScale.range()[1] + that.settings.highlightedRadius+ that.settings.stroke )
 		
 	this.xAxisSvg.transition().duration(500).style('top', (this.yScale.range()[1] + 25) + 'px')
-		.style('left', this.settings.margin.left)
+		.style('left', this.settings.margin.left + 'px')
 		.style('width', that.settings.width + 'px')
 
 	this.yAxisSvg.style('height', that.yScale.range()[1] + + that.settings.highlightedRadius + that.settings.stroke +'px')
