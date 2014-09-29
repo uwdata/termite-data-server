@@ -6,24 +6,18 @@ var ControlsView = Backbone.View.extend({
 		
 		// Change functions
 		this.changeTopicFunction = function(value) {
-			console.log(this.value)
 			that.model.set('topic', this.value)
 		}
 		this.changeXvariableFunction = function(value) {
-			console.log(this.value)			
 			that.model.set('xVariable', this.value)
 		}
 		this.changeColorVariableFunction = function(value) {
-			console.log(this.value)			
 			that.model.set('colorVariable', this.value)
 		}
 		var changeOpacityFunction = function(event, ui) {
-			console.log(ui.value)
 			that.model.set('opacity', ui.value)
-			// that.model.set('topic', this.value)
 		}
 		var changeRadiusFunction = function(event, ui) {
-			console.log(ui.value)
 			that.model.set('radius', ui.value)
 		}
 		this.prepData()

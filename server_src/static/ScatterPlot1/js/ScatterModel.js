@@ -13,7 +13,6 @@ var ScatterModel = Backbone.Model.extend({
 	prep:function(callback) {
 		var that = this
 		that.terms = {}
-		console.log(this.variables, MetadataFields.MetadataFields)
 		var type = this.variables.filter(function(d) {return d.field_name == that.get('xVariable')}).map(function(d) {return d.field_type})
 		var colorType = this.variables.filter(function(d) {return d.field_name == that.get('colorVariable')}).map(function(d) {return d.field_type})
 		that.set('xVariableType', type)

@@ -75,7 +75,8 @@ Scatter.prototype.defineFunctions = function() {
 			return klass
 		})
 		.attr('fill', function(d) {
-			return that.colorScale(Number(d.colorValue))
+			console.log(d.colorValue)
+			return that.colorScale((d.colorValue))
 		})
 		.attr('id', function(d) {return 'id_' + d.id})
 	}
@@ -88,6 +89,7 @@ Scatter.prototype.setScales = function() {
 	this.xScale = d3.scale.linear().domain(that.settings.domain.x).range([this.settings.highlightedRadius + this.settings.stroke, this.settings.width - this.settings.highlightedRadius -  this.settings.stroke - this.settings.margin.left - this.settings.margin.right])
 	this.yScale = d3.scale.linear().domain(that.settings.domain.y).range([this.settings.highlightedRadius+ this.settings.stroke, this.settings.height - this.settings.highlightedRadius -  this.settings.stroke - this.settings.margin.top - this.settings.margin.bottom ])
 	var colorDomain = d3.range(this.settings.domain.colors[1],this.settings.domain.colors[0], -(this.settings.domain.colors[1] - this.settings.domain.colors[0])/11)
+	console.log('color variable type ', this.settings.colorVariableType == 'string')
 	this.colorScale = this.settings.colorVariableType == "string" ? d3.scale.category10() : d3.scale.linear().domain(colorDomain).range(this.settings.colorRange)
 	this.legendScale = d3.scale.linear()
 		.domain(this.settings.domain.colors)
@@ -159,18 +161,11 @@ Scatter.prototype.build = function() {
 					.attr("id", "xaxis-label")
 					.call(this.xaxis)
 					
-	// this.xtitle = this.xAxisSvg.append('text')
-// 					.text(this.settings.xtitle)
-// 					.attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')')
-// 					.attr('id', 'xaxistext')
-// 					.attr('class', 'axis-label')
-// 					
 	this.xtitleDiv = this.div.append('div')	.style('text-align', 'center')
 					.style('margin-top', '10px')
 					
-	this.xtitleDiv.append('text')
+	this.xtitleText = this.xtitleDiv.append('text')
 					.text(this.settings.xtitle)
-					// .attr('transform', 'translate(' + ((this.xScale.range()[1])/2) + ',' + (40)+ ')')
 					.attr('id', 'xaxistext')
 					.attr('class', 'axis-label')
 
@@ -281,7 +276,6 @@ Scatter.prototype.updatePosition = function(settings) {
 		.attr("height", this.yScale.range()[1])
 		
 	this.pointsSvg
-// 		.attr("width", this.xScale.range()[1] + that.settings.highlightedRadius + that.settings.stroke)
 		.attr("width", this.settings.width)
 		.attr("height", this.yScale.range()[1] + that.settings.highlightedRadius+ that.settings.stroke )
 		
@@ -293,6 +287,7 @@ Scatter.prototype.updatePosition = function(settings) {
 	this.xaxisLabels.transition().duration(500).call(this.xaxis)
 	this.yaxisLabels.transition().duration(500).call(this.yaxis)
  	this.pointsSvg.selectAll('.point').data(this.data, function(d) {return (d.id)}).transition().duration(500).call(this.pointFunction)	
+	this.xtitleText.text(this.settings.xtitle)
 	
 	setTimeout(function() {
 		that.zoomG.call(d3.behavior.zoom().x(that.xScale).y(that.yScale).scaleExtent([1, 8]).on("zoom", that.zoom));
@@ -300,7 +295,7 @@ Scatter.prototype.updatePosition = function(settings) {
 	$('#' + this.settings.id + '-legend-wrapper').remove()
 	if(this.settings.colorVariableType == 'integer') this.buildContinuousLegend()	
 	else this.buildCategoricalLegend() 	
-// 	this.addHover()
+
 
 }
 
