@@ -13,7 +13,6 @@ var ScatterModel = Backbone.Model.extend({
 	prep:function(callback) {
 		var that = this
 		that.terms = {}
-		console.log(this.variables, MetadataFields.MetadataFields)
 		var type = this.variables.filter(function(d) {return d.field_name == that.get('xVariable')}).map(function(d) {return d.field_type})
 		var colorType = this.variables.filter(function(d) {return d.field_name == that.get('colorVariable')}).map(function(d) {return d.field_type})
 		that.set('xVariableType', type)
@@ -27,7 +26,14 @@ var ScatterModel = Backbone.Model.extend({
 		
 		// Prep proportions
 		this.topicProportions = {}
-		this.rawProportions.filter(function(d){return d.topic_index == that.get('topic')}).map(function(d,i) {that.topicProportions[i] = d.value})
+		this.xValues = {}
+		this.colorValues = {}
+		this.rawProportions.filter(function(d){return d.topic_index == that.get('topic')}).map(function(d,i) {
+			that.topicProportions[d.doc_index] = d.value
+			var doc_index = Metadata[that.get('xVariable')].MetadataValues[i].doc_index
+			that.xValues[doc_index] = Metadata[that.get('xVariable')].MetadataValues[i].value
+			that.colorValues[doc_index] = that.get('colorVariable') == 'none' ? 'none' : Metadata[that.get('colorVariable')].MetadataValues[i].value
+		})
 		
 		// Get ranges of the xvariable and color variable to set scales
 		this.xLabels = []
@@ -42,15 +48,16 @@ var ScatterModel = Backbone.Model.extend({
 		if(this.get('xVariableType') !='integer') this.xLabels.sort(function(a,b) {return a.toUpperCase() > b.toUpperCase()})
 		
 		// Prep Data for View
-		this.data = d3.range(0, 1000).map(function(i) {
-			var prop = that.topicProportions[i] == undefined? 0 : that.topicProportions[i]
+		this.data = d3.keys(that.topicProportions).map(function(d,i) {
+			var prop = that.topicProportions[d] == undefined? 0 : that.topicProportions[d]
 			var xVar = that.get('xVariable')
 			var colorVar = that.get('colorVariable')
- 			var colorValue = colorVar == 'none' ? 'none' : Metadata[that.get('colorVariable')].MetadataValues[i].value
+//  			var colorValue = colorVar == 'none' ? 'none' : Metadata[that.get('colorVariable')].MetadataValues[i].value
+ 			var colorValue = colorVar == 'none' ? 'none' : that.colorValues[d]
 			var groupVar = that.get('group1')
-			var xLabel = Metadata[xVar].MetadataValues[i].value
+			var xLabel = that.xValues[d]
 			var xValue = that.get('xVariableType') !='integer' ? that.xLabels.indexOf(xLabel) : xLabel
-			return {id:i, 
+			return {id:d, 
  				proportion:prop,
 				xVar:xVar, 
 				xValue:xValue,
