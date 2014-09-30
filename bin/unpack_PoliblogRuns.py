@@ -32,5 +32,30 @@ def main():
 	logger.info(command)
 	os.system(command)
 
+	command = 'sqlite3 -separator "\t" {PATH}/lda.db "SELECT topic_index, SUM(value) FROM doc_topic_matrix GROUP BY topic_index ORDER BY topic_index" > {PATH}/topic-weights.txt'.format(PATH = path)
+	logger.info(command)
+	os.system(command)
+	
+	data = []
+	max_value = 0
+	filename = '{}/topic-weights.txt'.format(path)
+	with open(filename, 'r') as f:
+		for line in f.read().splitlines():
+			topic_index, topic_weight = line.split('\t')
+			topic_index = int(topic_index)
+			topic_weight = float(topic_weight)
+			max_value = max(topic_weight, max_value)
+			data.append({
+				"topic_index" : topic_index,
+				"topic_weight" : topic_weight,
+				"value" : topic_weight
+			})
+	for elem in data:
+		elem['value'] = elem['value'] / max_value
+	
+	filename = '{}/meta.json'.format(path)
+	with open(filename, 'w') as f:
+		json.dump(data, f, encoding = 'utf-8', indent = 2, sort_keys = True)
+
 if __name__ == '__main__':
 	main()
