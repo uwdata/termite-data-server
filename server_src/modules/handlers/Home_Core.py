@@ -272,10 +272,10 @@ class Home_Core(object):
 		return self.IsJsonFormat() or self.IsGraphFormat() or self.IsCSVFormat() or self.IsTSVFormat()
 	
 	def HasAllowedOrigin( self ):
-		return 'origin' in self.request.vars
+		return 'HTTP_ORIGIN' in self.request.env
 	
 	def GetAllowedOrigin( self ):
-		return self.request.vars['origin']
+		return self.request.env.HTTP_ORIGIN
 	
 	def GenerateResponse( self ):
 		if self.IsDebugMode():
