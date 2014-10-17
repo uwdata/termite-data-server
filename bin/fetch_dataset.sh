@@ -29,7 +29,7 @@ then
 	then
 		mkdir -p $DOWNLOAD_PATH
 		echo "    Downloading..."
-		curl --insecure --location http://homes.cs.washington.edu/~jcchuang/termite-datasets/$DEMO.zip > $DOWNLOAD_PATH/$DEMO.zip
+		curl --insecure --location http://topic-models.info/data/termite/$DEMO.zip > $DOWNLOAD_PATH/$DEMO.zip
 	fi
 
 	mkdir -p $CORPUS_PATH
