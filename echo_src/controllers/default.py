@@ -31,6 +31,6 @@ def index():
 		'extension' : request.extension,
 		'now' : str( request.now )
 	}
-	dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+	dataStr = json.dumps(data, indent = 2, sort_keys = True )
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr

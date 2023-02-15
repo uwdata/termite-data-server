@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import sys
-sys.path.append("web2py")
+# This adds web2py to path, so that stuff like gluon can be imported properly 
+sys.path.append("web2py-new")
 
 import argparse
 import logging

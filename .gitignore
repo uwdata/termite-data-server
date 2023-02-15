@@ -21,3 +21,7 @@
 /web2py/parameters_*.py
 /web2py/welcome.w2p
 /web2py/NEWINSTALL
+/db
+/apps/temp*
+/apps/20newsgroups_*
+**/*.bak

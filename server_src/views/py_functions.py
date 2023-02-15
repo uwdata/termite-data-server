@@ -1,16 +1,11 @@
 {{
-	from __future__ import division
-
-	from future import standard_library
-	standard_library.install_aliases()
-	from past.utils import old_div
 	import math
 	import urllib.request, urllib.parse, urllib.error
 	import json
 
 	def MakeParamTextArea(name, value, width = 200, height = 50):
 		HTML = """<textarea name="{NAME}" onchange="updateParamTextInput('{NAME}',this)" style="width: {WIDTH}px; height: {HEIGHT}px; vertical-align: -{THIRD_HEIGHT}px; margin-bottom: 10px">{VALUE}</textarea>"""
-		html = HTML.format(NAME = name, VALUE=value, WIDTH=width, HEIGHT=height, THIRD_HEIGHT=old_div(height,2)-10)
+		html = HTML.format(NAME = name, VALUE=value, WIDTH=width, HEIGHT=height, THIRD_HEIGHT=height//2-10)
 		response.write(html, escape=False)
 	pass
 
@@ -19,7 +14,7 @@
 		html = HTML.format(NAME = name, VALUE=value, WIDTH=width)
 		response.write(html, escape=False)
 	pass
-	
+
 	def MakeParamRange(name, value, count, width = 200):
 		HTML = """
 		<input type="range" name="{NAME}" value="{VALUE_NUM}" min="-1" max="{COUNT}" onchange="updateParamRange('{NAME}',this)" style="width: {WIDTH}px; vertical-align: -4px"/>
@@ -31,7 +26,7 @@
 		html = HTML.format(NAME = name, VALUE_NUM=value_num, VALUE_STR=value_str, COUNT=count_num, WIDTH=width)
 		response.write(html, escape=False)
 	pass
-	
+
 	def MakeParamSelect(name, value, options, width = 200):
 		HEAD = """<select name={NAME} onchange="updateParamSelect('{NAME}',this)" style="width: {WIDTH}px">"""
 		OPTION = """<option value="{OPT_VALUE}" {OPT_SELECTED}>{OPT_NAME}</option>"""
@@ -79,6 +74,6 @@
 	pass
 
 	def WriteJSON( data ):
-		response.write( json.dumps(data, encoding='utf-8', indent=2, sort_keys=True), escape=False )
+		response.write( json.dumps(data, indent=2, sort_keys=True), escape=False )
 	pass
 }}

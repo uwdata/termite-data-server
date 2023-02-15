@@ -17,7 +17,7 @@ def GetTerms():
 		with LDA_DB() as lda_db:
 			handler = TermTopicMatrix3(request, response, bow_db, lda_db)
 			data = handler.GetTerms()
-	dataStr = json.dumps(data, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(data, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr
 
@@ -26,7 +26,7 @@ def GetTopics():
 		with LDA_DB() as lda_db:
 			handler = TermTopicMatrix3(request, response, bow_db, lda_db)
 			data = handler.GetTopics()
-	dataStr = json.dumps(data, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(data, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr
 
@@ -35,6 +35,6 @@ def GetTermTopicMatrix():
 		with LDA_DB() as lda_db:
 			handler = TermTopicMatrix3(request, response, bow_db, lda_db)
 			data = handler.GetTermTopicMatrix()
-	dataStr = json.dumps(data, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(data, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr

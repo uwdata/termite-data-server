@@ -1104,7 +1104,7 @@ def design():
     # Get all languages
     langpath = os.path.join(apath(app, r=request),'languages')
     languages = dict([(lang, info) for lang, info
-                      in read_possible_languages(langpath).iteritems()
+                      in read_possible_languages(langpath).items()
                       if info[2] != 0])  # info[2] is langfile_mtime:
                                          # get only existed files
 
@@ -1240,7 +1240,7 @@ def plugin():
 
     # Get all languages
     languages = sorted([lang + '.py' for lang, info in
-                        T.get_possible_languages_info().iteritems()
+                        T.get_possible_languages_info().items()
                         if info[2] != 0])  # info[2] is langfile_mtime:
                                     # get only existed files
 

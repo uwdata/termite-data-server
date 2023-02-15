@@ -50,14 +50,15 @@ class BOW_ComputeStats(object):
 	def LoadStopwords(self, filename):
 		stopwords = []
 		with open( filename, 'r' ) as f:
-			stopwords = f.read().decode('utf-8', 'ignore').splitlines()
+			stopwords = f.read().splitlines()
+			print(stopwords)
 		return frozenset(stopwords)
 	
 	def ReadCorpus(self, filename):
 		self.logger.debug( '    Loading corpus: %s', filename )
 		with open( filename, 'r' ) as f:
 			for line in f:
-				docID, docContent = line.decode('utf-8').rstrip('\n').split('\t')
+				docID, docContent = line.strip('\n').split('\t')
 				docTokens = self.tokenRegex.findall(docContent)
 				docTokens = [ token.lower() for token in docTokens if token not in self.stopwords ]
 				yield docID, docTokens
