@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from builtins import str
 import json
 
 def index():
@@ -9,8 +10,8 @@ def index():
 		value = envObject[ key ]
 		if isinstance( value, dict ) or \
 		   isinstance( value, list ) or isinstance( value, tuple ) or \
-		   isinstance( value, str ) or isinstance( value, unicode ) or \
-		   isinstance( value, int ) or isinstance( value, long ) or isinstance( value, float ) or \
+		   isinstance( value, str ) or isinstance( value, str ) or \
+		   isinstance( value, int ) or isinstance( value, int ) or isinstance( value, float ) or \
 		   value is None or value is True or value is False:
 			envJSON[ key ] = value
 		else:
