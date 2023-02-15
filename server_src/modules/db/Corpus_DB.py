@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import object
 import glob
 import re
 from gluon.sql import DAL, Field
 from utils.UnicodeIO import UnicodeReader, UnicodeWriter
 
-class Corpus_DB():
+class Corpus_DB(object):
 	FILENAME = 'corpus.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DOC_IDS = ['doc_id', 'docid']
@@ -48,7 +49,7 @@ class Corpus_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isInit
 		)
-		for key, value in Corpus_DB.DEFAULT_OPTIONS.iteritems():
+		for key, value in Corpus_DB.DEFAULT_OPTIONS.items():
 			self.SetOption( key, value, overwrite = self.isInit )
 			
 	

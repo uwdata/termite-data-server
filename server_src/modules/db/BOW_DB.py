@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import object
 from gluon.sql import DAL, Field
 
-class BOW_DB():
+class BOW_DB(object):
 	FILENAME = 'bow.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DEFAULT_OPTIONS = {
@@ -37,7 +38,7 @@ class BOW_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isInit
 		)
-		for key, value in BOW_DB.DEFAULT_OPTIONS.iteritems():
+		for key, value in BOW_DB.DEFAULT_OPTIONS.items():
 			self.SetOption( key, value, overwrite = self.isInit )
 
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 from gensim import corpora, models
-from LDAReader import LDAReader
+from .LDAReader import LDAReader
 
 class GensimReader(LDAReader):
 	"""

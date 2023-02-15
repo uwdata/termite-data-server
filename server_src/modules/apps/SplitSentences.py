@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import object
 import logging
 import subprocess
 
-class SplitSentences():
+class SplitSentences(object):
 
 	SENTENCE_SPLITTER = 'utils/corenlp/SentenceSplitter.jar'
 

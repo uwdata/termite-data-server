@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import json
 import os
 import subprocess
-from LDAReader import LDAReader
+from .LDAReader import LDAReader
 
 class STMReader(LDAReader):
 	"""

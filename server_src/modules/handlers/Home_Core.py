@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import os
 import json
 import re
-import urllib
-import cStringIO
+import urllib.request, urllib.parse, urllib.error
+import io
 from utils.UnicodeIO import UnicodeReader, UnicodeWriter
 from db.Corpus_DB import Corpus_DB
 
@@ -290,8 +294,8 @@ class Home_Core(object):
 			value = envObject[ key ]
 			if isinstance( value, dict ) or \
 			   isinstance( value, list ) or isinstance( value, tuple ) or \
-			   isinstance( value, str ) or isinstance( value, unicode ) or \
-			   isinstance( value, int ) or isinstance( value, long ) or isinstance( value, float ) or \
+			   isinstance( value, str ) or isinstance( value, str ) or \
+			   isinstance( value, int ) or isinstance( value, int ) or isinstance( value, float ) or \
 			   value is None or value is True or value is False:
 				envJSON[ key ] = value
 			else:
@@ -330,7 +334,7 @@ class Home_Core(object):
 			return dataStr
 
 		if self.IsCSVFormat():
-			f = cStringIO.StringIO()
+			f = io.StringIO()
 			writer = UnicodeWriter(f)
 			writer.writerow( [ d['name'] for d in self.header ] )
 			for record in self.table:

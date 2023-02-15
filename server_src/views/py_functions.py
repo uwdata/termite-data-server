@@ -1,11 +1,16 @@
 {{
+	from __future__ import division
+
+	from future import standard_library
+	standard_library.install_aliases()
+	from past.utils import old_div
 	import math
-	import urllib
+	import urllib.request, urllib.parse, urllib.error
 	import json
 
 	def MakeParamTextArea(name, value, width = 200, height = 50):
 		HTML = """<textarea name="{NAME}" onchange="updateParamTextInput('{NAME}',this)" style="width: {WIDTH}px; height: {HEIGHT}px; vertical-align: -{THIRD_HEIGHT}px; margin-bottom: 10px">{VALUE}</textarea>"""
-		html = HTML.format(NAME = name, VALUE=value, WIDTH=width, HEIGHT=height, THIRD_HEIGHT=height/2-10)
+		html = HTML.format(NAME = name, VALUE=value, WIDTH=width, HEIGHT=height, THIRD_HEIGHT=old_div(height,2)-10)
 		response.write(html, escape=False)
 	pass
 
@@ -43,7 +48,7 @@
 		html = '\n'.join(s)
 		response.write(html, escape=False)
 	pass
-	
+
 	def MakeParamFormat(json_only=False):
 		if json_only:
 			HTML = """
@@ -68,7 +73,7 @@
 
 	def WriteURL( keysAndValues = {} ):
 		urlStr = configs['url']
-		queryStr = urllib.urlencode({key : (value.encode('utf-8') if isinstance(value,unicode) else value) for key, value in params.iteritems() if value is not None})
+		queryStr = urllib.parse.urlencode({key : (value.encode('utf-8') if isinstance(value,str) else value) for key, value in params.items() if value is not None})
 		s = urlStr if len(queryStr) == 0 else '{}?{}'.format(urlStr, queryStr)
 		response.write(s, escape=False)
 	pass

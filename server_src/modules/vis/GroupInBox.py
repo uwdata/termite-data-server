@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 import os
 import json
 from json import encoder as JsonEncoder
@@ -49,11 +53,11 @@ class GroupInBox(Home_Core):
 			'keepTerms' : keepTermsStr,
 			'removeTerms' : removeTermsStr
 		})
-		print "constraints as received"
-		print mustLinksStr
-		print cannotLinksStr
-		print keepTermsStr
-		print removeTermsStr
+		print("constraints as received")
+		print(mustLinksStr)
+		print(cannotLinksStr)
+		print(keepTermsStr)
+		print(removeTermsStr)
 		mustLinks = None
 		cannotLinks = None
 		keepTerms = None
@@ -61,33 +65,33 @@ class GroupInBox(Home_Core):
 		try:
 			data = json.loads(mustLinksStr, encoding='utf8')
 			if type(data) is list:
-				mustLinks = [ [ d for d in dd if type(d) is unicode ] for dd in data if type(dd) is list ]
+				mustLinks = [ [ d for d in dd if type(d) is str ] for dd in data if type(dd) is list ]
 		except (ValueError, KeyError, TypeError):
 			pass
 		try:
 			data = json.loads(cannotLinksStr, encoding='utf8')
 			if type(data) is list:
-				cannotLinks = [ [ d for d in dd if type(d) is unicode ] for dd in data if type(dd) is list ]
+				cannotLinks = [ [ d for d in dd if type(d) is str ] for dd in data if type(dd) is list ]
 		except (ValueError, KeyError, TypeError):
 			pass
 		try:
 			data = json.loads(keepTermsStr, encoding='utf8')
 			if type(data) is dict:
-				for key, value in data.iteritems():
-					keepTerms = { int(key[5:]) : [ d for d in value if type(d) is unicode ] for key, value in data.iteritems() if type(value) is list }
+				for key, value in data.items():
+					keepTerms = { int(key[5:]) : [ d for d in value if type(d) is str ] for key, value in data.items() if type(value) is list }
 		except (ValueError, KeyError, TypeError):
 			pass
 		try:
 			data = json.loads(removeTermsStr, encoding='utf8')
 			if type(data) is list:
-				removeTerms = [ d for d in data if type(d) is unicode ]
+				removeTerms = [ d for d in data if type(d) is str ]
 		except (ValueError, KeyError, TypeError):
 			pass
-		print "constraints sanitized"
-		print mustLinks
-		print cannotLinks
-		print keepTerms
-		print removeTerms
+		print("constraints sanitized")
+		print(mustLinks)
+		print(cannotLinks)
+		print(keepTerms)
+		print(removeTerms)
 		return mustLinks, cannotLinks, keepTerms, removeTerms
 
 	def UpdateModel(self):
@@ -224,7 +228,7 @@ class GroupInBox(Home_Core):
 			value = d['value']
 			if source in marginalProbs:
 				if target in marginalProbs:
-					pmi = value / marginalProbs[source] / marginalProbs[target]
+					pmi = old_div(old_div(value, marginalProbs[source]), marginalProbs[target])
 					data.append({
 						'source' : d['source'],
 						'target' : d['target'],

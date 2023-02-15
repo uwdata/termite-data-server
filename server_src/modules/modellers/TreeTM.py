@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+from builtins import object
 import json
 import logging
 import os
@@ -17,7 +19,7 @@ class InspectLDA(object):
 			treeTM.ReadFiles()
 			self.mustLinks = [ sorted(d) for d in treeTM.GetMustLinks() ]
 			self.cannotLinks = [ sorted(d) for d in treeTM.GetCannotLinks() ]
-			self.keepTerms = { key : sorted(d) for key, d in treeTM.GetKeepTerms().iteritems() }
+			self.keepTerms = { key : sorted(d) for key, d in treeTM.GetKeepTerms().items() }
 			self.removeTerms = sorted( treeTM.GetRemoveTerms() )
 			self.iters = treeTM.prevIter
 			self.entryID = treeTM.prevEntryID
@@ -233,7 +235,7 @@ class TreeTM(object):
 		self.prevEntryPath = '{modelsPath}/entry-{prevEntryID:06d}'.format( modelsPath = self.modelsPath, prevEntryID = self.prevEntryID ) if self.prevEntryID >= 0 else None
 		self.nextEntryPath = '{modelsPath}/entry-{nextEntryID:06d}'.format( modelsPath = self.modelsPath, nextEntryID = self.nextEntryID )
 		self.filenamePrevStates  = '{prevEntryPath}/states.json'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
-		print "filename, path = ", self.filenamePrevStates, self.prevEntryPath
+		print("filename, path = ", self.filenamePrevStates, self.prevEntryPath)
 		self.filenamePrevModel   = '{prevEntryPath}/model'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
 		self.filenameNextStates  = '{nextEntryPath}/states.json'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameNextModel   = '{nextEntryPath}/model'.format( nextEntryPath = self.nextEntryPath )
@@ -318,7 +320,7 @@ class TreeTM(object):
 	def SetKeepTerms( self, keepTerms ):
 		"""Argument 'keepTerms' should be a dict where the keys are topic indexes and the values are a list of words"""
 		self.keepTerms = {}
-		for key, values in keepTerms.iteritems():
+		for key, values in keepTerms.items():
 			if key in self.keepTerms:
 				self.keepTerms[key].update(values)
 			else:
@@ -444,7 +446,7 @@ class TreeTM(object):
 				
 	def WriteKeepTermsFile( self ):
 		lines = []
-		for topic, terms in self.keepTerms.iteritems():
+		for topic, terms in self.keepTerms.items():
 			for term in terms:
 				lines.append( u'{} {}'.format(term, topic) )
 		with open( self.filenameKeepTerms, 'w' ) as f:
@@ -471,7 +473,7 @@ class TreeTM(object):
 	def WriteExecuteBashScript( self ):
 		with open( self.filenameExecute, 'w' ) as f:
 			f.write( self.EXECUTE_BASH_SCRIPT.encode('utf-8') )
-		os.chmod( self.filenameExecute, 0755 )
+		os.chmod( self.filenameExecute, 0o755 )
 		
 ################################################################################
 # Steps in Training a TreeTM

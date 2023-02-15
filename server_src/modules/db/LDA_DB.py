@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import object
 from gluon.sql import DAL, Field
 
-class LDA_DB():
+class LDA_DB(object):
 	FILENAME = 'lda.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DEFAULT_OPTIONS = {
@@ -35,7 +36,7 @@ class LDA_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isInit
 		)
-		for key, value in LDA_DB.DEFAULT_OPTIONS.iteritems():
+		for key, value in LDA_DB.DEFAULT_OPTIONS.items():
 			self.SetOption( key, value, overwrite = self.isInit )
 
 
