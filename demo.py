@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import argparse
 import subprocess
 
@@ -15,7 +16,7 @@ def Shell(command):
 	while p.poll() is None:
 		line = p.stdout.readline().rstrip('\n')
 		if len(line) > 0:
-			print line
+			print(line)
 
 def Demonstrate(dataset, model, is_quiet, force_overwrite):
 	database_folder = 'data/demo/{}/corpus'.format(dataset)
@@ -59,15 +60,15 @@ def Demonstrate(dataset, model, is_quiet, force_overwrite):
 			command.append('--overwrite')
 		Shell(command)
 
-	print '--------------------------------------------------------------------------------'
-	print 'Build a topic model ({}) using a demo dataset ({})'.format(model, dataset)
-	print '  database = {}'.format(database_folder)
-	print '    corpus = {}'.format(corpus_folder)
-	print '     model = {}'.format(model_folder)
-	print '       app = {}'.format(app_name)
-	print '--------------------------------------------------------------------------------'
+	print('--------------------------------------------------------------------------------')
+	print('Build a topic model ({}) using a demo dataset ({})'.format(model, dataset))
+	print('  database = {}'.format(database_folder))
+	print('    corpus = {}'.format(corpus_folder))
+	print('     model = {}'.format(model_folder))
+	print('       app = {}'.format(app_name))
+	print('--------------------------------------------------------------------------------')
 	
-	PrepareDataset()
+	# PrepareDataset()
 	PrepareModel()
 	PrepareOthers()
 	TrainModel()
