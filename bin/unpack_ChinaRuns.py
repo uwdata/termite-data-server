@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+from past.utils import old_div
 import sys
 sys.path.append("web2py")
 
@@ -49,7 +51,7 @@ def main():
 				"value" : topic_weight
 			})
 	for elem in data:
-		elem['value'] = elem['value'] / max_value
+		elem['value'] = old_div(elem['value'], max_value)
 	
 	filename = '{}/meta.json'.format(path)
 	with open(filename, 'w') as f:
