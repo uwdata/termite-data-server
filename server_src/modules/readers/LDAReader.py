@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import range
+from builtins import object
 import logging
 
 class LDAReader(object):

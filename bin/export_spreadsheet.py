@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import sys
 sys.path.append("web2py")
 
@@ -12,7 +13,7 @@ from db.Corpus_DB import Corpus_DB
 
 def ExportSpreadsheet(database_path, spreadsheet_filename, id_key, content_key, is_csv):
 	database_filename = '{}/corpus.db'.format(database_path)
-	print 'Exporting database [{}] to spreadsheet [{}]'.format(database_filename, spreadsheet_filename)
+	print('Exporting database [{}] to spreadsheet [{}]'.format(database_filename, spreadsheet_filename))
 	
 	with Corpus_DB(database_path) as corpus_db:
 		corpus_db.ExportToSpreadsheet(spreadsheet_filename, is_csv = is_csv, id_key = id_key, content_key = content_key)

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+from builtins import object
 import json
 import logging
 import os
@@ -17,7 +19,7 @@ class InspectLDA(object):
 			treeTM.ReadFiles()
 			self.mustLinks = [ sorted(d) for d in treeTM.GetMustLinks() ]
 			self.cannotLinks = [ sorted(d) for d in treeTM.GetCannotLinks() ]
-			self.keepTerms = { key : sorted(d) for key, d in treeTM.GetKeepTerms().iteritems() }
+			self.keepTerms = { key : sorted(d) for key, d in treeTM.GetKeepTerms().items() }
 			self.removeTerms = sorted( treeTM.GetRemoveTerms() )
 			self.iters = treeTM.prevIter
 			self.entryID = treeTM.prevEntryID
@@ -233,7 +235,7 @@ class TreeTM(object):
 		self.prevEntryPath = '{modelsPath}/entry-{prevEntryID:06d}'.format( modelsPath = self.modelsPath, prevEntryID = self.prevEntryID ) if self.prevEntryID >= 0 else None
 		self.nextEntryPath = '{modelsPath}/entry-{nextEntryID:06d}'.format( modelsPath = self.modelsPath, nextEntryID = self.nextEntryID )
 		self.filenamePrevStates  = '{prevEntryPath}/states.json'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
-		print "filename, path = ", self.filenamePrevStates, self.prevEntryPath
+		print("filename, path = ", self.filenamePrevStates, self.prevEntryPath)
 		self.filenamePrevModel   = '{prevEntryPath}/model'.format( prevEntryPath = self.prevEntryPath ) if self.prevEntryID >= 0 else None
 		self.filenameNextStates  = '{nextEntryPath}/states.json'.format( nextEntryPath = self.nextEntryPath )
 		self.filenameNextModel   = '{nextEntryPath}/model'.format( nextEntryPath = self.nextEntryPath )
@@ -318,7 +320,7 @@ class TreeTM(object):
 	def SetKeepTerms( self, keepTerms ):
 		"""Argument 'keepTerms' should be a dict where the keys are topic indexes and the values are a list of words"""
 		self.keepTerms = {}
-		for key, values in keepTerms.iteritems():
+		for key, values in keepTerms.items():
 			if key in self.keepTerms:
 				self.keepTerms[key].update(values)
 			else:
@@ -351,12 +353,12 @@ class TreeTM(object):
 			"numTopics" : numTopics
 		}
 		with open( self.filenameIndex, 'w' ) as f:
-			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+			json.dump( data, f, indent = 2, sort_keys = True )
 		return 0, numTopics
 		
 	def ReadRunIndexFile( self ):
 		with open( self.filenameIndex, 'r' ) as f:
-			data = json.load( f, encoding = 'utf-8' )
+			data = json.load(f)
 		completedEntryID = data['completedEntryID']
 		nextEntryID = data['nextEntryID']
 		numTopics = data['numTopics']
@@ -364,26 +366,26 @@ class TreeTM(object):
 
 	def UpdateRunIndexFile( self ):
 		with open( self.filenameIndex, 'r' ) as f:
-			data = json.load( f, encoding = 'utf-8' )
+			data = json.load(f)
 		completedEntryID = data['completedEntryID']
 		nextEntryID = data['nextEntryID']
 		numTopics = data['numTopics']
 		data["nextEntryID"] += 1
 		with open( self.filenameIndex, 'w' ) as f:
-			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+			json.dump( data, f, indent = 2, sort_keys = True )
 		return completedEntryID, nextEntryID, numTopics
 
 	def WriteRunIndexFile( self ):
 		with open( self.filenameIndex, 'r' ) as f:
-			data = json.load( f, encoding = 'utf-8' )
+			data = json.load(f)
 		data["completedEntryID"] = self.nextEntryID
 		with open( self.filenameIndex, 'w' ) as f:
-			json.dump( data, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+			json.dump( data, f, indent = 2, sort_keys = True )
 
 	def ReadStatesFile( self ):
 		if self.filenamePrevStates is not None:
 			with open( self.filenamePrevStates, 'r' ) as f:
-				states = json.load( f, encoding = 'utf-8' )
+				states = json.load( f)
 			self.prevIter = states['numIters']
 		
 	def WriteStatesFile( self ):
@@ -392,11 +394,11 @@ class TreeTM(object):
 			'numIters' : self.nextIter
 		}
 		with open( self.filenameNextStates, 'w' ) as f:
-			json.dump( states, f, encoding = 'utf-8', indent = 2, sort_keys = True )
+			json.dump( states, f, indent = 2, sort_keys = True )
 	
 	def CreateHyperparamsFile( self ):
 		with open( self.filenameHyperparams, 'w' ) as f:
-			f.write( self.hyperParameters.encode('utf-8') )
+			f.write( self.hyperParameters )
 
 	def CreateVocabFile( self ):
 		command = self.generateVocabCommand
@@ -411,7 +413,7 @@ class TreeTM(object):
 		cannotLinkConstraints = []
 		if self.filenameConstraintsPrevious is not None:
 			with open( self.filenameConstraintsPrevious, 'r' ) as f:
-				for line in f.read().decode('utf-8').splitlines():
+				for line in f.read().splitlines():
 					values = line.split('\t')
 					action = values[0]
 					terms = values[1:]
@@ -429,13 +431,13 @@ class TreeTM(object):
 		for cannotLink in self.cannotLinkConstraints:
 			lines.append( u'SPLIT_\t{}'.format( u'\t'.join(term for term in cannotLink) ) )
 		with open( self.filenameConstraints, 'w' ) as f:
-			f.write( u'\n'.join(lines).encode('utf-8') )
+			f.write( u'\n'.join(lines))
 	
 	def ReadKeepTermsFile( self ):
 		keepTerms = {}
 		if self.filenameKeepTermsPrevious is not None:
 			with open( self.filenameKeepTermsPrevious, 'r' ) as f:
-				for line in f.read().decode('utf-8').splitlines():
+				for line in f.read().splitlines():
 					term, topic = line.split(' ')
 					if topic not in keepTerms:
 						keepTerms[topic] = set()
@@ -444,34 +446,34 @@ class TreeTM(object):
 				
 	def WriteKeepTermsFile( self ):
 		lines = []
-		for topic, terms in self.keepTerms.iteritems():
+		for topic, terms in self.keepTerms.items():
 			for term in terms:
 				lines.append( u'{} {}'.format(term, topic) )
 		with open( self.filenameKeepTerms, 'w' ) as f:
-			f.write( u'\n'.join(lines).encode('utf-8') )
+			f.write( u'\n'.join(lines))
 
 	def ReadRemoveTermsFile( self ):
 		lines = []
 		if self.filenameRemoveTermsPrevAll is not None:
 			with open( self.filenameRemoveTermsPrevAll, 'r' ) as f:
-				lines += f.read().decode('utf-8').splitlines()
+				lines += f.read().splitlines()
 		if self.filenameRemoveTermsPrevNew is not None:
 			with open( self.filenameRemoveTermsPrevNew, 'r') as f:
-				lines += f.read().decode('utf-8').splitlines()
+				lines += f.read().splitlines()
 		self.removeTermsPrev = frozenset(lines)
 		
 	def WriteRemoveTermsFiles( self ):
 		lines = [ term for term in self.removeTermsPrev ]
 		with open( self.filenameRemoveTermsAll, 'w' ) as f:
-			f.write( u'\n'.join(lines).encode('utf-8') )
+			f.write( u'\n'.join(lines))
 		lines = [ term for term in self.removeTermsNew ]
 		with open( self.filenameRemoveTermsNew, 'w' ) as f:
-			f.write( u'\n'.join(lines).encode('utf-8') )
+			f.write( u'\n'.join(lines))
 	
 	def WriteExecuteBashScript( self ):
 		with open( self.filenameExecute, 'w' ) as f:
-			f.write( self.EXECUTE_BASH_SCRIPT.encode('utf-8') )
-		os.chmod( self.filenameExecute, 0755 )
+			f.write( self.EXECUTE_BASH_SCRIPT )
+		os.chmod( self.filenameExecute, 0o755 )
 		
 ################################################################################
 # Steps in Training a TreeTM
@@ -511,7 +513,7 @@ class TreeTM(object):
 	def Shell( self, command ):
 		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
 		while p.poll() is None:
-			self.logger.debug( p.stdout.readline().rstrip('\n') )
+			self.logger.debug( p.stdout.readline().decode('UTF-8').strip('\n') )
 	
 	def PrepareToInspect( self ):
 		assert self.resume

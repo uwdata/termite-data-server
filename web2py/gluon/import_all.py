@@ -23,6 +23,7 @@ base_modules = ['aifc', 'anydbm', 'array', 'asynchat', 'asyncore', 'atexit',
                 'collections', 'colorsys', 'compileall', 'compiler',
                 'compiler.ast', 'compiler.visitor', 'ConfigParser',
                 'contextlib', 'Cookie', 'cookielib', 'copy', 'copy_reg',
+                'collections',
                 'cPickle', 'cProfile', 'cStringIO', 'csv', 'ctypes',
                 'datetime', 'decimal', 'difflib', 'dircache', 'dis',
                 'doctest', 'DocXMLRPCServer', 'dumbdbm', 'dummy_thread',
@@ -67,13 +68,6 @@ base_modules = ['aifc', 'anydbm', 'array', 'asynchat', 'asyncore', 'atexit',
                 'MimeWriter', 'mimify', 'multifile', 'sets']
 
 contributed_modules = []
-for root, dirs, files in os.walk('gluon'):
-    for candidate in ['.'.join(
-                      os.path.join(root, os.path.splitext(name)[0]).split(os.sep))
-                      for name in files if name.endswith('.py')
-                      and root.split(os.sep) != ['gluon', 'tests']
-                      ]:
-        contributed_modules.append(candidate)
 
 # Python base version
 python_version = sys.version[:3]
@@ -84,16 +78,11 @@ alert_dependency = ['hashlib', 'uuid']
 # Now we remove the blacklisted modules if we are using the stated
 # python version.
 #
-# List of modules deprecated in Python 2.6 or 2.7 that are in the above set
-py26_deprecated = ['mhlib', 'multifile', 'mimify', 'sets', 'MimeWriter']
-py27_deprecated = []  # ['optparse'] but we need it for now
-
-if python_version >= '2.6':
-    base_modules += ['json', 'multiprocessing']
-    base_modules = list(set(base_modules).difference(set(py26_deprecated)))
+# List of modules deprecated in Python 2.7 that are in the above list
+py27_deprecated = ['mhlib', 'multifile', 'mimify', 'sets', 'MimeWriter']  # And ['optparse'] but we need it for now
 
 if python_version >= '2.7':
-    base_modules += ['argparse']
+    base_modules += ['argparse', 'json', 'multiprocessing']
     base_modules = list(set(base_modules).difference(set(py27_deprecated)))
 
 # Now iterate in the base_modules, trying to do the import

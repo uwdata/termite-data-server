@@ -17,6 +17,6 @@ def GetEntry():
 		with LDA_DB() as lda_db:
 			handler = TermTopicMatrix2(request, response, bow_db, lda_db)
 			data = handler.GetEntry()
-	dataStr = json.dumps(data, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(data, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr

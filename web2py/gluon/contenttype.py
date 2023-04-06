@@ -19,6 +19,7 @@ Additions:
  - .pickle: application/python-pickle
  - .w2p': application/w2p
 """
+from gluon._compat import to_native
 
 __all__ = ['contenttype']
 
@@ -329,7 +330,7 @@ CONTENT_TYPE = {
     '.lha': 'application/x-lha',
     '.lhs': 'text/x-literate-haskell',
     '.lhz': 'application/x-lhz',
-    '.load' : 'text/html',
+    '.load': 'text/html',
     '.log': 'text/x-log',
     '.lrz': 'application/x-lrzip',
     '.ltx': 'text/x-tex',
@@ -411,6 +412,7 @@ CONTENT_TYPE = {
     '.mrml': 'text/x-mrml',
     '.mrw': 'image/x-minolta-mrw',
     '.ms': 'text/x-troff-ms',
+    '.msg': 'application/vnd.ms-outlook',
     '.msi': 'application/x-msi',
     '.msod': 'image/x-msod',
     '.msx': 'application/x-msx-rom',
@@ -822,7 +824,7 @@ CONTENT_TYPE = {
     '.xsd': 'application/xml',
     '.xsl': 'application/xslt+xml',
     '.xslfo': 'text/x-xslfo',
-    '.xslm' : 'application/vnd.ms-excel.sheet.macroEnabled.12',
+    '.xslm': 'application/vnd.ms-excel.sheet.macroEnabled.12',
     '.xslt': 'application/xslt+xml',
     '.xspf': 'application/xspf+xml',
     '.xul': 'application/vnd.mozilla.xul+xml',
@@ -842,7 +844,7 @@ def contenttype(filename, default='text/plain'):
     """
     Returns the Content-Type string matching extension of the given filename.
     """
-
+    filename = to_native(filename)
     i = filename.rfind('.')
     if i >= 0:
         default = CONTENT_TYPE.get(filename[i:].lower(), default)

@@ -10,30 +10,31 @@
 # for more details.
 
 "Pythonic simple JSON RPC Client implementation"
+from __future__ import print_function
 
 __author__ = "Mariano Reingart (reingart@gmail.com)"
 __copyright__ = "Copyright (C) 2011 Mariano Reingart"
 __license__ = "LGPL 3.0"
 __version__ = "0.05"
 
-
-import urllib
-from xmlrpclib import Transport, SafeTransport
-from cStringIO import StringIO
-import random
 import sys
-try:
-    import gluon.contrib.simplejson as json     # try web2py json serializer
-except ImportError:
-    try:
-        import json                             # try stdlib (py2.6)
-    except:
-        import simplejson as json               # try external module
+PY2 = sys.version_info[0] == 2
 
+if PY2:
+    from xmlrpclib import Transport, SafeTransport
+    from cStringIO import StringIO
+else:
+    from xmlrpc.client import Transport, SafeTransport
+    from io import StringIO
+import random
+import json
+from gluon._compat import basestring, urlparse
 
 class JSONRPCError(RuntimeError):
     "Error object for remote procedure call fail"
-    def __init__(self, code, message, data=None):
+    def __init__(self, code, message, data=''):        
+        if isinstance(data, basestring):
+            data = [data]
         value = "%s: %s\n%s" % (code, message, '\n'.join(data))
         RuntimeError.__init__(self, value)
         self.code = code
@@ -47,7 +48,7 @@ class JSONDummyParser:
         self.buf = StringIO()
 
     def feed(self, data):
-        self.buf.write(data)
+        self.buf.write(data.decode('utf-8'))
 
     def close(self):
         return self.buf.getvalue()
@@ -61,7 +62,7 @@ class JSONTransportMixin:
         connection.putheader("Content-Length", str(len(request_body)))
         connection.endheaders()
         if request_body:
-            connection.send(request_body)
+            connection.send(str.encode(request_body))
         # todo: add gzip compression
 
     def getparser(self):
@@ -81,18 +82,21 @@ class JSONSafeTransport(JSONTransportMixin, SafeTransport):
 class ServerProxy(object):
     "JSON RPC Simple Client Service Proxy"
 
-    def __init__(self, uri, transport=None, encoding=None, verbose=0,version=None):
+    def __init__(self, uri, transport=None, encoding=None, verbose=0, version=None, json_encoder=None):
         self.location = uri             # server location (url)
         self.trace = verbose            # show debug messages
         self.exceptions = True          # raise errors? (JSONRPCError)
         self.timeout = None
         self.json_request = self.json_response = ''
         self.version = version          # '2.0' for jsonrpc2
+        self.json_encoder = json_encoder  # Allow for a custom JSON encoding class
 
-        type, uri = urllib.splittype(uri)
+        parsed = urlparse.urlparse(uri)
+        type = parsed.scheme
         if type not in ("http", "https"):
             raise IOError("unsupported JSON-RPC protocol")
-        self.__host, self.__handler = urllib.splithost(uri)
+        self.__host = parsed.netloc
+        self.__handler = parsed.path
 
         if transport is None:
             if type == "https":
@@ -105,17 +109,17 @@ class ServerProxy(object):
 
     def __getattr__(self, attr):
         "pseudo method that can be called"
-        return lambda *args: self.call(attr, *args)
+        return lambda *args, **vars: self.call(attr, *args, **vars)
 
-    def call(self, method, *args):
+    def call(self, method, *args, **vars):
         "JSON RPC communication (method invocation)"
 
         # build data sent to the service
-        request_id = random.randint(0, sys.maxint)
-        data = {'id': request_id, 'method': method, 'params': args, }
+        request_id = random.randint(0, sys.maxsize)
+        data = {'id': request_id, 'method': method, 'params': args or vars, }
         if self.version:
             data['jsonrpc'] = self.version #mandatory key/value for jsonrpc2 validation else err -32600
-        request = json.dumps(data)
+        request = json.dumps(data, cls=self.json_encoder)
 
         # make HTTP request (retry if connection is lost)
         response = self.__transport.request(
@@ -151,4 +155,4 @@ if __name__ == "__main__":
     # basic tests:
     location = "http://www.web2py.com.ar/webservices/sample/call/jsonrpc"
     client = ServerProxy(location, verbose='--verbose' in sys.argv,)
-    print client.add(1, 2)
+    print(client.add(1, 2))

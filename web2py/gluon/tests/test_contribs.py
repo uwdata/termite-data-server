@@ -3,42 +3,23 @@
 
 """ Unit tests for contribs """
 
-import sys
-import os
 import unittest
+import os
 
-def fix_sys_path():
-    """
-    logic to have always the correct sys.path
-     '', web2py/gluon, web2py/site-packages, web2py/ ...
-    """
-
-    def add_path_first(path):
-        sys.path = [path] + [p for p in sys.path if (
-            not p == path and not p == (path + '/'))]
-
-    path = os.path.dirname(os.path.abspath(__file__))
-
-    if not os.path.isfile(os.path.join(path,'web2py.py')):
-        i = 0
-        while i<10:
-            i += 1
-            if os.path.exists(os.path.join(path,'web2py.py')):
-                break
-            path = os.path.abspath(os.path.join(path, '..'))
-
-    paths = [path,
-             os.path.abspath(os.path.join(path, 'site-packages')),
-             os.path.abspath(os.path.join(path, 'gluon')),
-             '']
-    [add_path_first(path) for path in paths]
-
-fix_sys_path()
+from gluon._compat import to_bytes
+from gluon.storage import Storage
+from gluon.contrib import fpdf as fpdf
+from gluon.contrib import pyfpdf as pyfpdf
+from gluon.contrib.appconfig import AppConfig
 
 
-from utils import md5_hash
-import contrib.fpdf as fpdf
-import contrib.pyfpdf as pyfpdf
+def setUpModule():
+    pass
+
+
+def tearDownModule():
+    if os.path.isfile('appconfig.json'):
+        os.unlink('appconfig.json')
 
 
 class TestContribs(unittest.TestCase):
@@ -59,9 +40,28 @@ class TestContribs(unittest.TestCase):
         pdf.write(5, 'hello world')
         pdf_out = pdf.output('', 'S')
 
-        self.assertTrue(fpdf.FPDF_VERSION in pdf_out, 'version string')
-        self.assertTrue('hello world' in pdf_out, 'sample message')
+        self.assertTrue(to_bytes(fpdf.FPDF_VERSION) in pdf_out, 'version string')
+        self.assertTrue(to_bytes('hello world') in pdf_out, 'sample message')
 
+    def test_appconfig(self):
+        """
+        Test for the appconfig module
+        """
+        from gluon import current
+        s = Storage({'application': 'admin',
+                     'folder': 'applications/admin'})
+        current.request = s
+        simple_config = '{"config1" : "abc", "config2" : "bcd", "config3" : { "key1" : 1, "key2" : 2} }'
+        with open('appconfig.json', 'w') as g:
+            g.write(simple_config)
+        myappconfig = AppConfig('appconfig.json')
+        self.assertEqual(myappconfig['config1'], 'abc')
+        self.assertEqual(myappconfig['config2'], 'bcd')
+        self.assertEqual(myappconfig.take('config1'), 'abc')
+        self.assertEqual(myappconfig.take('config3.key1', cast=str), '1')
+        # once parsed, can't be casted to other types
+        self.assertEqual(myappconfig.take('config3.key1', cast=int), '1')
 
-if __name__ == '__main__':
-    unittest.main()
+        self.assertEqual(myappconfig.take('config3.key2'), 2)
+
+        current.request = {}

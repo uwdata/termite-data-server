@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import sys
 sys.path.append("web2py")
 
@@ -9,7 +10,7 @@ from db.Corpus_DB import Corpus_DB
 
 def ExportCorpus(database_path, corpus_filename):
 	database_filename = '{}/corpus.db'.format(database_path)
-	print 'Exporting database [{}] to file [{}]'.format(database_filename, corpus_filename)
+	print('Exporting database [{}] to file [{}]'.format(database_filename, corpus_filename))
 	
 	with Corpus_DB(database_path) as corpusDB:
 		corpusDB.ExportToFile(corpus_filename)

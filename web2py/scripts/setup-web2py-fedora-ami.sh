@@ -1,6 +1,6 @@
 echo "This script will:
 1) Install modules needed to run web2py on Fedora and CentOS/RHEL
-2) Install Python 2.6 to /opt and recompile wsgi if not provided
+2) Install Python 3.7 to /opt and recompile wsgi if not provided
 2) Install web2py in /opt/web-apps/
 3) Configure SELinux and iptables
 5) Create a self signed ssl certificate
@@ -54,7 +54,7 @@ echo
 yum update
 
 # Install required packages
-yum install httpd mod_ssl mod_wsgi wget python
+yum install httpd mod_ssl mod_wsgi wget python3
 
 # Verify we have at least Python 2.5
 typeset -i version_major
@@ -299,7 +299,7 @@ NameVirtualHost *:80
 NameVirtualHost *:443
 
 <VirtualHost *:80>
-  WSGIDaemonProcess web2py user=apache group=apache processes=1 threads=1
+  WSGIDaemonProcess web2py user=apache group=apache
   WSGIProcessGroup web2py
   WSGIScriptAlias / /opt/web-apps/web2py/wsgihandler.py
 
@@ -311,8 +311,8 @@ NameVirtualHost *:443
       Allow from all
     </Files>
   </Directory>
-
-  AliasMatch ^/([^/]+)/static/(.*) /opt/web-apps/web2py/applications/\$1/static/\$2
+  AliasMatch ^/([^/]+)/static/(?:_[\d]+.[\d]+.[\d]+/)?(.*) \
+        /opt/web-apps/web2py/applications/\$1/static/\$2
 
   <Directory /opt/web-apps/web2py/applications/*/static>
     Options -Indexes
@@ -350,7 +350,8 @@ NameVirtualHost *:443
     </Files>
   </Directory>
 
-  AliasMatch ^/([^/]+)/static/(.*) /opt/web-apps/web2py/applications/\$1/static/\$2
+  AliasMatch ^/([^/]+)/static/(?:_[\d]+.[\d]+.[\d]+/)?(.*) \
+        /opt/web-apps/web2py/applications/\$1/static/\$2
 
   <Directory /opt/web-apps/web2py/applications/*/static>
     Options -Indexes

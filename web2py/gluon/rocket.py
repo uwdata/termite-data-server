@@ -5,11 +5,14 @@
 # Modified by Massimo Di Pierro
 
 # Import System Modules
+
 import sys
 import errno
 import socket
 import logging
 import platform
+from gluon._compat import iteritems, to_bytes, to_unicode, StringIO
+from gluon._compat import urllib_unquote, to_native, PY2
 
 # Define Constants
 VERSION = '1.2.6'
@@ -20,7 +23,11 @@ HTTP_SERVER_SOFTWARE = '%s Python/%s' % (
 BUF_SIZE = 16384
 SOCKET_TIMEOUT = 10  # in secs
 THREAD_STOP_CHECK_INTERVAL = 1  # in secs, How often should threads check for a server stop message?
-IS_JYTHON = platform.system() == 'Java'  # Handle special cases for Jython
+if hasattr(sys, 'frozen'):
+    # py2installer
+    IS_JYTHON = False
+else:
+    IS_JYTHON = platform.system() == 'Java'  # Handle special cases for Jython
 IGNORE_ERRORS_ON_CLOSE = set([errno.ECONNABORTED, errno.ECONNRESET])
 DEFAULT_LISTEN_QUEUE_SIZE = 5
 DEFAULT_MIN_THREADS = 10
@@ -29,47 +36,16 @@ DEFAULTS = dict(LISTEN_QUEUE_SIZE=DEFAULT_LISTEN_QUEUE_SIZE,
                 MIN_THREADS=DEFAULT_MIN_THREADS,
                 MAX_THREADS=DEFAULT_MAX_THREADS)
 
-PY3K = sys.version_info[0] > 2
+PY3K = not PY2
 
 
 class NullHandler(logging.Handler):
-    "A Logging handler to prevent library errors."
+    """A Logging handler to prevent library errors."""
     def emit(self, record):
         pass
 
-if PY3K:
-    def b(val):
-        """ Convert string/unicode/bytes literals into bytes.  This allows for
-        the same code to run on Python 2.x and 3.x. """
-        if isinstance(val, str):
-            return val.encode()
-        else:
-            return val
-
-    def u(val, encoding="us-ascii"):
-        """ Convert bytes into string/unicode.  This allows for the
-        same code to run on Python 2.x and 3.x. """
-        if isinstance(val, bytes):
-            return val.decode(encoding)
-        else:
-            return val
-
-else:
-    def b(val):
-        """ Convert string/unicode/bytes literals into bytes.  This allows for
-        the same code to run on Python 2.x and 3.x. """
-        if isinstance(val, unicode):
-            return val.encode()
-        else:
-            return val
-
-    def u(val, encoding="us-ascii"):
-        """ Convert bytes into string/unicode.  This allows for the
-        same code to run on Python 2.x and 3.x. """
-        if isinstance(val, str):
-            return val.decode(encoding)
-        else:
-            return val
+b = to_bytes
+u = to_unicode
 
 # Import Package Modules
 # package imports removed in monolithic build
@@ -93,7 +69,7 @@ except ImportError:
 # Import Package Modules
 # package imports removed in monolithic build
 # TODO - This part is still very experimental.
-#from .filelike import FileLikeSocket
+# from .filelike import FileLikeSocket
 
 
 class Connection(object):
@@ -180,13 +156,6 @@ class Connection(object):
 
 # Import System Modules
 import socket
-try:
-    from io import StringIO
-except ImportError:
-    try:
-        from cStringIO import StringIO
-    except ImportError:
-        from StringIO import StringIO
 # Import Package Modules
 # package imports removed in monolithic build
 
@@ -311,13 +280,13 @@ try:
 except ImportError:
     has_futures = False
 
-    class Future:
+    class Future(object):
         pass
 
-    class ThreadPoolExecutor:
+    class ThreadPoolExecutor(object):
         pass
 
-    class _WorkItem:
+    class _WorkItem(object):
         pass
 
 
@@ -403,7 +372,7 @@ class WSGIExecutor(ThreadPoolExecutor):
 
 
 class FuturesMiddleware(object):
-    "Futures middleware that adds a Futures Executor to the environment"
+    """Futures middleware that adds a Futures Executor to the environment"""
     def __init__(self, app, threads=5):
         self.app = app
         self.executor = WSGIExecutor(threads)
@@ -528,6 +497,7 @@ class Listener(Thread):
                 ca_certs = self.interface[4]
                 cert_reqs = ssl.CERT_OPTIONAL
                 sock = ssl.wrap_socket(sock,
+                                       do_handshake_on_connect=False,
                                        keyfile=self.interface[2],
                                        certfile=self.interface[3],
                                        server_side=True,
@@ -536,6 +506,7 @@ class Listener(Thread):
                                        ssl_version=ssl.PROTOCOL_SSLv23)
             else:
                 sock = ssl.wrap_socket(sock,
+                                       do_handshake_on_connect=False,
                                        keyfile=self.interface[2],
                                        certfile=self.interface[3],
                                        server_side=True,
@@ -553,7 +524,7 @@ class Listener(Thread):
             self.err_log.warning('Listener started when not ready.')
             return
 
-        if self.thread is not None and self.thread.isAlive():
+        if self.thread is not None and self.thread.is_alive():
             self.err_log.warning('Listener already running.')
             return
 
@@ -561,11 +532,11 @@ class Listener(Thread):
 
         self.thread.start()
 
-    def isAlive(self):
+    def is_alive(self):
         if self.thread is None:
             return False
 
-        return self.thread.isAlive()
+        return self.thread.is_alive()
 
     def join(self):
         if self.thread is None:
@@ -617,9 +588,9 @@ import socket
 import logging
 import traceback
 from threading import Lock
-try:
+if PY3K:
     from queue import Queue
-except ImportError:
+else:
     from Queue import Queue
 
 # Import Package Modules
@@ -744,14 +715,14 @@ class Rocket(object):
         if background:
             return
 
-        while self._monitor.isAlive():
+        while self._monitor.is_alive():
             try:
                 time.sleep(THREAD_STOP_CHECK_INTERVAL)
             except KeyboardInterrupt:
                 # Capture a keyboard interrupt when running from a console
                 break
             except:
-                if self._monitor.isAlive():
+                if self._monitor.is_alive():
                     log.error(traceback.format_exc())
                     continue
 
@@ -771,12 +742,12 @@ class Rocket(object):
             time.sleep(0.01)
 
             for l in self.listeners:
-                if l.isAlive():
+                if l.is_alive():
                     l.join()
 
             # Stop Monitor
             self._monitor.stop()
-            if self._monitor.isAlive():
+            if self._monitor.is_alive():
                 self._monitor.join()
 
             # Stop Worker threads
@@ -788,8 +759,7 @@ class Rocket(object):
                        the application developer.  Please update your \
                        applications to no longer call rocket.stop(True)"
                 try:
-                    import warnings
-                    raise warnings.DeprecationWarning(msg)
+                    raise DeprecationWarning(msg)
                 except ImportError:
                     raise RuntimeError(msg)
 
@@ -1087,14 +1057,14 @@ class ThreadPool:
             self.app_info['executor'].shutdown(wait=False)
 
         # Give them the gun
-        #active_threads = [t for t in self.threads if t.isAlive()]
-        #while active_threads:
-        #    t = active_threads.pop()
-        #    t.kill()
+        # active_threads = [t for t in self.threads if t.is_alive()]
+        # while active_threads:
+        #     t = active_threads.pop()
+        #     t.kill()
 
         # Wait until they pull the trigger
         for t in self.threads:
-            if t.isAlive():
+            if t.is_alive():
                 t.join()
 
         # Clean up the mess
@@ -1103,7 +1073,7 @@ class ThreadPool:
     def bring_out_your_dead(self):
         # Remove dead threads from the pool
 
-        dead_threads = [t for t in self.threads if not t.isAlive()]
+        dead_threads = [t for t in self.threads if not t.is_alive()]
         for t in dead_threads:
             if __debug__:
                 log.debug("Removing dead thread: %s." % t.getName())
@@ -1178,19 +1148,6 @@ from threading import Thread
 from datetime import datetime
 
 try:
-    from urllib import unquote
-except ImportError:
-    from urllib.parse import unquote
-
-try:
-    from io import StringIO
-except ImportError:
-    try:
-        from cStringIO import StringIO
-    except ImportError:
-        from StringIO import StringIO
-
-try:
     from ssl import SSLError
 except ImportError:
     class SSLError(socket.error):
@@ -1202,17 +1159,17 @@ except ImportError:
 # Define Constants
 re_SLASH = re.compile('%2F', re.IGNORECASE)
 re_REQUEST_LINE = re.compile(r"""^
-(?P<method>OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT)   # Request Method
-\                                                            # (single space)
+(?P<method>OPTIONS|GET|HEAD|POST|PUT|DELETE|PATCH|TRACE|CONNECT) # Req Method
+\                                                                # single space
 (
-    (?P<scheme>[^:/]+)                                       # Scheme
+    (?P<scheme>[^:/]+)                                           # Scheme
     (://)  #
-    (?P<host>[^/]+)                                          # Host
+    (?P<host>[^/]+)                                              # Host
 )? #
-(?P<path>(\*|/[^ \?]*))                                      # Path
-(\? (?P<query_string>[^ ]*))?                                # Query String
-\                                                            # (single space)
-(?P<protocol>HTTPS?/1\.[01])                                 # Protocol
+(?P<path>(\*|/[^ \?]*))                                          # Path
+(\? (?P<query_string>[^ ]*))?                                    # Query String
+\                                                                # single space
+(?P<protocol>HTTPS?/1\.[01])                                     # Protocol
 $
 """, re.X)
 LOG_LINE = '%(client_ip)s - "%(request_line)s" - %(status)s %(size)s'
@@ -1429,12 +1386,12 @@ class Worker(Thread):
             raise BadRequest
 
         req = match.groupdict()
-        for k, v in req.iteritems():
+        for k, v in iteritems(req):
             if not v:
                 req[k] = ""
             if k == 'path':
                 req['path'] = r'%2F'.join(
-                    [unquote(x) for x in re_SLASH.split(v)])
+                    [urllib_unquote(x) for x in re_SLASH.split(v)])
 
         self.protocol = req['protocol']
         return req
@@ -1469,7 +1426,7 @@ class Worker(Thread):
         if '?' in path:
             path, query_string = path.split('?', 1)
 
-        path = r'%2F'.join([unquote(x) for x in re_SLASH.split(path)])
+        path = r'%2F'.join([urllib_unquote(x) for x in re_SLASH.split(path)])
 
         req.update(path=path,
                    query_string=query_string,
@@ -1515,17 +1472,17 @@ class Worker(Thread):
 
 
 class SocketTimeout(Exception):
-    "Exception for when a socket times out between requests."
+    """Exception for when a socket times out between requests."""
     pass
 
 
 class BadRequest(Exception):
-    "Exception for when a client sends an incomprehensible request."
+    """Exception for when a client sends an incomprehensible request."""
     pass
 
 
 class SocketClosed(Exception):
-    "Exception for when a socket is closed by the client."
+    """Exception for when a socket is closed by the client."""
     pass
 
 
@@ -1653,7 +1610,7 @@ class WSGIWorker(Worker):
         environ = self.base_environ.copy()
 
         # Grab the headers
-        for k, v in self.read_headers(sock_file).iteritems():
+        for k, v in iteritems(self.read_headers(sock_file)):
             environ[str('HTTP_' + k)] = v
 
         # Add CGI Variables
@@ -1677,11 +1634,12 @@ class WSGIWorker(Worker):
             environ['wsgi.url_scheme'] = 'https'
             environ['HTTPS'] = 'on'
             try:
+                conn.socket.do_handshake()
                 peercert = conn.socket.getpeercert(binary_form=True)
                 environ['SSL_CLIENT_RAW_CERT'] = \
-                    peercert and ssl.DER_cert_to_PEM_cert(peercert)
+                    peercert and to_native(ssl.DER_cert_to_PEM_cert(peercert))
             except Exception:
-                print sys.exc_info()[1]
+                print(sys.exc_info()[1])
         else:
             environ['wsgi.url_scheme'] = 'http'
 
@@ -1768,9 +1726,9 @@ class WSGIWorker(Worker):
         if self.request_method != 'HEAD':
             try:
                 if self.chunked:
-                    self.conn.sendall(b('%x\r\n%s\r\n' % (len(data), data)))
+                    self.conn.sendall(b'%x\r\n%s\r\n' % (len(data), to_bytes(data, 'ISO-8859-1')))
                 else:
-                    self.conn.sendall(data)
+                    self.conn.sendall(to_bytes(data))
             except socket.timeout:
                 self.closeConnection = True
             except socket.error:
@@ -1850,12 +1808,13 @@ class WSGIWorker(Worker):
                 if data:
                     self.write(data, sections)
 
-            if self.chunked:
-                # If chunked, send our final chunk length
-                self.conn.sendall(b('0\r\n\r\n'))
-            elif not self.headers_sent:
+            if not self.headers_sent:
                 # Send headers if the body was empty
                 self.send_headers('', sections)
+
+            if self.chunked and self.request_method != 'HEAD':
+                # If chunked, send our final chunk length
+                self.conn.sendall(b('0\r\n\r\n'))
 
         # Don't capture exceptions here.  The Worker class handles
         # them appropriately.
@@ -1869,3 +1828,46 @@ class WSGIWorker(Worker):
             sock_file.close()
 
 # Monolithic build...end of module: rocket/methods/wsgi.py
+def demo_app(environ, start_response):
+    global static_folder
+    import os
+    types = {'htm': 'text/html','html': 'text/html','gif': 'image/gif',
+             'jpg': 'image/jpeg','png': 'image/png','pdf': 'applications/pdf'}
+    if static_folder:
+        if not static_folder.startswith('/'):
+            static_folder = os.path.join(os.getcwd(),static_folder)
+        path = os.path.join(static_folder, environ['PATH_INFO'][1:] or 'index.html')
+        type = types.get(path.split('.')[-1],'text')
+        if os.path.exists(path):
+            try:
+                data = open(path,'rb').read()
+                start_response('200 OK', [('Content-Type', type)])
+            except IOError:
+                start_response('404 NOT FOUND', [])
+                data = '404 NOT FOUND'
+        else:
+            start_response('500 INTERNAL SERVER ERROR', [])
+            data = '500 INTERNAL SERVER ERROR'
+    else:
+        start_response('200 OK', [('Content-Type', 'text/html')])
+        data = '<html><body><h1>Hello from Rocket Web Server</h1></body></html>'
+    return [data]
+
+def demo():
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("-i", "--ip", dest="ip",default="127.0.0.1",
+                      help="ip address of the network interface")
+    parser.add_option("-p", "--port", dest="port",default="8000",
+                      help="post where to run web server")
+    parser.add_option("-s", "--static", dest="static",default=None,
+                      help="folder containing static files")
+    (options, args) = parser.parse_args()
+    global static_folder
+    static_folder = options.static
+    print('Rocket running on %s:%s' % (options.ip, options.port))
+    r=Rocket((options.ip,int(options.port)),'wsgi', {'wsgi_app':demo_app})
+    r.start()
+
+if __name__=='__main__':
+    demo()

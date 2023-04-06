@@ -3,7 +3,7 @@ AIM class to credit card payment with authorize.net
 
 Fork of authnet code written by John Conde
 http://www.johnconde.net/blog/integrate-the-authorizenet-aim-api-with-python-3-2/
-Unknown license, assuming public domain
+BSDv3 License
 
 Modifed by Massimo Di Pierro
 
@@ -13,11 +13,12 @@ Modifed by Massimo Di Pierro
 - namedtuple from http://code.activestate.com/recipes/500261/
 
 """
+from __future__ import print_function
 
 __all__ = ['AIM']
 
 from operator import itemgetter
-import urllib
+from gluon._compat import urlopen, urlencode, FancyURLopener
 
 _known_tuple_types = {}
 
@@ -115,17 +116,17 @@ class AIM:
         self.setParameter('x_tran_key', transkey)
 
     def process(self):
-        encoded_args = urllib.urlencode(self.parameters)
+        encoded_args = urlencode(self.parameters)
         if self.testmode == True:
             url = 'https://test.authorize.net/gateway/transact.dll'
         else:
             url = 'https://secure.authorize.net/gateway/transact.dll'
 
         if self.proxy is None:
-            self.results += str(urllib.urlopen(
+            self.results += str(urlopen(
                 url, encoded_args).read()).split(self.delimiter)
         else:
-            opener = urllib.FancyURLopener(self.proxy)
+            opener = FancyURLopener(self.proxy)
             opened = opener.open(url, encoded_args)
             try:
                 self.results += str(opened.read()).split(self.delimiter)
@@ -248,23 +249,23 @@ def test():
         payment.setParameter('x_email_customer', False)
         payment.process()
         if payment.isApproved():
-            print 'Response Code: ', payment.response.ResponseCode
-            print 'Response Text: ', payment.response.ResponseText
-            print 'Response: ', payment.getResultResponseFull()
-            print 'Transaction ID: ', payment.response.TransactionID
-            print 'CVV Result: ', payment.response.CVVResponse
-            print 'Approval Code: ', payment.response.AuthCode
-            print 'AVS Result: ', payment.response.AVSResponse
+            print('Response Code: ', payment.response.ResponseCode)
+            print('Response Text: ', payment.response.ResponseText)
+            print('Response: ', payment.getResultResponseFull())
+            print('Transaction ID: ', payment.response.TransactionID)
+            print('CVV Result: ', payment.response.CVVResponse)
+            print('Approval Code: ', payment.response.AuthCode)
+            print('AVS Result: ', payment.response.AVSResponse)
         elif payment.isDeclined():
-            print 'Your credit card was declined by your bank'
+            print('Your credit card was declined by your bank')
         elif payment.isError():
             raise AIM.AIMError('An uncaught error occurred')
-    except AIM.AIMError, e:
-        print "Exception thrown:", e
-        print 'An error occured'
-    print 'approved', payment.isApproved()
-    print 'declined', payment.isDeclined()
-    print 'error', payment.isError()
+    except AIM.AIMError as e:
+        print("Exception thrown:", e)
+        print('An error occured')
+    print('approved', payment.isApproved())
+    print('declined', payment.isDeclined())
+    print('error', payment.isError())
 
 if __name__ == '__main__':
     test()

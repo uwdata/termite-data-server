@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import os
 import json
 import re
-import urllib
-import cStringIO
+import urllib.request, urllib.parse, urllib.error
+import io
 from utils.UnicodeIO import UnicodeReader, UnicodeWriter
 from db.Corpus_DB import Corpus_DB
 
@@ -223,7 +227,7 @@ class Home_Core(object):
 
 	def GetStringParam( self, key ):
 		if key in self.request.vars:
-			return self.request.vars[key].decode('utf-8', 'replace')
+			return self.request.vars[key]
 		else:
 			return None
 		
@@ -290,8 +294,8 @@ class Home_Core(object):
 			value = envObject[ key ]
 			if isinstance( value, dict ) or \
 			   isinstance( value, list ) or isinstance( value, tuple ) or \
-			   isinstance( value, str ) or isinstance( value, unicode ) or \
-			   isinstance( value, int ) or isinstance( value, long ) or isinstance( value, float ) or \
+			   isinstance( value, str ) or isinstance( value, str ) or \
+			   isinstance( value, int ) or isinstance( value, int ) or isinstance( value, float ) or \
 			   value is None or value is True or value is False:
 				envJSON[ key ] = value
 			else:
@@ -314,7 +318,7 @@ class Home_Core(object):
 			'params' : self.params
 		}
 		data.update( self.content )
-		dataStr = json.dumps( data, encoding = 'utf-8', indent = 2, sort_keys = True )
+		dataStr = json.dumps( data, indent = 2, sort_keys = True )
 		
 		self.response.headers['Content-Type'] = 'application/json'
 		return dataStr
@@ -323,14 +327,14 @@ class Home_Core(object):
 		if self.IsJsonFormat():
 			data = { 'configs' : self.configs }
 			data.update(self.content)
-			dataStr = json.dumps( self.content, encoding = 'utf-8', indent = 2, sort_keys = True )
+			dataStr = json.dumps( self.content, indent = 2, sort_keys = True )
 			self.response.headers['Content-Type'] = 'application/json'
 			if self.HasAllowedOrigin():
 				self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()
 			return dataStr
 
 		if self.IsCSVFormat():
-			f = cStringIO.StringIO()
+			f = io.StringIO()
 			writer = UnicodeWriter(f)
 			writer.writerow( [ d['name'] for d in self.header ] )
 			for record in self.table:
@@ -361,7 +365,7 @@ class Home_Core(object):
 			'params' : self.params
 		}
 		data.update( self.content )
-		data['content'] = json.dumps( self.content, encoding = 'utf-8', indent = 2, sort_keys = True )
+		data['content'] = json.dumps( self.content, indent = 2, sort_keys = True )
 		self.response.headers['Content-Type'] = 'text/html; charset=utf-8'
 		if self.HasAllowedOrigin():
 			self.response.headers['Access-Control-Allow-Origin'] = self.GetAllowedOrigin()

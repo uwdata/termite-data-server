@@ -9,14 +9,8 @@ from gluon.storage import Storage
 from gluon.html import TAG, XmlComponent, xmlescape
 from gluon.languages import lazyT
 import gluon.contrib.rss2 as rss2
-
-try:
-    import simplejson as json_parser                # try external module
-except ImportError:
-    try:
-        import json as json_parser                  # try stdlib (Python >= 2.6)
-    except:
-        import gluon.contrib.simplejson as json_parser    # fallback to pure-Python module
+import json as json_parser
+from gluon._compat import long, to_native, unicodeT, integer_types
 
 have_yaml = True
 try:
@@ -24,21 +18,23 @@ try:
 except ImportError:
     have_yaml = False
 
+
 def cast_keys(o, cast=str, encoding="utf-8"):
-    """ Builds a new object with <cast> type keys
-
-    Arguments:
-        o is the object input
-        cast (defaults to str) is an object type or function
-              which supports conversion such as:
-
-              >>> converted = cast(o)
-
-        encoding (defaults to utf-8) is the encoding for unicode
-                 keys. This is not used for custom cast functions
-
-    Use this funcion if you are in Python < 2.6.5
+    """
+    Builds a new object with <cast> type keys.
+    Use this function if you are in Python < 2.6.5
     This avoids syntax errors when unpacking dictionary arguments.
+
+    Args:
+        o: is the object input
+        cast:  (defaults to str) is an object type or function
+            which supports conversion such as:
+
+                converted = cast(o)
+
+        encoding: (defaults to utf-8) is the encoding for unicode
+            keys. This is not used for custom cast functions
+
     """
 
     if isinstance(o, (dict, Storage)):
@@ -47,7 +43,7 @@ def cast_keys(o, cast=str, encoding="utf-8"):
         else:
             newobj = Storage()
         for k, v in o.items():
-            if (cast == str) and isinstance(k, unicode):
+            if (cast == str) and isinstance(k, unicodeT):
                 key = k.encode(encoding)
             else:
                 key = cast(k)
@@ -65,6 +61,7 @@ def cast_keys(o, cast=str, encoding="utf-8"):
         newobj = o
     return newobj
 
+
 def loads_json(o, unicode_keys=True, **kwargs):
     # deserialize a json string
     result = json_parser.loads(o, **kwargs)
@@ -74,6 +71,7 @@ def loads_json(o, unicode_keys=True, **kwargs):
                            encoding=kwargs.get("encoding", "utf-8"))
     return result
 
+
 def custom_json(o):
     if hasattr(o, 'custom_json') and callable(o.custom_json):
         return o.custom_json()
@@ -81,14 +79,18 @@ def custom_json(o):
                       datetime.datetime,
                       datetime.time)):
         return o.isoformat()[:19].replace('T', ' ')
-    elif isinstance(o, (int, long)):
+    elif isinstance(o, integer_types):
         return int(o)
     elif isinstance(o, decimal.Decimal):
-        return str(o)
+        return float(o)
+    elif isinstance(o, (bytes, bytearray)):
+        return str(o) if hasattr(str, 'decode') else str(o, encoding='utf-8')
     elif isinstance(o, lazyT):
         return str(o)
     elif isinstance(o, XmlComponent):
-        return str(o)
+        return to_native(o.xml())
+    elif isinstance(o, set):
+        return list(o)
     elif hasattr(o, 'as_list') and callable(o.as_list):
         return o.as_list()
     elif hasattr(o, 'as_dict') and callable(o.as_dict):
@@ -117,13 +119,43 @@ def xml(value, encoding='UTF-8', key='document', quote=True):
     return ('<?xml version="1.0" encoding="%s"?>' % encoding) + str(xml_rec(value, key, quote))
 
 
-def json(value, default=custom_json):
-    # replace JavaScript incompatible spacing
-    # http://timelessrepo.com/json-isnt-a-javascript-subset
-    return json_parser.dumps(value,
-        default=default).replace(ur'\u2028',
-                                 '\\u2028').replace(ur'\2029',
-                                                    '\\u2029')
+class JSONEncoderForHTML(json_parser.JSONEncoder):
+    """An encoder that produces JSON safe to embed in HTML.
+    To embed JSON content in, say, a script tag on a web page, the
+    characters &, < and > should be escaped. They cannot be escaped
+    with the usual entities (e.g. &amp;) because they are not expanded
+    within <script> tags.
+    This class also escapes the line separator and paragraph separator
+    characters U+2028 and U+2029, irrespective of the ensure_ascii setting,
+    as these characters are not valid in JavaScript strings (see
+    http://timelessrepo.com/json-isnt-a-javascript-subset).
+    """
+
+    def encode(self, o):
+        # Override JSONEncoder.encode because it has hacks for
+        # performance that make things more complicated.
+        chunks = self.iterencode(o, True)
+        if self.ensure_ascii:
+            return ''.join(chunks)
+        else:
+            return u''.join(chunks)
+
+    def iterencode(self, o, _one_shot=False):
+        chunks = super(JSONEncoderForHTML, self).iterencode(o, _one_shot)
+        for chunk in chunks:
+            chunk = chunk.replace('&', '\\u0026')
+            chunk = chunk.replace('<', '\\u003c')
+            chunk = chunk.replace('>', '\\u003e')
+
+            if not self.ensure_ascii:
+                chunk = chunk.replace(u'\u2028', '\\u2028')
+                chunk = chunk.replace(u'\u2029', '\\u2029')
+
+            yield chunk
+
+
+def json(value, default=custom_json, indent=None, sort_keys=False, cls=JSONEncoderForHTML):
+    return json_parser.dumps(value, default=default, cls=cls, sort_keys=sort_keys, indent=indent)
 
 def csv(value):
     return ''
@@ -131,7 +163,6 @@ def csv(value):
 
 def ics(events, title=None, link=None, timeshift=0, calname=True,
         **ignored):
-    import datetime
     title = title or '(unknown)'
     if link and not callable(link):
         link = lambda item, prefix=link: prefix.replace(
@@ -159,30 +190,51 @@ def ics(events, title=None, link=None, timeshift=0, calname=True,
     s += '\nEND:VCALENDAR'
     return s
 
+def safe_encode(text):
+    if not isinstance(text, (str, unicodeT)):
+        text = str(text)
+    try:
+        text = text.encode('utf8','replace')
+    except ValueError:
+        new_text = ''
+        for c in text:
+            try:
+                new_text += c.encode('utf8')
+            except:
+                new_text += '?'
+        text = new_text
+    return text
 
 def rss(feed):
     if not 'entries' in feed and 'items' in feed:
         feed['entries'] = feed['items']
+
+    def safestr(obj, key, default=''):
+        return safe_encode(obj.get(key,''))
+
     now = datetime.datetime.now()
-    rss = rss2.RSS2(title=str(feed.get('title', '(notitle)').encode('utf-8', 'replace')),
-                    link=str(feed.get('link', None).encode('utf-8', 'replace')),
-                    description=str(feed.get('description', '').encode('utf-8', 'replace')),
+    rss = rss2.RSS2(title=safestr(feed,'title'),
+                    link=safestr(feed,'link'),
+                    description=safestr(feed,'description'),
                     lastBuildDate=feed.get('created_on', now),
                     items=[rss2.RSSItem(
-                           title=str(entry.get('title', '(notitle)').encode('utf-8', 'replace')),
-                           link=str(entry.get('link', None).encode('utf-8', 'replace')),
-                           description=str(entry.get('description', '').encode('utf-8', 'replace')),
+                           title=safestr(entry,'title','(notitle)'),
+                           link=safestr(entry,'link'),
+                           description=safestr(entry,'description'),
                            pubDate=entry.get('created_on', now)
                            ) for entry in feed.get('entries', [])])
-    return rss.to_xml(encoding='utf-8')
+    return rss.to_xml(encoding='utf8')
 
 
 def yaml(data):
     if have_yaml:
         return yamlib.dump(data)
-    else: raise ImportError("No YAML serializer available")
+    else:
+        raise ImportError("No YAML serializer available")
+
 
 def loads_yaml(data):
     if have_yaml:
         return yamlib.load(data)
-    else: raise ImportError("No YAML serializer available")
+    else:
+        raise ImportError("No YAML serializer available")

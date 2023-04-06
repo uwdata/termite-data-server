@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import object
 from gluon.sql import DAL, Field
 
-class MultipleLDA_DB():
+class MultipleLDA_DB(object):
 	FILENAME = 'multiple_lda.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DEFAULT_OPTIONS = {
@@ -36,7 +37,7 @@ class MultipleLDA_DB():
 			migrate = self.isInit
 		)
 		if self.isInit:
-			for key, value in LDA_DB.DEFAULT_OPTIONS.iteritems():
+			for key, value in LDA_DB.DEFAULT_OPTIONS.items():
 				self.SetOption( key, value )
 
 	def SetOption(self, key, value):

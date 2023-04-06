@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-This file is part of the web2py Web Framework
-Copyrighted by Massimo Di Pierro <mdipierro@cs.depaul.edu>
-License: LGPLv3 (http://www.gnu.org/licenses/lgpl.html)
+| This file is part of the web2py Web Framework
+| Copyrighted by Massimo Di Pierro <mdipierro@cs.depaul.edu>
+| License: LGPLv3 (http://www.gnu.org/licenses/lgpl.html)
+
+Facilities to handle file streaming
+------------------------------------
 """
 
 import os
@@ -12,9 +15,10 @@ import stat
 import time
 import re
 import errno
-import rewrite
 from gluon.http import HTTP
+from gluon.utils import unlocalised_http_header_date
 from gluon.contenttype import contenttype
+from gluon._compat import PY2
 
 
 regex_start_range = re.compile('\d+(?=\-)')
@@ -22,23 +26,25 @@ regex_stop_range = re.compile('(?<=\-)\d+')
 
 DEFAULT_CHUNK_SIZE = 64 * 1024
 
-
-def streamer(stream, chunk_size=DEFAULT_CHUNK_SIZE, bytes=None):
-    offset = 0
-    while bytes is None or offset < bytes:
-        if not bytes is None and bytes - offset < chunk_size:
-            chunk_size = bytes - offset
-        data = stream.read(chunk_size)
-        length = len(data)
-        if not length:
-            break
-        else:
-            yield data
-        if length < chunk_size:
-            break
-        offset += length
-    stream.close()
-
+def streamer(stream, chunk_size=DEFAULT_CHUNK_SIZE, bytes=None, callback=None):
+    try:
+        offset = 0
+        while bytes is None or offset < bytes:
+            if not bytes is None and bytes - offset < chunk_size:
+                chunk_size = bytes - offset
+            data = stream.read(chunk_size)
+            length = len(data)
+            if not length:
+                break
+            else:
+                yield data
+            if length < chunk_size:
+                break
+            offset += length
+    finally:
+        stream.close()
+        if callback:
+            callback()
 
 def stream_file_or_304_or_206(
     static_file,
@@ -48,14 +54,19 @@ def stream_file_or_304_or_206(
     status=200,
     error_message=None
     ):
-    if error_message is None:
-        error_message = rewrite.THREAD_LOCAL.routes.error_message % 'invalid request'
+    # FIX THIS
+    # if error_message is None:
+    #     error_message = rewrite.THREAD_LOCAL.routes.error_message % 'invalid request'
     try:
-        fp = open(static_file)
-    except IOError, e:
-        if e[0] == errno.EISDIR:
+        if PY2:
+            open_f = file # this makes no sense but without it GAE cannot open files
+        else:
+            open_f = open
+        fp = open_f(static_file,'rb')
+    except IOError as e:
+        if e.errno == errno.EISDIR:
             raise HTTP(403, error_message, web2py_error='file is a directory')
-        elif e[0] == errno.EACCES:
+        elif e.errno == errno.EACCES:
             raise HTTP(403, error_message, web2py_error='inaccessible file')
         else:
             raise HTTP(404, error_message, web2py_error='invalid file')
@@ -64,7 +75,7 @@ def stream_file_or_304_or_206(
     stat_file = os.stat(static_file)
     fsize = stat_file[stat.ST_SIZE]
     modified = stat_file[stat.ST_MTIME]
-    mtime = time.strftime('%a, %d %b %Y %H:%M:%S GMT', time.gmtime(modified))
+    mtime = unlocalised_http_header_date(time.gmtime(modified))
     headers.setdefault('Content-Type', contenttype(static_file))
     headers.setdefault('Last-Modified', mtime)
     headers.setdefault('Pragma', 'cache')
@@ -86,8 +97,8 @@ def stream_file_or_304_or_206(
             bytes = part[1] - part[0] + 1
             try:
                 stream = open(static_file, 'rb')
-            except IOError, e:
-                if e[0] in (errno.EISDIR, errno.EACCES):
+            except IOError as e:
+                if e.errno in (errno.EISDIR, errno.EACCES):
                     raise HTTP(403)
                 else:
                     raise HTTP(404)
@@ -107,9 +118,9 @@ def stream_file_or_304_or_206(
                 headers['Vary'] = 'Accept-Encoding'
         try:
             stream = open(static_file, 'rb')
-        except IOError, e:
-            # this better does not happer when returning an error page ;-)
-            if e[0] in (errno.EISDIR, errno.EACCES):
+        except IOError as e:
+            # this better not happen when returning an error page ;-)
+            if e.errno in (errno.EISDIR, errno.EACCES):
                 raise HTTP(403)
             else:
                 raise HTTP(404)

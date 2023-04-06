@@ -3,17 +3,18 @@ DowCommerce class to process credit card payments with DowCommerce.com
 
 Modifications to support Dow Commerce API from code originally written by John Conde
 http://www.johnconde.net/blog/integrate-the-authorizenet-aim-api-with-python-3-2/
-Unknown license, assuming public domain
+BSDv3 License
 
 Modifed by Dave Stoll dave.stoll@gmail.com
 
 - modifed to support Dow Commerce API
 """
+from __future__ import print_function
 
 __all__ = ['DowCommerce']
 
 from operator import itemgetter
-import urllib
+from gluon._compat import urlopen, urlencode, FancyURLopene
 
 
 class DowCommerce:
@@ -48,12 +49,12 @@ class DowCommerce:
         self.setParameter('password', password)
 
     def process(self):
-        encoded_args = urllib.urlencode(self.parameters)
+        encoded_args = urlencode(self.parameters)
         if self.proxy is None:
-            results = str(urllib.urlopen(
+            results = str(urlopen(
                 self.url, encoded_args).read()).split(self.delimiter)
         else:
-            opener = urllib.FancyURLopener(self.proxy)
+            opener = FancyURLopener(self.proxy)
             opened = opener.open(self.url, encoded_args)
             try:
                 results = str(opened.read()).split(self.delimiter)
@@ -227,18 +228,18 @@ def test():
 
         payment.process()
         if payment.isApproved():
-            print 'Payment approved!'
-            print payment.getFullResponse()
+            print('Payment approved!')
+            print(payment.getFullResponse())
         elif payment.isDeclined():
-            print 'Your credit card was declined by your bank'
+            print('Your credit card was declined by your bank')
         elif payment.isError():
             raise DowCommerce.DowCommerceError('An uncaught error occurred')
-    except DowCommerce.DowCommerceError, e:
-        print "Exception thrown:", e
-        print 'An error occured'
-    print 'approved', payment.isApproved()
-    print 'declined', payment.isDeclined()
-    print 'error', payment.isError()
+    except DowCommerce.DowCommerceError as e:
+        print("Exception thrown:", e)
+        print('An error occured')
+    print('approved', payment.isApproved())
+    print('declined', payment.isDeclined())
+    print('error', payment.isError())
 
 if __name__ == '__main__':
     test()

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import object
 import logging
 import subprocess
 
-class SplitSentences():
+class SplitSentences(object):
 
 	SENTENCE_SPLITTER = 'utils/corenlp/SentenceSplitter.jar'
 
@@ -16,6 +17,6 @@ class SplitSentences():
 	def Shell( self, command ):
 		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
 		while p.poll() is None:
-			line = p.stdout.readline().rstrip('\n')
+			line = p.stdout.readline().decode('UTF-8').strip('\n')
 			if len(line) > 0:
 				self.logger.debug( line )
