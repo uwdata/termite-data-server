@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from builtins import str
 import csv
 import os
 from db.Corpus_DB import Corpus_DB

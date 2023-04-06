@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import json
 import os
 import subprocess
-from LDAReader import LDAReader
+from .LDAReader import LDAReader
 
 class STMReader(LDAReader):
 	"""
@@ -106,7 +107,7 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 	def RunCommand( self, command ):
 		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
 		while p.poll() is None:
-			line = p.stdout.readline().rstrip('\n')
+			line = p.stdout.readline().decode('UTF-8').strip('\n')
 			if len(line) > 0:
 				self.logger.debug( line )
 	
@@ -124,13 +125,13 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 	def ReadFromDisk( self ):
 		self.logger.debug( '    Loading json: %s', self.ldaTermIndex )
 		with open( self.ldaTermIndex ) as f:
-			data = json.load( f, encoding = 'utf-8' )
+			data = json.load(f)
 		self.termList = [ d['text'] for d in data ]
 		self.docList = [ d.doc_id for d in self.corpus().select(self.corpus.corpus.doc_id, orderby=self.corpus.corpus.doc_index) ] if self.corpus is not None else None
 
 		self.logger.debug( '    Loading matrix: %s', self.ldaTermTopicMatrix )
 		with open( self.ldaTermTopicMatrix ) as f:
-			matrix = json.load( f, encoding = 'utf-8' )
+			matrix = json.load( f)
 		self.termTopicMatrix = []
 		for termIndex, topicFreqs in enumerate(matrix):
 			for topicIndex, value in enumerate(topicFreqs):
@@ -147,7 +148,7 @@ write( data.TermTopicMatrixJSON, file = app.path.TermTopicMatrix )
 
 		self.logger.debug( '    Loading matrix: %s', self.ldaDocTopicMatrix )
 		with open( self.ldaDocTopicMatrix ) as f:
-			matrix = json.load( f, encoding = 'utf-8' )
+			matrix = json.load( f)
 		self.docTopicMatrix = []
 		for docIndex, topicFreqs in enumerate(matrix):
 			for topicIndex, value in enumerate(topicFreqs):

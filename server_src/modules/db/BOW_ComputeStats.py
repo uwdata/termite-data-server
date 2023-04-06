@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+from builtins import object
+from past.utils import old_div
 import logging
 import math
 import re
 from collections import Counter
 
-class BOW_ComputeStats():
+class BOW_ComputeStats(object):
 	
 	DEFAULT_STOPWORDS = 'tools/mallet/stoplists/en.txt'
 	
@@ -47,27 +50,28 @@ class BOW_ComputeStats():
 	def LoadStopwords(self, filename):
 		stopwords = []
 		with open( filename, 'r' ) as f:
-			stopwords = f.read().decode('utf-8', 'ignore').splitlines()
+			stopwords = f.read().splitlines()
+			print(stopwords)
 		return frozenset(stopwords)
 	
 	def ReadCorpus(self, filename):
 		self.logger.debug( '    Loading corpus: %s', filename )
 		with open( filename, 'r' ) as f:
 			for line in f:
-				docID, docContent = line.decode('utf-8').rstrip('\n').split('\t')
+				docID, docContent = line.strip('\n').split('\t')
 				docTokens = self.tokenRegex.findall(docContent)
 				docTokens = [ token.lower() for token in docTokens if token not in self.stopwords ]
 				yield docID, docTokens
 	
 	def UnfoldVocab(self):
 		data = []
-		for term, index in self.termLookup.iteritems():
+		for term, index in self.termLookup.items():
 			data.append({ 'term_index' : index, 'term_text' : term })
 		return data
 	
 	def UnfoldStats(self, stats):
 		data = []
-		for term, index in self.termLookup.iteritems():
+		for term, index in self.termLookup.items():
 			if term in stats:
 				data.append({ 'term_index' : index, 'value' : stats[term], 'rank' : 0 })
 		data.sort( key = lambda x : -x['value'] )
@@ -77,9 +81,9 @@ class BOW_ComputeStats():
 	
 	def UnfoldCoStats(self, coStats):
 		data = []
-		for first_term, stats in coStats.iteritems():
+		for first_term, stats in coStats.items():
 			first_term_index = self.termLookup[first_term]
-			for second_term, value in stats.iteritems():
+			for second_term, value in stats.items():
 				second_term_index = self.termLookup[second_term]
 				data.append({ 'first_term_index' : first_term_index, 'second_term_index' : second_term_index, 'value' : value, 'rank' : 0 })
 		data.sort( key = lambda x : -x['value'] )
@@ -112,17 +116,17 @@ class BOW_ComputeStats():
 		self.db.term_doc_freqs.bulk_insert(rows)
 		
 		coStats = termCoStats['co_freqs']
-		self.logger.debug( '    Saving term_co_freqs (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
+		self.logger.debug( '    Saving term_co_freqs (%d term pairs)...', min(sum(len(stats) for stats in coStats.values()), self.maxCoFreqCount) )
 		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.term_co_freqs.bulk_insert(rows)
 		coStats = termCoStats['co_probs']
-		self.logger.debug( '    Saving term_co_probs (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
+		self.logger.debug( '    Saving term_co_probs (%d term pairs)...', min(sum(len(stats) for stats in coStats.values()), self.maxCoFreqCount) )
 		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.term_co_probs.bulk_insert(rows)
 		coStats = termCoStats['g2']
-		self.logger.debug( '    Saving term_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
+		self.logger.debug( '    Saving term_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats.values()), self.maxCoFreqCount) )
 		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.term_g2.bulk_insert(rows)
@@ -134,17 +138,17 @@ class BOW_ComputeStats():
 		termCoStats = self.ComputeTermCoFreqs( corpus, termStats )
 
 		coStats = termCoStats['co_freqs']
-		self.logger.debug( '    Saving sentences_co_freqs (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
+		self.logger.debug( '    Saving sentences_co_freqs (%d term pairs)...', min(sum(len(stats) for stats in coStats.values()), self.maxCoFreqCount) )
 		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.sentences_co_freqs.bulk_insert(rows)
 		coStats = termCoStats['co_probs']
-		self.logger.debug( '    Saving sentences_co_probs (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
+		self.logger.debug( '    Saving sentences_co_probs (%d term pairs)...', min(sum(len(stats) for stats in coStats.values()), self.maxCoFreqCount) )
 		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.sentences_co_probs.bulk_insert(rows)
 		coStats = termCoStats['g2']
-		self.logger.debug( '    Saving sentences_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats.itervalues()), self.maxCoFreqCount) )
+		self.logger.debug( '    Saving sentences_g2 (%d term pairs)...', min(sum(len(stats) for stats in coStats.values()), self.maxCoFreqCount) )
 		rows = self.UnfoldCoStats(coStats)
 		self.logger.debug( '        inserting %d rows...', len(rows) )
 		self.db.sentences_g2.bulk_insert(rows)
@@ -152,30 +156,30 @@ class BOW_ComputeStats():
 	def ComputeTermFreqs(self, corpus):
 		def ComputeFreqs(corpus):
 			freqs = Counter()
-			for docID, docTokens in corpus.iteritems():
+			for docID, docTokens in corpus.items():
 				freqs.update( docTokens )
 			return freqs
 		
 		def ComputeDocFreqs(corpus):
 			docFreqs = Counter()
-			for docID, docTokens in corpus.iteritems():
+			for docID, docTokens in corpus.items():
 				uniqueTokens = frozenset( docTokens )
 				docFreqs.update( uniqueTokens )
 			return docFreqs
 		
 		def NormalizeFreqs(freqs):
-			normalization = sum( freqs.itervalues() )
+			normalization = sum( freqs.values() )
 			normalization = 1.0 / normalization if normalization > 1.0 else 1.0
-			probs = { term : freq * normalization for term, freq in freqs.iteritems() }
+			probs = { term : freq * normalization for term, freq in freqs.items() }
 			return probs
 		
 		def ComputeIdfs(corpus, docFreqs):
 			N = len( corpus )
-			idfs = { term : math.log( 1.0 * N / docFreq ) for term, docFreq in docFreqs.iteritems() }
+			idfs = { term : math.log( old_div(1.0 * N, docFreq) ) for term, docFreq in docFreqs.items() }
 			return idfs
 		
 		def ComputeTfIdfs( freqs, idfs ):
-			tfIdfs = { term : freq * idfs[term] for term, freq in freqs.iteritems() }
+			tfIdfs = { term : freq * idfs[term] for term, freq in freqs.items() }
 			return tfIdfs
 		
 		self.logger.info( '    Computing term freqs (%d docs)...', len(corpus) )
@@ -214,11 +218,11 @@ class BOW_ComputeStats():
 			jointFreqs = {}
 			allFreq = 0
 			allCoFreq = 0
-			for docID, docTokens in corpus.iteritems():
+			for docID, docTokens in corpus.items():
 				freqs = Counter( docTokens )
-				allFreq += sum( freqs.itervalues() )
-				for firstToken, firstFreq in freqs.iteritems():
-					for secondToken, secondFreq in freqs.iteritems():
+				allFreq += sum( freqs.values() )
+				for firstToken, firstFreq in freqs.items():
+					for secondToken, secondFreq in freqs.items():
 						coFreq = firstFreq * secondFreq
 						allCoFreq += coFreq
 						if firstToken in vocab and secondToken in vocab and firstToken < secondToken:
@@ -232,9 +236,9 @@ class BOW_ComputeStats():
 		
 		def NormalizeJointFreqs(jointFreqs, normalization=None):
 			if normalization is None:
-				normalization = sum( sum( d.itervalues() ) for d in jointFreqs.itervalues() )
+				normalization = sum( sum( d.values() ) for d in jointFreqs.values() )
 				normalization = 1.0 / normalization if normalization > 1.0 else 1.0
-			jointProbs = { term : { t : f * normalization for t, f in freqs.iteritems() } for term, freqs in jointFreqs.iteritems() }
+			jointProbs = { term : { t : f * normalization for t, f in freqs.items() } for term, freqs in jointFreqs.items() }
 			return jointProbs
 		
 		def GetBinomial(B_given_A, any_given_A, B_given_notA, any_given_notA):
@@ -247,10 +251,10 @@ class BOW_ComputeStats():
 			b = float( B_given_notA )
 			c = float( any_given_A )
 			d = float( any_given_notA )
-			E1 = c * ( a + b ) / ( c + d )
-			E2 = d * ( a + b ) / ( c + d )
-			g2a = a * math.log( a / E1 ) if a > 0 else 0
-			g2b = b * math.log( b / E2 ) if b > 0 else 0
+			E1 = old_div(c * ( a + b ), ( c + d ))
+			E2 = old_div(d * ( a + b ), ( c + d ))
+			g2a = a * math.log( old_div(a, E1) ) if a > 0 else 0
+			g2b = b * math.log( old_div(b, E2) ) if b > 0 else 0
 			return 2 * ( g2a + g2b )
 		
 		def GetG2Stats(freq_all, freq_ab, freq_a, freq_b, a, b):
@@ -284,11 +288,11 @@ class BOW_ComputeStats():
 		def ComputeG2Stats(allFreq, marginalProbs, jointProbs):
 			g2_stats = {}
 			freq_all = allFreq
-			for firstToken, d in jointProbs.iteritems():
+			for firstToken, d in jointProbs.items():
 				if firstToken in marginalProbs:
 					freq_a = allFreq * marginalProbs[ firstToken ]
 					g2_stats[ firstToken ] = {}
-					for secondToken, jointProb in d.iteritems():
+					for secondToken, jointProb in d.items():
 						if secondToken in marginalProbs:
 							freq_b = allFreq * marginalProbs[ secondToken ]
 							freq_ab = allFreq * jointProb

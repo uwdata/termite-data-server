@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from LDAReader import LDAReader
+from __future__ import absolute_import
+from .LDAReader import LDAReader
 
 class MalletReader(LDAReader):
 	"""

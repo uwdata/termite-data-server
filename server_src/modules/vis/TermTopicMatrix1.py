@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from builtins import range
 import json
 import math
 from handlers.Home_Core import Home_Core

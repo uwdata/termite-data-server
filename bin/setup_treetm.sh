@@ -26,7 +26,7 @@ function __setup_treetm__ {
 			mkdir -p $EXTERNALS_PATH
 			mkdir -p $EXTERNALS_SUBPATH
 			echo "    Downloading..."
-			curl --insecure --location http://www.cs.umd.edu/~ynhu/code/tree-TM.zip > $EXTERNALS_SUBPATH/tree-tm.zip
+			curl --insecure --location https://github.com/BYU-NLP-Lab/ITM_Mallet/raw/master/tree-TM.zip > $EXTERNALS_SUBPATH/tree-tm.zip
 			echo "    Extracting README..."
 			unzip $EXTERNALS_SUBPATH/tree-tm.zip tree-TM/readme.txt -d $EXTERNALS_SUBPATH &&\
 				mv $EXTERNALS_SUBPATH/tree-TM/readme.txt $EXTERNALS_SUBPATH/README &&\

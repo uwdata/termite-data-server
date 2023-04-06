@@ -17,7 +17,7 @@ def StateModel():
 		with LDA_DB() as lda_db:
 			handler = TermTopicMatrix1(request, response, bow_db, lda_db)
 			data = handler.GetStateModel()
-	dataStr = json.dumps(data, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(data, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr
 
@@ -26,7 +26,7 @@ def SeriatedTermTopicProbabilityModel():
 		with LDA_DB() as lda_db:
 			handler = TermTopicMatrix1(request, response, bow_db, lda_db)
 			data = handler.GetSeriatedTermTopicProbabilityModel()
-	dataStr = json.dumps(data, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(data, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr
 
@@ -35,7 +35,7 @@ def FilteredTermTopicProbabilityModel():
 		with LDA_DB() as lda_db:
 			handler = TermTopicMatrix1(request, response, bow_db, lda_db)
 	data = handler.GetFilteredTermTopicProbabilityModel()
-	dataStr = json.dumps(data, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(data, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr
 
@@ -44,6 +44,6 @@ def TermFrequencyModel():
 		with LDA_DB() as lda_db:
 			handler = TermTopicMatrix1(request, response, bow_db, lda_db)
 			data = handler.GetTermFrequencyModel()
-	dataStr = json.dumps(data, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(data, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr

@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import os
-from LDAReader import LDAReader
+from .LDAReader import LDAReader
 
 class TreeTMReader(LDAReader):
 	"""
@@ -47,14 +48,14 @@ class TreeTMReader(LDAReader):
 		self.termList = []
 		self.logger.debug( '    Loading vocbuary: %s', self.corpusVocab )
 		with open( self.corpusVocab ) as f:
-			self.termList = [ line.decode('utf-8', 'ignore').rstrip('\n').split('\t')[1] for line in f ]
+			self.termList = [ line.strip('\n').split('\t')[1] for line in f ]
 
 	def ReadTopicWordWeights( self ):
 		accumulator = {}
 		self.logger.debug( '    Loading matrix: %s', self.entryTopicWordWeights )
 		with open( self.entryTopicWordWeights, 'r' ) as f:
 			for line in f:
-				line = line.rstrip('\n').decode('utf-8')
+				line = line.strip('\n')
 				topicIndex, term, value = line.split('\t')
 				topicIndex = int(topicIndex)
 				value = float(value)
@@ -85,9 +86,9 @@ class TreeTMReader(LDAReader):
 		self.docTopicMatrix = []
 		docSet = set()
 		self.logger.debug( '    Loading matrix: %s', self.entryDocTopicMixtures )
-		with open( self.entryDocTopicMixtures, 'r' ) as f:
+		with open( self.entryDocTopicMixtures, 'r', encoding='utf-8' ) as f:
 			for index, line in enumerate(f):
-				line = line.rstrip('\n').decode('utf-8')
+				line = line.strip('\n')
 				if index == 0:
 					pass
 #					assert line == "#doc source topic proportion ..."

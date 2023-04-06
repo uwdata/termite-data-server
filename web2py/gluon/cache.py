@@ -20,19 +20,61 @@ caching will be provided by the GAE memcache
 (see gluon.contrib.gae_memcache)
 """
 import time
-import portalocker
-import shelve
-import thread
 import os
+import gc
+import sys
 import logging
 import re
+import random
 import hashlib
 import datetime
+import tempfile
+from gluon import recfile
+from collections import defaultdict
+from collections import OrderedDict
+
 try:
     from gluon import settings
     have_settings = True
 except ImportError:
     have_settings = False
+
+from pydal.contrib import portalocker
+from gluon._compat import pickle, thread, to_bytes, to_native, hashlib_md5
+
+try:
+    import psutil
+    HAVE_PSUTIL = True
+except ImportError:
+    HAVE_PSUTIL = False
+
+
+# TODO: REMOVE ME ONCE THIS IS FIXED IN DAL https://github.com/web2py/pydal/issues/668
+from pydal.objects import Row
+from pydal._compat import copyreg
+def pickle_row(s):
+    return Row, (dict(s),)
+copyreg.pickle(Row, pickle_row)
+# END TODO
+
+
+def remove_oldest_entries(storage, percentage=90):
+    # compute current memory usage (%)
+    old_mem = psutil.virtual_memory().percent
+    # if we have data in storage and utilization exceeds 90%
+    while storage and old_mem > percentage:
+        # removed oldest entry
+        storage.popitem(last=False)
+        # garbage collect
+        gc.collect(1)
+        # comute used memory again
+        new_mem = psutil.virtual_memory().percent
+        # if the used memory did not decrease stop
+        if new_mem >= old_mem:
+            break
+        # net new measurement for memory usage and loop
+        old_mem = new_mem
+
 
 logger = logging.getLogger("web2py.cache")
 
@@ -40,7 +82,6 @@ __all__ = ['Cache', 'lazy_cache']
 
 
 DEFAULT_TIME_EXPIRE = 300
-
 
 
 class CacheAbstract(object):
@@ -51,7 +92,7 @@ class CacheAbstract(object):
     Use CacheInRam or CacheOnDisk instead which are derived from this class.
 
     Note:
-        Michele says: there are signatures inside gdbm files that are used 
+        Michele says: there are signatures inside gdbm files that are used
         directly by the python gdbm adapter that often are lagging behind in the
         detection code in python part.
         On every occasion that a gdbm store is probed by the python adapter,
@@ -64,6 +105,7 @@ class CacheAbstract(object):
     """
 
     cache_stats_name = 'web2py_cache_statistics'
+    max_ram_utilization = None  # percent
 
     def __init__(self, request=None):
         """Initializes the object
@@ -122,9 +164,10 @@ class CacheAbstract(object):
         Auxiliary function called by `clear` to search and clear cache entries
         """
         r = re.compile(regex)
-        for (key, value) in storage.items():
+        for key in list(storage.keys()):
             if r.match(str(key)):
                 del storage[key]
+        return
 
 
 class CacheInRam(CacheAbstract):
@@ -138,11 +181,13 @@ class CacheInRam(CacheAbstract):
 
     locker = thread.allocate_lock()
     meta_storage = {}
+    stats = {}
 
     def __init__(self, request=None):
         self.initialized = False
         self.request = request
-        self.storage = {}
+        self.storage = OrderedDict() if HAVE_PSUTIL else {}
+        self.app = request.application if request else ''
 
     def initialize(self):
         if self.initialized:
@@ -150,16 +195,12 @@ class CacheInRam(CacheAbstract):
         else:
             self.initialized = True
         self.locker.acquire()
-        request = self.request
-        if request:
-            app = request.application
+        if self.app not in self.meta_storage:
+            self.storage = self.meta_storage[self.app] = \
+                OrderedDict() if HAVE_PSUTIL else {}
+            self.stats[self.app] = {'hit_total': 0, 'misses': 0}
         else:
-            app = ''
-        if not app in self.meta_storage:
-            self.storage = self.meta_storage[app] = {
-                CacheAbstract.cache_stats_name: {'hit_total': 0, 'misses': 0}}
-        else:
-            self.storage = self.meta_storage[app]
+            self.storage = self.meta_storage[self.app]
         self.locker.release()
 
     def clear(self, regex=None):
@@ -171,9 +212,8 @@ class CacheInRam(CacheAbstract):
         else:
             self._clear(storage, regex)
 
-        if not CacheAbstract.cache_stats_name in storage.keys():
-            storage[CacheAbstract.cache_stats_name] = {
-                'hit_total': 0, 'misses': 0}
+        if self.app not in self.stats:
+            self.stats[self.app] = {'hit_total': 0, 'misses': 0}
 
         self.locker.release()
 
@@ -181,8 +221,8 @@ class CacheInRam(CacheAbstract):
                  time_expire=DEFAULT_TIME_EXPIRE,
                  destroyer=None):
         """
-        Attention! cache.ram does not copy the cached object. 
-        It just stores a reference to it. Turns out the deepcopying the object 
+        Attention! cache.ram does not copy the cached object.
+        It just stores a reference to it. Turns out the deepcopying the object
         has some problems:
 
         - would break backward compatibility
@@ -204,7 +244,7 @@ class CacheInRam(CacheAbstract):
             del self.storage[key]
             if destroyer:
                 destroyer(item[1])
-        self.storage[CacheAbstract.cache_stats_name]['hit_total'] += 1
+        self.stats[self.app]['hit_total'] += 1
         self.locker.release()
 
         if f is None:
@@ -217,7 +257,9 @@ class CacheInRam(CacheAbstract):
 
         self.locker.acquire()
         self.storage[key] = (now, value)
-        self.storage[CacheAbstract.cache_stats_name]['misses'] += 1
+        self.stats[self.app]['misses'] += 1
+        if HAVE_PSUTIL and self.max_ram_utilization is not None and random.random() < 0.10:
+            remove_oldest_entries(self.storage, percentage=self.max_ram_utilization)
         self.locker.release()
         return value
 
@@ -228,7 +270,7 @@ class CacheInRam(CacheAbstract):
             if key in self.storage:
                 value = self.storage[key][1] + value
             self.storage[key] = (time.time(), value)
-        except BaseException, e:
+        except BaseException as e:
             self.locker.release()
             raise e
         self.locker.release()
@@ -239,146 +281,229 @@ class CacheOnDisk(CacheAbstract):
     """
     Disk based cache
 
-    This is implemented as a shelve object and it is shared by multiple web2py
-    processes (and threads) as long as they share the same filesystem.
-    The file is locked when accessed.
+    This is implemented as a key value store where each key corresponds to a
+    single file in disk which is replaced when the value changes.
 
-    Disk cache provides persistance when web2py is started/stopped but it slower
-    than `CacheInRam`
+    Disk cache provides persistance when web2py is started/stopped but it is
+    slower than `CacheInRam`
 
     Values stored in disk cache must be pickable.
     """
 
-    def _close_shelve_and_unlock(self):
-        try:
-            if self.storage:
-                self.storage.close()
-        except ValueError:
-            pass
-        finally:
-            self.storage = None
-            if self.locker and self.locked:
-                portalocker.unlock(self.locker)
-                self.locker.close()
-                self.locked = False
+    class PersistentStorage(object):
+        """
+        Implements a key based thread/process-safe safe storage in disk.
+        """
 
-    def _open_shelve_and_lock(self):
-        """Open and return a shelf object, obtaining an exclusive lock
-        on self.locker first. Replaces the close method of the
-        returned shelf instance with one that releases the lock upon
-        closing."""
+        def __init__(self, folder, file_lock_time_wait=0.1):
+            self.folder = folder
+            self.key_filter_in = lambda key: key
+            self.key_filter_out = lambda key: key
+            self.file_lock_time_wait = file_lock_time_wait
+            # How long we should wait before retrying to lock a file held by another process
+            # We still need a mutex for each file as portalocker only blocks other processes
+            self.file_locks = defaultdict(thread.allocate_lock)
 
-        storage = None
-        locker = None
-        locked = False
-        try:
-            locker = locker = open(self.locker_name, 'a')
-            portalocker.lock(locker, portalocker.LOCK_EX)
-            locked = True
+            # Make sure we use valid filenames.
+            if sys.platform == "win32":
+                import base64
+
+                def key_filter_in_windows(key):
+                    """
+                    Windows doesn't allow \ / : * ? "< > | in filenames.
+                    To go around this encode the keys with base32.
+                    """
+                    return to_native(base64.b32encode(to_bytes(key)))
+
+                def key_filter_out_windows(key):
+                    """
+                    We need to decode the keys so regex based removal works.
+                    """
+                    return to_native(base64.b32decode(to_bytes(key)))
+
+                self.key_filter_in = key_filter_in_windows
+                self.key_filter_out = key_filter_out_windows
+
+        def wait_portalock(self, val_file):
+            """
+            Wait for the process file lock.
+            """
+            while True:
+                try:
+                    portalocker.lock(val_file, portalocker.LOCK_EX)
+                    break
+                except:
+                    time.sleep(self.file_lock_time_wait)
+
+        def acquire(self, key):
+            self.file_locks[key].acquire()
+
+        def release(self, key):
+            self.file_locks[key].release()
+
+        def __setitem__(self, key, value):
+            key = self.key_filter_in(key)
+            val_file = recfile.open(key, mode='wb', path=self.folder)
+            self.wait_portalock(val_file)
+            pickle.dump(value, val_file, pickle.HIGHEST_PROTOCOL)
+            val_file.close()
+
+        def __getitem__(self, key):
+            key = self.key_filter_in(key)
             try:
-                storage = shelve.open(self.shelve_name)
-            except:
-                logger.error('corrupted cache file %s, will try rebuild it'
-                             % self.shelve_name)
-                storage = None
-            if storage is None:
-                if os.path.exists(self.shelve_name):
-                    os.unlink(self.shelve_name)
-                storage = shelve.open(self.shelve_name)
-            if not CacheAbstract.cache_stats_name in storage.keys():
-                storage[CacheAbstract.cache_stats_name] = {
-                    'hit_total': 0, 'misses': 0}
-            storage.sync()
-        except Exception, e:
-            if storage:
-                storage.close()
-                storage = None
-            if locked:
-                portalocker.unlock(locker)
-                locker.close()
-            locked = False
-            raise RuntimeError(
-                'unable to create/re-create cache file %s' % self.shelve_name)
-        self.locker = locker
-        self.locked = locked
-        self.storage = storage
-        return storage
+                val_file = recfile.open(key, mode='rb', path=self.folder)
+            except IOError:
+                raise KeyError
+
+            self.wait_portalock(val_file)
+            value = pickle.load(val_file)
+            val_file.close()
+            return value
+
+        def __contains__(self, key):
+            key = self.key_filter_in(key)
+            return (key in self.file_locks) or recfile.exists(key, path=self.folder)
+
+        def __delitem__(self, key):
+            key = self.key_filter_in(key)
+            try:
+                recfile.remove(key, path=self.folder)
+            except IOError:
+                raise KeyError
+
+        def __iter__(self):
+            for dirpath, dirnames, filenames in os.walk(self.folder):
+                for filename in filenames:
+                    yield self.key_filter_out(filename)
+
+        def safe_apply(self, key, function, default_value=None):
+            """
+            Safely apply a function to the value of a key in storage and set
+            the return value of the function to it.
+
+            Return the result of applying the function.
+            """
+            key = self.key_filter_in(key)
+            exists = True
+            try:
+                val_file = recfile.open(key, mode='r+b', path=self.folder)
+            except IOError:
+                exists = False
+                val_file = recfile.open(key, mode='wb', path=self.folder)
+            self.wait_portalock(val_file)
+            if exists:
+                timestamp, value = pickle.load(val_file)
+            else:
+                value = default_value
+            new_value = function(value)
+            val_file.seek(0)
+            pickle.dump((time.time(), new_value), val_file, pickle.HIGHEST_PROTOCOL)
+            val_file.truncate()
+            val_file.close()
+            return new_value
+
+        def keys(self):
+            return list(self.__iter__())
+
+        def get(self, key, default=None):
+            try:
+                return self[key]
+            except KeyError:
+                return default
 
     def __init__(self, request=None, folder=None):
         self.initialized = False
         self.request = request
         self.folder = folder
-        self.storage = {}
+        self.storage = None
 
     def initialize(self):
         if self.initialized:
             return
         else:
             self.initialized = True
+
         folder = self.folder
         request = self.request
 
         # Lets test if the cache folder exists, if not
         # we are going to create it
-        folder = folder or os.path.join(request.folder, 'cache')
+        folder = os.path.join(folder or request.folder, 'cache')
 
         if not os.path.exists(folder):
             os.mkdir(folder)
 
-        ### we need this because of a possible bug in shelve that may
-        ### or may not lock
-        self.locker_name = os.path.join(folder, 'cache.lock')
-        self.shelve_name = os.path.join(folder, 'cache.shelve')
-
-    def clear(self, regex=None):
-        self.initialize()
-        storage = self._open_shelve_and_lock()
-        try:
-            if regex is None:
-                storage.clear()
-            else:
-                self._clear(storage, regex)
-            storage.sync()
-        finally:
-            self._close_shelve_and_unlock()
+        self.storage = CacheOnDisk.PersistentStorage(folder)
 
     def __call__(self, key, f,
                  time_expire=DEFAULT_TIME_EXPIRE):
         self.initialize()
-        dt = time_expire
-        storage = self._open_shelve_and_lock()
-        try:
-            item = storage.get(key, None)
-            storage[CacheAbstract.cache_stats_name]['hit_total'] += 1
-            if item and f is None:
-                del storage[key]
-                storage.sync()
-            now = time.time()
-            if f is None:
-                value = None
-            elif item and (dt is None or item[0] > now - dt):
-                value = item[1]
-            else:
-                value = f()
-                storage[key] = (now, value)
-                storage[CacheAbstract.cache_stats_name]['misses'] += 1
-                storage.sync()
-        finally:
-            self._close_shelve_and_unlock()
 
+        def inc_hit_total(v):
+            v['hit_total'] += 1
+            return v
+
+        def inc_misses(v):
+            v['misses'] += 1
+            return v
+
+        dt = time_expire
+        self.storage.acquire(key)
+        self.storage.acquire(CacheAbstract.cache_stats_name)
+        item = self.storage.get(key)
+        self.storage.safe_apply(CacheAbstract.cache_stats_name, inc_hit_total,
+                                default_value={'hit_total': 0, 'misses': 0})
+
+        if item and f is None:
+            del self.storage[key]
+
+        if f is None:
+            self.storage.release(CacheAbstract.cache_stats_name)
+            self.storage.release(key)
+            return None
+
+        now = time.time()
+
+        if item and ((dt is None) or (item[0] > now - dt)):
+            value = item[1]
+        else:
+            try:
+                value = f()
+            except:
+                self.storage.release(CacheAbstract.cache_stats_name)
+                self.storage.release(key)
+                raise
+            self.storage[key] = (now, value)
+            self.storage.safe_apply(CacheAbstract.cache_stats_name, inc_misses,
+                                    default_value={'hit_total': 0, 'misses': 0})
+
+        self.storage.release(CacheAbstract.cache_stats_name)
+        self.storage.release(key)
         return value
+
+    def clear(self, regex=None):
+        self.initialize()
+        storage = self.storage
+        if regex is None:
+            keys = storage
+        else:
+            r = re.compile(regex)
+            keys = (key for key in storage if r.match(key))
+        for key in keys:
+            storage.acquire(key)
+            try:
+                del storage[key]
+            except KeyError:
+                pass
+            storage.release(key)
 
     def increment(self, key, value=1):
         self.initialize()
-        storage = self._open_shelve_and_lock()
-        try:
-            if key in storage:
-                value = storage[key][1] + value
-            storage[key] = (time.time(), value)
-            storage.sync()
-        finally:
-            self._close_shelve_and_unlock()
+        self.storage.acquire(key)
+        value = self.storage.safe_apply(key, lambda x: x + value, default_value=0)
+        self.storage.release(key)
         return value
+
 
 class CacheAction(object):
     def __init__(self, func, key, time_expire, cache, cache_model):
@@ -418,7 +543,7 @@ class Cache(object):
 
     def __init__(self, request):
         """
-        Args: 
+        Args:
             request: the global request object
         """
         # GAE will have a special caching
@@ -438,12 +563,12 @@ class Cache(object):
                 logger.warning('no cache.disk (AttributeError)')
 
     def action(self, time_expire=DEFAULT_TIME_EXPIRE, cache_model=None,
-             prefix=None, session=False, vars=True, lang=True,
-             user_agent=False, public=True, valid_statuses=None,
-             quick=None):
+               prefix=None, session=False, vars=True, lang=True,
+               user_agent=False, public=True, valid_statuses=None,
+               quick=None):
         """Better fit for caching an action
 
-        Warning: 
+        Warning:
             Experimental!
 
         Currently only HTTP 1.1 compliant
@@ -457,8 +582,8 @@ class Cache(object):
             vars(bool): adds request.env.query_string
             lang(bool): adds T.accepted_language
             user_agent(bool or dict): if True, adds is_mobile and is_tablet to the key.
-                Pass a dict to use all the needed values (uses str(.items())) 
-                (e.g. user_agent=request.user_agent()). Used only if session is 
+                Pass a dict to use all the needed values (uses str(.items()))
+                (e.g. user_agent=request.user_agent()). Used only if session is
                 not True
             public(bool): if False forces the Cache-Control to be 'private'
             valid_statuses: by default only status codes starting with 1,2,3 will be cached.
@@ -468,28 +593,33 @@ class Cache(object):
         """
         from gluon import current
         from gluon.http import HTTP
+
         def wrap(func):
             def wrapped_f():
                 if current.request.env.request_method != 'GET':
                     return func()
+
+                if quick:
+                    session_ = True if 'S' in quick else False
+                    vars_ = True if 'V' in quick else False
+                    lang_ = True if 'L' in quick else False
+                    user_agent_ = True if 'U' in quick else False
+                    public_ = True if 'P' in quick else False
+                else:
+                    (session_, vars_, lang_, user_agent_, public_) = \
+                        (session, vars, lang, user_agent, public)
+
+                expires = 'Fri, 01 Jan 1990 00:00:00 GMT'
                 if time_expire:
                     cache_control = 'max-age=%(time_expire)s, s-maxage=%(time_expire)s' % dict(time_expire=time_expire)
-                    if quick:
-                        session_ = True if 'S' in quick else False
-                        vars_ = True if 'V' in quick else False
-                        lang_ = True if 'L' in quick else False
-                        user_agent_ = True if 'U' in quick else False
-                        public_ = True if 'P' in quick else False
-                    else:
-                        session_, vars_, lang_, user_agent_, public_ = session, vars, lang, user_agent, public
-                    if not session_ and public_:
-                        cache_control += ', public'
-                        expires = (current.request.utcnow + datetime.timedelta(seconds=time_expire)).strftime('%a, %d %b %Y %H:%M:%S GMT')
-                    else:
-                        cache_control += ', private'
-                        expires = 'Fri, 01 Jan 1990 00:00:00 GMT'
+                    expires = (current.request.utcnow + datetime.timedelta(seconds=time_expire)).strftime(
+                        '%a, %d %b %Y %H:%M:%S GMT')
+                else:
+                    cache_control = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
+                cache_control += ', public' if not session_ and public_ else ', private'
+
                 if cache_model:
-                    #figure out the correct cache key
+                    # figure out the correct cache key
                     cache_key = [current.request.env.path_info, current.response.view]
                     if session_:
                         cache_key.append(current.response.session_id)
@@ -497,37 +627,37 @@ class Cache(object):
                         if user_agent_ is True:
                             cache_key.append("%(is_mobile)s_%(is_tablet)s" % current.request.user_agent())
                         else:
-                            cache_key.append(str(user_agent_.items()))
+                            cache_key.append(str(list(user_agent_.items())))
                     if vars_:
                         cache_key.append(current.request.env.query_string)
                     if lang_:
                         cache_key.append(current.T.accepted_language)
-                    cache_key = hashlib.md5('__'.join(cache_key)).hexdigest()
+                    cache_key = hashlib_md5('__'.join(cache_key)).hexdigest()
                     if prefix:
                         cache_key = prefix + cache_key
                     try:
-                        #action returns something
-                        rtn = cache_model(cache_key, lambda : func(), time_expire=time_expire)
+                        # action returns something
+                        rtn = cache_model(cache_key, lambda: func(), time_expire=time_expire)
                         http, status = None, current.response.status
-                    except HTTP, e:
-                        #action raises HTTP (can still be valid)
-                        rtn = cache_model(cache_key, lambda : e.body, time_expire=time_expire)
+                    except HTTP as e:
+                        # action raises HTTP (can still be valid)
+                        rtn = cache_model(cache_key, lambda: e.body, time_expire=time_expire)
                         http, status = HTTP(e.status, rtn, **e.headers), e.status
                     else:
-                        #action raised a generic exception
+                        # action raised a generic exception
                         http = None
                 else:
-                    #no server-cache side involved
+                    # no server-cache side involved
                     try:
-                        #action returns something
+                        # action returns something
                         rtn = func()
                         http, status = None, current.response.status
-                    except HTTP, e:
-                        #action raises HTTP (can still be valid)
+                    except HTTP as e:
+                        # action raises HTTP (can still be valid)
                         status = e.status
                         http = HTTP(e.status, e.body, **e.headers)
                     else:
-                        #action raised a generic exception
+                        # action raised a generic exception
                         http = None
                 send_headers = False
                 if http and isinstance(valid_statuses, list):
@@ -537,15 +667,13 @@ class Cache(object):
                     if str(status)[0] in '123':
                         send_headers = True
                 if send_headers:
-                    headers = {
-                        'Pragma' : None,
-                        'Expires' : expires,
-                        'Cache-Control' : cache_control
-                        }
+                    headers = {'Pragma': None,
+                               'Expires': expires,
+                               'Cache-Control': cache_control}
                     current.response.headers.update(headers)
                 if cache_model and not send_headers:
-                    #we cached already the value, but the status is not valid
-                    #so we need to delete the cached value
+                    # we cached already the value, but the status is not valid
+                    # so we need to delete the cached value
                     cache_model(cache_key, None)
                 if http:
                     if send_headers:
@@ -567,8 +695,8 @@ class Cache(object):
         Args:
             key(str) : the key of the object to be store or retrieved
             time_expire(int) : expiration of the cache in seconds
-                `time_expire` is used to compare the current time with the time 
-                when the requested object was last saved in cache. 
+                `time_expire` is used to compare the current time with the time
+                when the requested object was last saved in cache.
                 It does not affect future requests.
                 Setting `time_expire` to 0 or negative value forces the cache to
                 refresh.
@@ -602,8 +730,7 @@ class Cache(object):
         allow replacing cache.ram with cache.with_prefix(cache.ram,'prefix')
         it will add prefix to all the cache keys used.
         """
-        return lambda key, f, time_expire=DEFAULT_TIME_EXPIRE, prefix=prefix:\
-            cache_model(prefix + key, f, time_expire)
+        return lambda key, f, time_expire=DEFAULT_TIME_EXPIRE, prefix=prefix: cache_model(prefix + key, f, time_expire)
 
 
 def lazy_cache(key=None, time_expire=None, cache_model='ram'):

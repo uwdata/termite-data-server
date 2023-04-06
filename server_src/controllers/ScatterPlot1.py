@@ -24,6 +24,6 @@ def gib():
 	handler.UpdateModel()
 	handler.InspectModel()
 	handler.LoadGIB()
-	dataStr = json.dumps(handler.content, encoding='utf-8', indent=2, sort_keys=True)
+	dataStr = json.dumps(handler.content, indent=2, sort_keys=True)
 	response.headers['Content-Type'] = 'application/json'
 	return dataStr

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import object
 import logging
 
-class ITM_ComputeStats():
+class ITM_ComputeStats(object):
 
 	def __init__(self, itm_db, corpus_db):
 		self.logger = logging.getLogger('termite')

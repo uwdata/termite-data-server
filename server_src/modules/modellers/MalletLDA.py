@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import str
+from builtins import range
+from builtins import object
 import logging
 import os
 import subprocess
@@ -43,7 +46,7 @@ class ImportMalletCorpus(object):
 	def Shell( self, command ):
 		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
 		while p.poll() is None:
-			line = p.stdout.readline().rstrip('\n')
+			line = p.stdout.readline().decode('UTF-8').strip('\n')
 			if len(line) > 0:
 				self.logger.debug( line )
 	
@@ -91,7 +94,7 @@ class TrainMalletLDA(object):
 	def Shell( self, command ):
 		p = subprocess.Popen( command, stdout = subprocess.PIPE, stderr = subprocess.STDOUT )
 		while p.poll() is None:
-			line = p.stdout.readline().rstrip('\n')
+			line = p.stdout.readline().decode('UTF-8').strip('\n')
 			if len(line) > 0:
 				self.logger.debug( line )
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from builtins import object
 from gluon.sql import DAL, Field
 
-class ITM_DB():
+class ITM_DB(object):
 	FILENAME = 'itm.db'
 	CONNECTION = 'sqlite://{}'.format(FILENAME)
 	DEFAULT_OPTIONS = {}
@@ -30,7 +31,7 @@ class ITM_DB():
 			Field( 'value', 'string', required = True ),
 			migrate = self.isInit
 		)
-		for key, value in ITM_DB.DEFAULT_OPTIONS.iteritems():
+		for key, value in ITM_DB.DEFAULT_OPTIONS.items():
 			self.SetOption( key, value, overwrite = self.isInit )
 
 

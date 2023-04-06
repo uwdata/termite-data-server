@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# vim: set ts=4 sw=4 et ai:
 
 """
 | This file is part of the web2py Web Framework
@@ -9,24 +9,34 @@
 Utility functions for the Admin application
 -------------------------------------------
 """
+
+from __future__ import print_function
+
 import os
-import sys
 import traceback
+from shutil import rmtree, copyfileobj
 import zipfile
-import urllib
-from shutil import rmtree
-from gluon.utils import web2py_uuid
-from gluon.fileutils import w2p_pack, w2p_unpack, w2p_pack_plugin, w2p_unpack_plugin
-from gluon.fileutils import up, fix_newlines, abspath, recursive_unlink
-from gluon.fileutils import read_file, write_file, parse_version
+
+from gluon.fileutils import (w2p_pack, create_app, w2p_unpack,
+                             w2p_pack_plugin, w2p_unpack_plugin,
+                             up, fix_newlines, abspath, recursive_unlink,
+                             write_file, parse_version)
 from gluon.restricted import RestrictedError
 from gluon.settings import global_settings
+from gluon.cache import CacheOnDisk
+from gluon._compat import urlopen, to_native
 
-
+# TODO: move into add_path_first
 if not global_settings.web2py_runtime_gae:
-    import site
+    pass
 
 
+REGEX_DEFINE_TABLE = r"""^\w+\.define_table\(\s*['"](?P<name>\w+)['"]"""
+REGEX_EXTEND = r"""^\s*(?P<all>\{\{\s*extend\s+['"](?P<name>[^'"]+)['"]\s*\}\})"""
+REGEX_INCLUDE = r"""(?P<all>\{\{\s*include\s+['"](?P<name>[^'"]+)['"]\s*\}\})"""
+
+
+# TODO: swap arguments, let first ('r' or whatever) be mandatory
 def apath(path='', r=None):
     """Builds a path inside an application folder
 
@@ -37,8 +47,9 @@ def apath(path='', r=None):
     """
 
     opath = up(r.folder)
-    while path[:3] == '../':
-        (opath, path) = (up(opath), path[3:])
+    while path.startswith('../'):
+        opath = up(opath)
+        path = path[3:]
     return os.path.join(opath, path).replace('\\', '/')
 
 
@@ -53,11 +64,12 @@ def app_pack(app, request, raise_ex=False, filenames=None):
 
     """
     try:
-        if filenames is None: app_cleanup(app, request)
+        if filenames is None:
+            app_cleanup(app, request)
         filename = apath('../deposit/web2py.app.%s.w2p' % app, request)
         w2p_pack(filename, apath(app, request), filenames=filenames)
         return filename
-    except Exception, e:
+    except Exception as e:
         if raise_ex:
             raise
         return False
@@ -79,7 +91,7 @@ def app_pack_compiled(app, request, raise_ex=False):
         filename = apath('../deposit/%s.w2p' % app, request)
         w2p_pack(filename, apath(app, request), compiled=True)
         return filename
-    except Exception, e:
+    except Exception:
         if raise_ex:
             raise
         return None
@@ -103,7 +115,8 @@ def app_cleanup(app, request):
     if os.path.exists(path):
         for f in os.listdir(path):
             try:
-                if f[:1] != '.': os.unlink(os.path.join(path, f))
+                if not f.startswith('.'):
+                    os.unlink(os.path.join(path, f))
             except IOError:
                 r = False
 
@@ -112,22 +125,25 @@ def app_cleanup(app, request):
     if os.path.exists(path):
         for f in os.listdir(path):
             try:
-                if f[:1] != '.': recursive_unlink(os.path.join(path, f))
-            except IOError:
+                if not f.startswith('.'):
+                    recursive_unlink(os.path.join(path, f))
+            except (OSError, IOError):
                 r = False
 
     # Remove cache files
     path = apath('%s/cache/' % app, request)
     if os.path.exists(path):
+        CacheOnDisk(folder=path).clear()
         for f in os.listdir(path):
             try:
-                if f[:1] != '.': os.unlink(os.path.join(path, f))
-            except IOError:
+                if not f.startswith('.'):
+                    recursive_unlink(os.path.join(path, f))
+            except (OSError, IOError):
                 r = False
     return r
 
 
-def app_compile(app, request):
+def app_compile(app, request, skip_failed_views=False):
     """Compiles the application
 
     Args:
@@ -138,13 +154,13 @@ def app_compile(app, request):
         None if everything went ok, traceback text if errors are found
 
     """
-    from compileapp import compile_application, remove_compiled_application
+    from gluon.compileapp import compile_application, remove_compiled_application
     folder = apath(app, request)
     try:
-        compile_application(folder)
-        return None
+        failed_views = compile_application(folder, skip_failed_views)
+        return failed_views
     except (Exception, RestrictedError):
-        tb = traceback.format_exc(sys.exc_info)
+        tb = traceback.format_exc()
         remove_compiled_application(folder)
         return tb
 
@@ -163,7 +179,7 @@ def app_create(app, request, force=False, key=None, info=False):
             os.mkdir(path)
         except:
             if info:
-                return False, traceback.format_exc(sys.exc_info)
+                return False, traceback.format_exc()
             else:
                 return False
     elif not force:
@@ -172,20 +188,7 @@ def app_create(app, request, force=False, key=None, info=False):
         else:
             return False
     try:
-        w2p_unpack('welcome.w2p', path)
-        for subfolder in [
-            'models', 'views', 'controllers', 'databases',
-            'modules', 'cron', 'errors', 'sessions', 'cache',
-            'languages', 'static', 'private', 'uploads']:
-            subpath = os.path.join(path, subfolder)
-            if not os.path.exists(subpath):
-                os.mkdir(subpath)
-        db = os.path.join(path, 'models', 'db.py')
-        if os.path.exists(db):
-            data = read_file(db)
-            data = data.replace('<your secret key>',
-                                'sha512:' + (key or web2py_uuid()))
-            write_file(db, data)
+        create_app(path)
         if info:
             return True, None
         else:
@@ -193,7 +196,7 @@ def app_create(app, request, force=False, key=None, info=False):
     except:
         rmtree(path)
         if info:
-            return False, traceback.format_exc(sys.exc_info)
+            return False, traceback.format_exc()
         else:
             return False
 
@@ -218,16 +221,17 @@ def app_install(app, fobj, request, filename, overwrite=None):
 
     """
     did_mkdir = False
-    if filename[-4:] == '.w2p':
+    if filename.endswith('.w2p'):
         extension = 'w2p'
-    elif filename[-7:] == '.tar.gz':
+    elif filename.endswith('.tar.gz'):
         extension = 'tar.gz'
     else:
         extension = 'tar'
     upname = apath('../deposit/%s.%s' % (app, extension), request)
 
     try:
-        write_file(upname, fobj.read(), 'wb')
+        with open(upname, 'wb') as appfp:
+            copyfileobj(fobj, appfp, 4194304) # 4 MB buffer
         path = apath(app, request)
         if not overwrite:
             os.mkdir(path)
@@ -306,7 +310,8 @@ def plugin_install(app, fobj, request, filename):
     upname = apath('../deposit/%s' % filename, request)
 
     try:
-        write_file(upname, fobj.read(), 'wb')
+        with open(upname, 'wb') as appfp:
+            copyfileobj(fobj, appfp, 4194304) # 4 MB buffer
         path = apath(app, request)
         w2p_unpack_plugin(upname, path)
         fix_newlines(path)
@@ -328,19 +333,29 @@ def check_new_version(myversion, version_url):
         tuple: state, version
 
         - state : `True` if upgrade available, `False` if current
-          version is up-to-date, -1 on error
+                  version is up-to-date, -1 on error,
+                  -2 when the system is likely to be offline (no
+                  internet link available)
         - version : the most up-to-version available
 
     """
     try:
-        from urllib import urlopen
-        version = urlopen(version_url).read()
+        version = to_native(urlopen(version_url).read())
         pversion = parse_version(version)
         pmyversion = parse_version(myversion)
-    except IOError:
-        import traceback
-        print traceback.format_exc()
-        return -1, myversion
+    except IOError as e:
+        from socket import gaierror
+        if isinstance(getattr(e, 'reason', None), gaierror) and \
+            e.reason.errno == -2:
+            # assuming the version_url is ok the socket.gaierror
+            # (gaierror stands for getaddrinfo() error) that
+            # originates the exception is probably due to a
+            # missing internet link (i.e. the system is offline)
+            print('system is offline, cannot retrieve latest web2py version')
+            return -2, myversion
+        else:
+            print(traceback.format_exc())
+            return -1, myversion
 
     if pversion[:3]+pversion[-6:] > pmyversion[:3]+pmyversion[-6:]:
         return True, version
@@ -367,7 +382,7 @@ def unzip(filename, dir, subfolder=''):
     for name in sorted(zf.namelist()):
         if not name.startswith(subfolder):
             continue
-        #print name[n:]
+        # print(name[n:])
         if name.endswith('/'):
             folder = os.path.join(dir, name[n:])
             if not os.path.exists(folder):
@@ -418,41 +433,11 @@ def upgrade(request, url='http://web2py.com'):
     full_url = url + '/examples/static/web2py_%s.zip' % version_type
     filename = abspath('web2py_%s_downloaded.zip' % version_type)
     try:
-        write_file(filename, urllib.urlopen(full_url).read(), 'wb')
-    except Exception, e:
+        write_file(filename, urlopen(full_url).read(), 'wb')
+    except Exception as e:
         return False, e
     try:
         unzip(filename, destination, subfolder)
         return True, None
-    except Exception, e:
+    except Exception as e:
         return False, e
-
-
-def add_path_first(path):
-    sys.path = [path] + [p for p in sys.path if (
-        not p == path and not p == (path + '/'))]
-    if not global_settings.web2py_runtime_gae:
-        site.addsitedir(path)
-
-
-def create_missing_folders():
-    if not global_settings.web2py_runtime_gae:
-        for path in ('applications', 'deposit', 'site-packages', 'logs'):
-            path = abspath(path, gluon=True)
-            if not os.path.exists(path):
-                os.mkdir(path)
-    paths = (global_settings.gluon_parent, abspath(
-        'site-packages', gluon=True), abspath('gluon', gluon=True), '')
-    [add_path_first(path) for path in paths]
-
-
-def create_missing_app_folders(request):
-    if not global_settings.web2py_runtime_gae:
-        if request.folder not in global_settings.app_folders:
-            for subfolder in ('models', 'views', 'controllers', 'databases',
-                              'modules', 'cron', 'errors', 'sessions',
-                              'languages', 'static', 'private', 'uploads'):
-                path = os.path.join(request.folder, subfolder)
-                if not os.path.exists(path):
-                    os.mkdir(path)
-            global_settings.app_folders.add(request.folder)
