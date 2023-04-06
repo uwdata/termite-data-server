@@ -86,7 +86,7 @@ class TreeTMReader(LDAReader):
 		self.docTopicMatrix = []
 		docSet = set()
 		self.logger.debug( '    Loading matrix: %s', self.entryDocTopicMixtures )
-		with open( self.entryDocTopicMixtures, 'r' ) as f:
+		with open( self.entryDocTopicMixtures, 'r', encoding='utf-8' ) as f:
 			for index, line in enumerate(f):
 				line = line.strip('\n')
 				if index == 0:

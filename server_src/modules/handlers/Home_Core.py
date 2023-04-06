@@ -227,7 +227,7 @@ class Home_Core(object):
 
 	def GetStringParam( self, key ):
 		if key in self.request.vars:
-			return self.request.vars[key].decode('utf-8', 'replace')
+			return self.request.vars[key]
 		else:
 			return None
 		

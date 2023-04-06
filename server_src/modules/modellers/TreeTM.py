@@ -398,7 +398,7 @@ class TreeTM(object):
 	
 	def CreateHyperparamsFile( self ):
 		with open( self.filenameHyperparams, 'w' ) as f:
-			f.write( self.hyperParameters.encode('utf-8') )
+			f.write( self.hyperParameters )
 
 	def CreateVocabFile( self ):
 		command = self.generateVocabCommand
@@ -431,7 +431,7 @@ class TreeTM(object):
 		for cannotLink in self.cannotLinkConstraints:
 			lines.append( u'SPLIT_\t{}'.format( u'\t'.join(term for term in cannotLink) ) )
 		with open( self.filenameConstraints, 'w' ) as f:
-			f.write( u'\n'.join(lines).encode('utf-8') )
+			f.write( u'\n'.join(lines))
 	
 	def ReadKeepTermsFile( self ):
 		keepTerms = {}
@@ -450,7 +450,7 @@ class TreeTM(object):
 			for term in terms:
 				lines.append( u'{} {}'.format(term, topic) )
 		with open( self.filenameKeepTerms, 'w' ) as f:
-			f.write( u'\n'.join(lines).encode('utf-8') )
+			f.write( u'\n'.join(lines))
 
 	def ReadRemoveTermsFile( self ):
 		lines = []
@@ -465,14 +465,14 @@ class TreeTM(object):
 	def WriteRemoveTermsFiles( self ):
 		lines = [ term for term in self.removeTermsPrev ]
 		with open( self.filenameRemoveTermsAll, 'w' ) as f:
-			f.write( u'\n'.join(lines).encode('utf-8') )
+			f.write( u'\n'.join(lines))
 		lines = [ term for term in self.removeTermsNew ]
 		with open( self.filenameRemoveTermsNew, 'w' ) as f:
-			f.write( u'\n'.join(lines).encode('utf-8') )
+			f.write( u'\n'.join(lines))
 	
 	def WriteExecuteBashScript( self ):
 		with open( self.filenameExecute, 'w' ) as f:
-			f.write( self.EXECUTE_BASH_SCRIPT.encode('utf-8') )
+			f.write( self.EXECUTE_BASH_SCRIPT )
 		os.chmod( self.filenameExecute, 0o755 )
 		
 ################################################################################
