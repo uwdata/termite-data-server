@@ -1,107 +1,96 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
     Unit tests for running web2py
 """
+
+from __future__ import print_function
+
 import sys
 import os
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 import subprocess
 import time
-import signal
+import shutil
 
+from gluon.contrib.webclient import WebClient
+from gluon._compat import urllib2, PY2
+from gluon.fileutils import create_app
 
-def fix_sys_path():
-    """
-    logic to have always the correct sys.path
-     '', web2py/gluon, web2py/site-packages, web2py/ ...
-    """
-
-    def add_path_first(path):
-        sys.path = [path] + [p for p in sys.path if (
-            not p == path and not p == (path + '/'))]
-
-    path = os.path.dirname(os.path.abspath(__file__))
-
-    if not os.path.isfile(os.path.join(path,'web2py.py')):
-        i = 0
-        while i<10:
-            i += 1
-            if os.path.exists(os.path.join(path,'web2py.py')):
-                break
-            path = os.path.abspath(os.path.join(path, '..'))
-
-    paths = [path,
-             os.path.abspath(os.path.join(path, 'site-packages')),
-             os.path.abspath(os.path.join(path, 'gluon')),
-             '']
-    [add_path_first(path) for path in paths]
-
-fix_sys_path()
-
-from contrib.webclient import WebClient
-from urllib2 import HTTPError
+test_app_name = '_test_web'
 
 webserverprocess = None
 
 def startwebserver():
     global webserverprocess
     path = path = os.path.dirname(os.path.abspath(__file__))
-    if not os.path.isfile(os.path.join(path,'web2py.py')):
+    if not os.path.isfile(os.path.join(path, 'web2py.py')):
         i = 0
-        while i<10:
+        while i < 10:
             i += 1
-            if os.path.exists(os.path.join(path,'web2py.py')):
+            if os.path.exists(os.path.join(path, 'web2py.py')):
                 break
             path = os.path.abspath(os.path.join(path, '..'))
     web2py_exec = os.path.join(path, 'web2py.py')
-    webserverprocess = subprocess.Popen([sys.executable, web2py_exec, '-a',  'testpass'])
-    print 'Sleeping before web2py starts...'
-    for a in range(1,11):
+    webserverprocess = subprocess.Popen([sys.executable, web2py_exec, '-a', 'testpass'])
+    print('Sleeping before web2py starts...')
+    for a in range(1, 11):
         time.sleep(1)
-        print a, '...'
-    print ''
+        print("%d..." % a)
+        try:
+            c = WebClient('http://127.0.0.1:8000/')
+            c.get(test_app_name)
+            break
+        except:
+            continue
+    print('')
 
-def terminate_process(pid):
-    #Taken from http://stackoverflow.com/questions/1064335/in-python-2-5-how-do-i-kill-a-subprocess
-    # all this **blah** is because we are stuck with Python 2.5 and \
-    #we cannot use Popen.terminate()
-    if sys.platform.startswith('win'):
-        import ctypes
-        PROCESS_TERMINATE = 1
-        handle = ctypes.windll.kernel32.OpenProcess(PROCESS_TERMINATE, False, pid)
-        ctypes.windll.kernel32.TerminateProcess(handle, -1)
-        ctypes.windll.kernel32.CloseHandle(handle)
-    else:
-        os.kill(pid, signal.SIGKILL)
 
 def stopwebserver():
     global webserverprocess
-    print 'Killing webserver'
-    if sys.version_info < (2,6):
-        terminate_process(webserverprocess.pid)
-    else:
-        webserverprocess.terminate()
+    print('Killing webserver')
+    webserverprocess.terminate()
+
+
+class Cookie(unittest.TestCase):
+    def testParseMultipleEquals(self):
+        """ Test for issue #1500.
+        Ensure that a cookie containing one or more '=' is correctly parsed
+        """
+        client = WebClient()
+        client.headers['set-cookie'] = "key = value with one =;"
+        client._parse_headers_in_cookies()
+        self.assertIn("key", client.cookies)
+        self.assertEqual(client.cookies['key'], "value with one =")
+
+        client.headers['set-cookie'] = "key = value with one = and another one =;"
+        client._parse_headers_in_cookies()
+        client._parse_headers_in_cookies()
+        self.assertIn("key", client.cookies)
+        self.assertEqual(client.cookies['key'], "value with one = and another one =")
 
 
 class LiveTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        appdir = os.path.join('applications', test_app_name)
+        if not os.path.exists(appdir):
+            os.mkdir(appdir)
+            create_app(appdir)
         startwebserver()
 
     @classmethod
     def tearDownClass(cls):
         stopwebserver()
+        appdir = os.path.join('applications', test_app_name)
+        if os.path.exists(appdir):
+            shutil.rmtree(appdir)
 
 
 @unittest.skipIf("datastore" in os.getenv("DB", ""), "TODO: setup web test for app engine")
 class TestWeb(LiveTest):
     def testRegisterAndLogin(self):
-        client = WebClient('http://127.0.0.1:8000/welcome/default/')
+        client = WebClient("http://127.0.0.1:8000/%s/default/" % test_app_name)
 
         client.get('index')
 
@@ -122,30 +111,30 @@ class TestWeb(LiveTest):
                     password='test',
                     _formname='login')
         client.post('user/login', data=data)
-        self.assertTrue('Welcome Homer' in client.text)
+        self.assertIn('Homer', client.text)
 
         # check registration and login were successful
         client.get('index')
 
-        # COMMENTED BECAUSE FAILS BUT WHY?
-        self.assertTrue('Welcome Homer' in client.text)
+        self.assertIn('Homer', client.text)
 
         client = WebClient('http://127.0.0.1:8000/admin/default/')
-        client.post('index', data=dict(password='hello'))
+        client.post('index', data=dict(password='testpass'))
         client.get('site')
-        client.get('design/welcome')
+        client.get('design/' + test_app_name)
 
     def testStaticCache(self):
-        s = WebClient('http://127.0.0.1:8000/welcome/')
+        s = WebClient("http://127.0.0.1:8000/%s/" % test_app_name)
         s.get('static/js/web2py.js')
-        assert('expires' not in s.headers)
-        assert(not s.headers['cache-control'].startswith('max-age'))
+        self.assertNotIn('expires', s.headers)
+        self.assertFalse(s.headers['cache-control'].startswith('max-age'))
         text = s.text
         s.get('static/_1.2.3/js/web2py.js')
-        assert(text == s.text)
-        assert('expires' in s.headers)
-        assert(s.headers['cache-control'].startswith('max-age'))
+        self.assertEqual(text, s.text)
+        self.assertIn('expires', s.headers)
+        self.assertTrue(s.headers['cache-control'].startswith('max-age'))
 
+    @unittest.skipIf(not(PY2), 'skip PY3 testSoap')
     def testSoap(self):
         # test soap server implementation
         from gluon.contrib.pysimplesoap.client import SoapClient, SoapFault
@@ -153,15 +142,15 @@ class TestWeb(LiveTest):
         client = SoapClient(wsdl=url)
         ret = client.SubIntegers(a=3, b=2)
         # check that the value returned is ok
-        assert('SubResult' in ret)
-        assert(ret['SubResult'] == 1)
+        self.assertIn('SubResult', ret)
+        self.assertEqual(ret['SubResult'], 1)
 
         try:
             ret = client.Division(a=3, b=0)
-        except SoapFault, sf:
+        except SoapFault as sf:
             # verify the exception value is ok
-            # assert(sf.faultstring == "float division by zero") # true only in 2.7
-            assert(sf.faultcode == "Server.ZeroDivisionError")
+            # self.assertEqual(sf.faultstring, "float division by zero") # true only in 2.7
+            self.assertEqual(sf.faultcode, "Server.ZeroDivisionError")
 
         # store sent and received xml for low level test
         xml_request = client.xml_request
@@ -171,12 +160,8 @@ class TestWeb(LiveTest):
         s = WebClient('http://127.0.0.1:8000/')
         try:
             s.post('examples/soap_examples/call/soap', data=xml_request, method="POST")
-        except HTTPError, e:
-            assert(e.msg=='INTERNAL SERVER ERROR')
+        except urllib2.HTTPError as e:
+            self.assertEqual(e.msg, 'INTERNAL SERVER ERROR')
         # check internal server error returned (issue 153)
-        assert(s.status == 500)
-        assert(s.text == xml_response)
-        
-
-if __name__ == '__main__':
-    unittest.main()
+        self.assertEqual(s.status, 500)
+        self.assertEqual(s.text, xml_response)

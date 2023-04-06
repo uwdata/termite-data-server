@@ -13,12 +13,11 @@
 
 import os
 import re
-import urllib
 from gluon import *
 from gluon.tools import fetch
 from gluon.storage import Storage
-import gluon.contrib.simplejson as json
-
+import json
+from gluon._compat import urlencode
 
 class RPXAccount(object):
 
@@ -78,10 +77,13 @@ class RPXAccount(object):
 
     def get_user(self):
         request = self.request
-        if request.vars.token:
+        # Janrain now sends the token via both a POST body and the query
+        # string, so we should keep only one of these.
+        token = request.post_vars.token or request.get_vars.token
+        if token:
             user = Storage()
-            data = urllib.urlencode(
-                dict(apiKey=self.api_key, token=request.vars.token))
+            data = urlencode(
+                dict(apiKey=self.api_key, token=token))
             auth_info_json = fetch(self.auth_url + '?' + data)
             auth_info = json.loads(auth_info_json)
 
@@ -98,32 +100,27 @@ class RPXAccount(object):
     def login_form(self):
         request = self.request
         args = request.args
-        rpxform = """
-        <script type="text/javascript">
-        (function() {
-            if (typeof window.janrain !== 'object') window.janrain = {};
-            if (typeof window.janrain.settings !== 'object') window.janrain.settings = {};
-            janrain.settings.tokenUrl = '%s';
-            function isReady() { janrain.ready = true; };
-            if (document.addEventListener) {
-                document.addEventListener("DOMContentLoaded", isReady, false);
-            } else {
-                window.attachEvent('onload', isReady);
-            }
-            var e = document.createElement('script');
-            e.type = 'text/javascript';
-            e.id = 'janrainAuthWidget';
-            if (document.location.protocol === 'https:') {
-                e.src = 'https://rpxnow.com/js/lib/%s/engage.js';
-            } else {
-                e.src = 'http://widget-cdn.rpxnow.com/js/lib/%s/engage.js';
-            }
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(e, s);
-        })();
-        </script>
-        <div id="janrainEngageEmbed"></div>""" % (self.token_url, self.domain, self.domain)
-        return XML(rpxform)
+        if self.embed:
+            JANRAIN_URL = \
+                "https://%s.rpxnow.com/openid/embed?token_url=%s&language_preference=%s"
+            rpxform = IFRAME(
+                _src=JANRAIN_URL % (
+                    self.domain, self.token_url, self.language),
+                _scrolling="no",
+                _frameborder="no",
+                _style="width:400px;height:240px;")
+        else:
+            JANRAIN_URL = \
+                "https://%s.rpxnow.com/openid/v2/signin?token_url=%s"
+            rpxform = DIV(SCRIPT(_src="https://rpxnow.com/openid/v2/widget",
+                                 _type="text/javascript"),
+                          SCRIPT("RPXNOW.overlay = true;",
+                                 "RPXNOW.language_preference = '%s';" % self.language,
+                                 "RPXNOW.realm = '%s';" % self.domain,
+                                 "RPXNOW.token_url = '%s';" % self.token_url,
+                                 "RPXNOW.show();",
+                                 _type="text/javascript"))
+        return rpxform
 
 
 def use_janrain(auth, filename='private/janrain.key', **kwargs):

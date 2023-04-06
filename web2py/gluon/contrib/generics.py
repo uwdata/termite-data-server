@@ -1,12 +1,8 @@
 # fix response
 
-import re
 import os
-import cPickle
-import gluon.serializers
 from gluon import current, HTTP
 from gluon.html import markmin_serializer, TAG, HTML, BODY, UL, XML, H1
-from gluon.contenttype import contenttype
 from gluon.contrib.fpdf import FPDF, HTMLMixin
 from gluon.sanitizer import sanitize
 from gluon.contrib.markmin.markmin2latex import markmin2latex
@@ -18,18 +14,18 @@ def wrapper(f):
         try:
             output = f(data)
             return XML(ouput)
-        except (TypeError, ValueError), e:
+        except (TypeError, ValueError) as e:
             raise HTTP(405, '%s serialization error' % e)
-        except ImportError, e:
+        except ImportError as e:
             raise HTTP(405, '%s not available' % e)
-        except Exception, e:
+        except Exception as e:
             raise HTTP(405, '%s error' % e)
     return g
 
 
 def latex_from_html(html):
     markmin = TAG(html).element('body').flatten(markmin_serializer)
-    return XML(markmin2latex(markmin))
+    return markmin2latex(markmin)
 
 
 def pdflatex_from_html(html):
@@ -43,7 +39,7 @@ def pdflatex_from_html(html):
                                       H1('warnings'),
                                       UL(*warnings))).xml())
         else:
-            return XML(out)
+            return out
 
 
 def pyfpdf_from_html(html):
@@ -58,8 +54,16 @@ def pyfpdf_from_html(html):
         pass
     pdf = MyFPDF()
     pdf.add_page()
+    # pyfpdf needs some attributes to render the table correctly:
     html = sanitize(
-        html, escape=False)  # should have better list of allowed tags
+        html, allowed_attributes={
+            'a': ['href', 'title'],
+            'img': ['src', 'alt'],
+            'blockquote': ['type'],
+            'td': ['align', 'bgcolor', 'colspan', 'height', 'width'],
+            'tr': ['bgcolor', 'height', 'width'],
+            'table': ['border', 'bgcolor', 'height', 'width'],
+        }, escape=False)
     pdf.write_html(html, image_map=image_map)
     return XML(pdf.output(dest='S'))
 

@@ -3,7 +3,7 @@
 
 """
 Written by Michele Comitini <mcm@glisco.it>
-License: GPL v3
+License: LGPL v3
 
 Adds support for x509 authentication.
 
@@ -15,6 +15,7 @@ from gluon.http import HTTP, redirect
 
 #requires M2Crypto
 from M2Crypto import X509
+from functools import reduce
 
 
 class X509Auth(object):

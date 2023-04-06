@@ -3,7 +3,7 @@
 
 import sys
 # This adds web2py to path, so that stuff like gluon can be imported properly 
-sys.path.append("web2py-new")
+sys.path.append("web2py")
 
 import argparse
 import logging
