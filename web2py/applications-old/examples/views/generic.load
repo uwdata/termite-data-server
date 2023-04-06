@@ -1,1 +1,0 @@
-{{response.headers['web2py-response-flash']=response.flash}}{{if len(response._vars)==1:}}{{=response._vars[next(iter(response._vars))]}}{{else:}}{{=BEAUTIFY(response._vars)}}{{pass}}
